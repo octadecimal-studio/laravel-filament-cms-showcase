@@ -17,9 +17,6 @@
         "laravel/framework": "^12.0",
         "laravel/sanctum": "^4.2",
         "laravel/tinker": "^2.10.1",
-        "mozex/anthropic-laravel": "^1.0",
-        "mwguerra/web-terminal": "^1.0",
-        "nuwave/lighthouse": "^6.65",
         "octopyid/filament-palette": "^1.0",
         "spatie/laravel-medialibrary": "^11.0",
         "spatie/laravel-permission": "^6.24"

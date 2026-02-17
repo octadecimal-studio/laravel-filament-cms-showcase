@@ -8,7 +8,6 @@ use App\Filament\Resources\Modules\Content\Models\TwoWheels\FeatureResource;
 use App\Filament\Resources\Modules\Content\Models\TwoWheels\GalleryResource;
 use App\Filament\Resources\Modules\Content\Models\TwoWheels\MotorcycleResource;
 use App\Filament\Resources\Modules\Content\Models\TwoWheels\SiteSettingResource;
-use App\Filament\Resources\SiteResource;
 use App\Modules\Core\Models\TenantFeatureAccess;
 use Filament\Widgets\Widget;
 
@@ -52,7 +51,6 @@ class ClientDashboardWidget extends Widget
             'gallery' => ['Galeria', GalleryResource::class, 'heroicon-o-photo'],
             'site_settings' => ['Ustawienia strony', SiteSettingResource::class, 'heroicon-o-cog-6-tooth'],
             'features' => ['Zalety', FeatureResource::class, 'heroicon-o-sparkles'],
-            'sites' => ['Strony', SiteResource::class, 'heroicon-o-globe-alt'],
         ];
 
         foreach ($checks as $feature => [$label, $resource, $icon]) {

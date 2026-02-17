@@ -19,17 +19,14 @@ class DatabaseSeeder extends Seeder
         // Najpierw role i uprawnienia
         $this->call(RolesAndPermissionsSeeder::class);
 
-        // Następnie tenanty i użytkownicy (legacy)
+        // Tenanty i użytkownicy
         $this->call(TenantSeeder::class);
 
-        // Nowy workflow CMS z przykładowymi danymi
-        $this->call(CmsWorkflowSeeder::class);
+        // Konto klienta MotoRent Demo (creates Site needed by ReservationSeeder)
+        $this->call(TwoWheelsClientSeeder::class);
 
         // Rezerwacje z produkcji (Plugin Reservations)
         $this->call(ReservationSeeder::class);
-
-        // Konto klienta MotoRent Demo
-        $this->call(TwoWheelsClientSeeder::class);
 
         // Treści MotoRent (motocykle, marki, kategorie, features, steps, testimonials)
         $this->call(TwoWheelsContentSeeder::class);

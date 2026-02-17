@@ -8,7 +8,6 @@ use App\Http\Middleware\UpdateSessionUserId;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use App\Models\Plugin;
 use App\Models\UserCustomNavigationItem;
-use App\Modules\Core\Middleware\EnsureTenantSession;
 use App\Modules\Core\Models\Tenant;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -49,24 +48,11 @@ class AdminPanelProvider extends PanelProvider
 
     /**
      * Sprawdza czy użytkownik ma dostęp do sekcji MotoRent.
-     * Widoczne dla super admina lub klienta z tenant_id demo-studio.
+     * Dedicated panel — always true.
      */
     private static function canAccessTwoWheels(): bool
     {
-        $user = auth()->user();
-        if (!$user) {
-            return false;
-        }
-
-        // Super admin widzi wszystko
-        if ($user->is_super_admin || $user->hasRole('super_admin')) {
-            return true;
-        }
-
-        // Klient widzi motorent jeśli jest przypisany do demo-studio tenant
-        // (tenant_id dla motorent)
-        $demoStudioTenantId = 'a0e1ef09-91b0-476a-aec1-45ae89c36bd4';
-        return $user->tenant_id === $demoStudioTenantId;
+        return true;
     }
 
     /**
@@ -334,10 +320,10 @@ class AdminPanelProvider extends PanelProvider
                 'success' => Color::Emerald,
                 'info' => Color::Sky,
             ])
-            ->brandName('Octadecimal Studio')
-            ->brandLogo(asset('images/logo-cms.png'))
-            ->darkModeBrandLogo(asset('images/logo-cms.png'))
-            ->homeUrl('https://octadecimal.studio/')
+            ->brandName('MotoRent Demo')
+            ->brandLogo(asset('images/logo-motorent.png'))
+            ->darkModeBrandLogo(asset('images/logo-motorent.png'))
+            ->homeUrl('https://example-rental.test/')
             ->favicon(asset('favicon.ico'))
 
             // Dark mode domyślnie
@@ -495,13 +481,6 @@ class AdminPanelProvider extends PanelProvider
                         ->icon('heroicon-o-envelope')
                         ->url('/admin/mailbox')
                         ->sort(100)
-                        ->visible(fn (): bool => self::isSuperAdmin()),
-                    NavigationItem::make('Database Client')
-                        ->label('Klient bazy danych')
-                        ->icon('heroicon-o-circle-stack')
-                        ->url(config('app.database_client_url'))
-                        ->openUrlInNewTab()
-                        ->sort(101)
                         ->visible(fn (): bool => self::isSuperAdmin()),
                 ],
                 // Dodaj custom navigation items użytkownika

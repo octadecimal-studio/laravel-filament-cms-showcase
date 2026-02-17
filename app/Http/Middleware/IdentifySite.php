@@ -36,7 +36,6 @@ final class IdentifySite
         $site = Site::query()
             ->where('slug', $slug)
             ->where('status', '!=', 'suspended')
-            ->with(['customer', 'primaryDomain'])
             ->first();
 
         if ($site === null) {

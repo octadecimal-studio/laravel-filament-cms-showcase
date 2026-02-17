@@ -15,8 +15,6 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
@@ -296,59 +294,4 @@ class User extends Authenticatable implements FilamentUser, HasTenants, HasAvata
         return $query->where('is_super_admin', true);
     }
 
-    // ==========================================
-    // RELACJE DLA NOWEGO SCHEMATU CMS
-    // ==========================================
-
-    /**
-     * Klienci, do których użytkownik ma dostęp.
-     */
-    public function customers(): BelongsToMany
-    {
-        return $this->belongsToMany(Customer::class, 'customer_user')
-            ->withPivot(['role', 'can_view_billing', 'can_manage_users', 'notify_new_invoice', 'notify_site_updates', 'invited_at', 'accepted_at'])
-            ->withTimestamps();
-    }
-
-    /**
-     * Strony, do których użytkownik ma dostęp.
-     */
-    public function sites(): BelongsToMany
-    {
-        return $this->belongsToMany(Site::class, 'site_user')
-            ->withPivot(['role', 'can_publish', 'can_manage_media', 'can_view_analytics', 'invited_by', 'invited_at', 'accepted_at', 'last_access_at'])
-            ->withTimestamps();
-    }
-
-    /**
-     * Wpisy czasu pracy użytkownika.
-     */
-    public function timeEntries(): HasMany
-    {
-        return $this->hasMany(TimeEntry::class);
-    }
-
-    /**
-     * Zlecenia przypisane do użytkownika.
-     */
-    public function assignedOrders(): HasMany
-    {
-        return $this->hasMany(Order::class, 'assigned_to');
-    }
-
-    /**
-     * Poprawki przypisane do użytkownika.
-     */
-    public function assignedCorrections(): HasMany
-    {
-        return $this->hasMany(Correction::class, 'assigned_to');
-    }
-
-    /**
-     * Logi aktywności użytkownika.
-     */
-    public function activityLogs(): HasMany
-    {
-        return $this->hasMany(ActivityLog::class);
-    }
 }
