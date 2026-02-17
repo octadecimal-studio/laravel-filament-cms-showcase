@@ -1,0 +1,300 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Filament\Resources\Modules\Content\Models\TwoWheels;
+
+use App\Filament\Resources\Modules\Content\Models\TwoWheels\SiteSettingResource\Pages;
+use App\Filament\Resources\Modules\Content\Models\TwoWheels\SiteSettingResource\RelationManagers;
+use App\Modules\Content\Models\TwoWheels\SiteSetting;
+use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Support\HtmlString;
+use App\Modules\Core\Traits\HasFeatureAccess;
+use Filament\Forms;
+use Filament\Forms\Form;
+use Filament\Resources\Resource;
+use Filament\Tables;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
+
+/**
+ * Filament Resource dla zarządzania ustawieniami strony.
+ */
+final class SiteSettingResource extends Resource
+{
+    use HasFeatureAccess;
+
+    protected static ?string $model = SiteSetting::class;
+
+    protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';
+
+    protected static ?string $navigationLabel = 'Ustawienia strony';
+
+    protected static ?string $modelLabel = 'Ustawienie strony';
+
+    protected static ?string $pluralModelLabel = 'Ustawienia strony';
+
+    protected static ?string $navigationGroup = 'MotoRent Demo';
+
+    /**
+     * Nazwa funkcjonalności dla systemu dostępów.
+     */
+    protected static string $featureName = 'site_settings';
+
+    /**
+     * Sprawdza czy Resource powinien być widoczny w nawigacji.
+     */
+    public static function shouldRegisterNavigation(): bool
+    {
+        return static::canAccessFeature();
+    }
+
+    /**
+     * Filtruj dane po tenant_id.
+     */
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery()
+            ->withoutGlobalScopes([
+                SoftDeletingScope::class,
+                \App\Modules\Core\Scopes\TenantScope::class,
+            ]);
+
+        $user = auth()->user();
+        if ($user && !($user->is_super_admin || $user->hasRole('super_admin'))) {
+            $query->where('tenant_id', $user->tenant_id);
+        }
+        return $query;
+    }
+
+    public static function form(Form $form): Form
+    {
+        return $form
+            ->schema([
+                Forms\Components\Section::make('Podstawowe informacje')
+                    ->schema([
+                        Forms\Components\TextInput::make('site_title')
+                            ->label('Tytuł strony')
+                            ->required()
+                            ->maxLength(255)
+                            ->columnSpanFull(),
+
+                        Forms\Components\Textarea::make('site_description')
+                            ->label('Opis strony')
+                            ->rows(3)
+                            ->required()
+                            ->columnSpanFull(),
+                    ])
+                    ->columns(2),
+
+                Forms\Components\Section::make('Sekcja "O nas"')
+                    ->description('Treść wyświetlana w sekcji "O nas" na stronie głównej. Możesz używać formatowania HTML.')
+                    ->schema([
+                        Forms\Components\RichEditor::make('about_us_content')
+                            ->label('Treść sekcji "O nas"')
+                            ->toolbarButtons([
+                                'bold',
+                                'italic',
+                                'underline',
+                                'strike',
+                                'h2',
+                                'h3',
+                                'bulletList',
+                                'orderedList',
+                                'blockquote',
+                                'link',
+                            ])
+                            ->columnSpanFull(),
+                    ]),
+
+                Forms\Components\Section::make('Regulamin')
+                    ->description('Treść regulaminu wyświetlana w sekcji na stronie głównej.')
+                    ->schema([
+                        Forms\Components\RichEditor::make('regulamin_content')
+                            ->label('Treść regulaminu')
+                            ->toolbarButtons([
+                                'bold', 'italic', 'underline', 'strike',
+                                'h2', 'h3', 'bulletList', 'orderedList', 'blockquote', 'link',
+                            ])
+                            ->columnSpanFull(),
+                    ])
+                    ->collapsed(),
+
+                Forms\Components\Section::make('Polityka prywatności')
+                    ->description('Treść polityki prywatności wyświetlana w sekcji na stronie głównej.')
+                    ->schema([
+                        Forms\Components\RichEditor::make('polityka_prywatnosci_content')
+                            ->label('Treść polityki prywatności')
+                            ->toolbarButtons([
+                                'bold', 'italic', 'underline', 'strike',
+                                'h2', 'h3', 'bulletList', 'orderedList', 'blockquote', 'link',
+                            ])
+                            ->columnSpanFull(),
+                    ])
+                    ->collapsed(),
+
+                Forms\Components\Section::make('Logo')
+                    ->schema([
+                        Forms\Components\Placeholder::make('current_logo_preview')
+                            ->label('Aktualne logo')
+                            ->content(function (?SiteSetting $record): Htmlable {
+                                if (! $record || ! $record->logo) {
+                                    return new HtmlString('<span class="text-gray-500">Brak logo</span>');
+                                }
+                                $url = asset('storage/' . $record->logo->file_path);
+                                return new HtmlString(
+                                    '<img src="' . $url . '" alt="' . e($record->logo->file_name) . '" ' .
+                                    'class="max-h-32 rounded-lg shadow-md object-contain" />'
+                                );
+                            })
+                            ->visible(fn (string $operation): bool => $operation === 'edit')
+                            ->columnSpanFull(),
+
+                        Forms\Components\FileUpload::make('new_logo')
+                            ->label(fn (string $operation): string => $operation === 'create' ? 'Wgraj logo' : 'Podmień logo')
+                            ->helperText('Wgraj logo lub użyj edytora do kadrowania. Obsługiwane: JPG, PNG, WebP.')
+                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                            ->maxSize(2048)
+                            ->disk('public')
+                            ->directory('site-settings/logos')
+                            ->visibility('public')
+                            ->imagePreviewHeight('150')
+                            ->imageEditor()
+                            ->imageEditorAspectRatios([
+                                null,
+                                '16:9',
+                                '4:3',
+                                '3:2',
+                                '1:1',
+                            ])
+                            ->imageEditorEmptyFillColor('#ffffff')
+                            ->imageEditorViewportWidth(800)
+                            ->imageEditorViewportHeight(450)
+                            ->openable()
+                            ->downloadable()
+                            ->columnSpanFull(),
+
+                        Forms\Components\Hidden::make('logo_id'),
+                    ]),
+
+                Forms\Components\Section::make('Kontakt')
+                    ->schema([
+                        Forms\Components\TextInput::make('contact_phone')
+                            ->label('Telefon')
+                            ->tel()
+                            ->maxLength(20)
+                            ->required(),
+
+                        Forms\Components\TextInput::make('contact_email')
+                            ->label('Email')
+                            ->email()
+                            ->maxLength(255)
+                            ->required(),
+
+                        Forms\Components\Textarea::make('address')
+                            ->label('Adres')
+                            ->rows(2)
+                            ->required()
+                            ->columnSpanFull(),
+
+                        Forms\Components\Textarea::make('opening_hours')
+                            ->label('Godziny otwarcia')
+                            ->rows(2)
+                            ->required()
+                            ->columnSpanFull(),
+
+                        Forms\Components\TextInput::make('map_coordinates')
+                            ->label('Współrzędne mapy')
+                            ->placeholder('52.2297,21.0122')
+                            ->helperText('Format: szerokość,długość (np. 52.2297,21.0122)')
+                            ->required()
+                            ->columnSpanFull(),
+                    ])
+                    ->columns(2),
+            ]);
+    }
+
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->headerActions([
+                Tables\Actions\Action::make('view_api')
+                    ->label('Zobacz API')
+                    ->icon('heroicon-o-code-bracket')
+                    ->url(fn () => url('/api/motorent/site-setting?tenant_id=' . (auth()->user()?->tenant_id ?? \App\Modules\Core\Models\Tenant::where('slug', 'demo-studio')->where('is_active', true)->value('id') ?? '')))
+                    ->openUrlInNewTab()
+                    ->color('info'),
+            ])
+            ->columns([
+                Tables\Columns\TextColumn::make('site_title')
+                    ->label('Tytuł strony')
+                    ->searchable()
+                    ->sortable()
+                    ->weight('bold'),
+
+                Tables\Columns\TextColumn::make('site_description')
+                    ->label('Opis')
+                    ->limit(50)
+                    ->toggleable(),
+
+                Tables\Columns\ImageColumn::make('logo.file_path')
+                    ->label('Logo')
+                    ->height(40)
+                    ->width(40)
+                    ->toggleable(),
+
+                Tables\Columns\TextColumn::make('contact_phone')
+                    ->label('Telefon')
+                    ->searchable()
+                    ->toggleable(),
+
+                Tables\Columns\TextColumn::make('contact_email')
+                    ->label('Email')
+                    ->searchable()
+                    ->toggleable(),
+
+                Tables\Columns\TextColumn::make('address')
+                    ->label('Adres')
+                    ->limit(30)
+                    ->toggleable(),
+
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Utworzono')
+                    ->dateTime('d.m.Y H:i')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Zaktualizowano')
+                    ->dateTime('d.m.Y H:i')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+            ])
+            ->filters([
+                //
+            ])
+            ->actions([
+                Tables\Actions\EditAction::make(),
+            ])
+            ->bulkActions([
+                //
+            ]);
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            //
+        ];
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListSiteSettings::route('/'),
+            'create' => Pages\CreateSiteSetting::route('/create'),
+            'edit' => Pages\EditSiteSetting::route('/{record}/edit'),
+        ];
+    }
+}
