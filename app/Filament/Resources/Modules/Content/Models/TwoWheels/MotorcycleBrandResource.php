@@ -30,7 +30,7 @@ final class MotorcycleBrandResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Marki';
 
-    protected static ?string $navigationGroup = 'MotoRent Demo';
+    protected static ?int $navigationSort = 30;
 
     /**
      * Filtruj dane po tenant_id.

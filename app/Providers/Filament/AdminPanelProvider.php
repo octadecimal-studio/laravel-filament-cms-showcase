@@ -21,7 +21,6 @@ use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\View\PanelsRenderHook;
 use Illuminate\Support\HtmlString;
-use Datlechin\FilamentMenuBuilder\Models\Menu;
 use Filament\Widgets;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -251,7 +250,7 @@ class AdminPanelProvider extends PanelProvider
             return '';
         }
         try {
-            $menu = Menu::location('header');
+            $menu = \Datlechin\FilamentMenuBuilder\Models\Menu::location('header');
             
             if (!$menu || !$menu->is_visible || $menu->menuItems->isEmpty()) {
                 return '';
@@ -451,22 +450,6 @@ class AdminPanelProvider extends PanelProvider
 
             // Filament Shield - zarządzanie rolami i uprawnieniami
             ->plugin(FilamentShieldPlugin::make())
-            // Opcjonalne pluginy – rejestrowane tylko gdy pakiety są zainstalowane (np. lokalnie)
-            ->plugins(array_filter([
-                class_exists(\Octopy\Filament\Palette\PaletteSwitcherPlugin::class)
-                    ? \Octopy\Filament\Palette\PaletteSwitcherPlugin::make() : null,
-                class_exists(\Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin::class)
-                    ? \Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin::make()
-                        ->addLocations([
-                            'header' => 'Header (Góra strony)',
-                            'footer' => 'Footer (Stopka)',
-                            'sidebar' => 'Sidebar (Boczny panel)',
-                            'mobile' => 'Mobile (Menu mobilne)',
-                        ]) : null,
-            ]))
-
-            // Dynamiczne pluginy z bazy danych
-            ->plugins(self::getEnabledPluginsFromDatabase())
 
             // Niestandardowe pozycje menu
             ->navigationItems(array_merge(
@@ -479,9 +462,9 @@ class AdminPanelProvider extends PanelProvider
                     NavigationItem::make('Mailbox')
                         ->label('Mailbox')
                         ->icon('heroicon-o-envelope')
-                        ->url('/admin/mailbox')
-                        ->sort(100)
-                        ->visible(fn (): bool => self::isSuperAdmin()),
+                        ->url('https://mail.ovh.net/roundcube/')
+                        ->sort(95)
+                        ->openUrlInNewTab(),
                 ],
                 // Dodaj custom navigation items użytkownika
                 self::getUserCustomNavigationItems()

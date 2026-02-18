@@ -6,7 +6,6 @@ namespace App\Plugins\Reservations\Filament\Resources;
 
 use App\Modules\Content\Models\TwoWheels\Motorcycle;
 use App\Modules\Core\Scopes\TenantScope;
-use App\Modules\Core\Traits\HasFeatureAccess;
 use App\Plugins\Reservations\Filament\Resources\ReservationResource\Pages;
 use App\Plugins\Reservations\Models\Reservation;
 use Filament\Forms;
@@ -27,7 +26,6 @@ use Illuminate\Database\Eloquent\Builder;
  */
 class ReservationResource extends Resource
 {
-    use HasFeatureAccess;
 
     /**
      * Model.
@@ -57,25 +55,7 @@ class ReservationResource extends Resource
     /**
      * Grupa nawigacji.
      */
-    protected static ?string $navigationGroup = 'Plugins';
-
-    /**
-     * Kolejność w nawigacji.
-     */
-    protected static ?int $navigationSort = 10;
-
-    /**
-     * Nazwa funkcjonalności dla systemu dostępów.
-     */
-    protected static string $featureName = 'reservations';
-
-    /**
-     * Sprawdza czy Resource powinien być widoczny w nawigacji.
-     */
-    public static function shouldRegisterNavigation(): bool
-    {
-        return static::canAccessFeature();
-    }
+    protected static ?int $navigationSort = 85;
 
     /**
      * Definicja formularza.

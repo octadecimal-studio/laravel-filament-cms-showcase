@@ -30,7 +30,7 @@ final class ProcessStepResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Kroki procesu';
 
-    protected static ?string $navigationGroup = 'MotoRent Demo';
+    protected static ?int $navigationSort = 60;
 
     /**
      * Filtruj dane po tenant_id.

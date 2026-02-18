@@ -32,7 +32,7 @@ final class FeatureResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Zalety';
 
-    protected static ?string $navigationGroup = 'MotoRent Demo';
+    protected static ?int $navigationSort = 10;
 
     /**
      * Filtruj dane po tenant_id.

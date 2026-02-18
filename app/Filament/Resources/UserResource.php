@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources;
 
-use App\Filament\Concerns\HasNavigationPermission;
 use App\Filament\Resources\UserResource\Pages;
 use App\Models\User;
 use App\Modules\Core\Models\Tenant;
@@ -23,12 +22,6 @@ use Spatie\Permission\Models\Role;
  */
 class UserResource extends Resource
 {
-    use HasNavigationPermission;
-
-    /**
-     * Prefix uprawnień dla tego zasobu.
-     */
-    protected static string $permissionPrefix = 'users';
     protected static ?string $model = User::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-users';
@@ -39,13 +32,7 @@ class UserResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Użytkownicy';
 
-    protected static ?string $navigationGroup = 'System';
-
-    protected static ?int $navigationSort = 10;
-
-    // Widoczność w nawigacji jest zarządzana przez HasNavigationPermission trait
-    // na podstawie uprawnienia 'users.view_any'
-    // Super admini mają automatycznie dostęp do wszystkiego
+    protected static ?int $navigationSort = 90;
 
     public static function form(Form $form): Form
     {
