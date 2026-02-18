@@ -26,6 +26,11 @@ final class ContentTemplateResource extends Resource
 
     protected static ?string $model = ContentTemplate::class;
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
+
     protected static ?string $navigationIcon = 'heroicon-o-document-duplicate';
 
     protected static ?string $navigationLabel = 'Szablony';
@@ -35,15 +40,6 @@ final class ContentTemplateResource extends Resource
     protected static ?string $pluralModelLabel = 'Szablony';
 
     protected static ?string $navigationGroup = 'Content';
-
-    /**
-     * Tylko super admin widzi szablony treści.
-     */
-    public static function shouldRegisterNavigation(): bool
-    {
-        $user = auth()->user();
-        return $user && ($user->is_super_admin || $user->hasRole('super_admin'));
-    }
 
     public static function form(Form $form): Form
     {

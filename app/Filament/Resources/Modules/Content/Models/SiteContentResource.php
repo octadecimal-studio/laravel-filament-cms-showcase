@@ -29,6 +29,11 @@ final class SiteContentResource extends Resource
 
     protected static ?string $model = SiteContent::class;
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
+
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
 
     protected static ?string $navigationLabel = 'Treści';
@@ -38,19 +43,6 @@ final class SiteContentResource extends Resource
     protected static ?string $pluralModelLabel = 'Treści';
 
     protected static ?string $navigationGroup = 'Content';
-
-    /**
-     * Tylko super admin widzi treści.
-     */
-    public static function shouldRegisterNavigation(): bool
-    {
-        /** @var \App\Models\User|null $user */
-        $user = Auth::user();
-        if (!$user) {
-            return false;
-        }
-        return $user->is_super_admin || (method_exists($user, 'hasRole') && $user->hasRole('super_admin'));
-    }
 
     /**
      * Formularz edycji/tworzenia treści.

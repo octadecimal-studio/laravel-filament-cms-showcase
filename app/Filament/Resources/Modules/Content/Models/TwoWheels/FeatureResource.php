@@ -9,7 +9,6 @@ use App\Filament\Resources\Modules\Content\Models\TwoWheels\FeatureResource\Rela
 use App\Modules\Content\Models\TwoWheels\Feature;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\HtmlString;
-use App\Modules\Core\Traits\HasFeatureAccess;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -23,8 +22,6 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
  */
 final class FeatureResource extends Resource
 {
-    use HasFeatureAccess;
-
     protected static ?string $model = Feature::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-sparkles';
@@ -36,19 +33,6 @@ final class FeatureResource extends Resource
     protected static ?string $pluralModelLabel = 'Zalety';
 
     protected static ?string $navigationGroup = 'MotoRent Demo';
-
-    /**
-     * Nazwa funkcjonalności dla systemu dostępów.
-     */
-    protected static string $featureName = 'features';
-
-    /**
-     * Sprawdza czy Resource powinien być widoczny w nawigacji.
-     */
-    public static function shouldRegisterNavigation(): bool
-    {
-        return static::canAccessFeature();
-    }
 
     /**
      * Filtruj dane po tenant_id.

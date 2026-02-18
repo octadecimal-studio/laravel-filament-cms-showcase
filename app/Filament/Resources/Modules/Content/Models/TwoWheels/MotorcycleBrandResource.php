@@ -7,7 +7,6 @@ namespace App\Filament\Resources\Modules\Content\Models\TwoWheels;
 use App\Filament\Resources\Modules\Content\Models\TwoWheels\MotorcycleBrandResource\Pages;
 use App\Filament\Resources\Modules\Content\Models\TwoWheels\MotorcycleBrandResource\RelationManagers;
 use App\Modules\Content\Models\TwoWheels\MotorcycleBrand;
-use App\Modules\Core\Traits\HasFeatureAccess;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -21,8 +20,6 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
  */
 final class MotorcycleBrandResource extends Resource
 {
-    use HasFeatureAccess;
-
     protected static ?string $model = MotorcycleBrand::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-star';
@@ -34,19 +31,6 @@ final class MotorcycleBrandResource extends Resource
     protected static ?string $pluralModelLabel = 'Marki';
 
     protected static ?string $navigationGroup = 'MotoRent Demo';
-
-    /**
-     * Nazwa funkcjonalności dla systemu dostępów.
-     */
-    protected static string $featureName = 'motorcycle_brands';
-
-    /**
-     * Sprawdza czy Resource powinien być widoczny w nawigacji.
-     */
-    public static function shouldRegisterNavigation(): bool
-    {
-        return static::canAccessFeature();
-    }
 
     /**
      * Filtruj dane po tenant_id.

@@ -7,7 +7,6 @@ namespace App\Filament\Resources\Modules\Content\Models\TwoWheels;
 use App\Filament\Resources\Modules\Content\Models\TwoWheels\MotorcycleCategoryResource\Pages;
 use App\Filament\Resources\Modules\Content\Models\TwoWheels\MotorcycleCategoryResource\RelationManagers;
 use App\Modules\Content\Models\TwoWheels\MotorcycleCategory;
-use App\Modules\Core\Traits\HasFeatureAccess;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -21,8 +20,6 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
  */
 final class MotorcycleCategoryResource extends Resource
 {
-    use HasFeatureAccess;
-
     protected static ?string $model = MotorcycleCategory::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-tag';
@@ -34,19 +31,6 @@ final class MotorcycleCategoryResource extends Resource
     protected static ?string $pluralModelLabel = 'Kategorie';
 
     protected static ?string $navigationGroup = 'MotoRent Demo';
-
-    /**
-     * Nazwa funkcjonalności dla systemu dostępów.
-     */
-    protected static string $featureName = 'motorcycle_categories';
-
-    /**
-     * Sprawdza czy Resource powinien być widoczny w nawigacji.
-     */
-    public static function shouldRegisterNavigation(): bool
-    {
-        return static::canAccessFeature();
-    }
 
     /**
      * Filtruj dane po tenant_id.

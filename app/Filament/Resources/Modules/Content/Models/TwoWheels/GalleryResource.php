@@ -6,7 +6,6 @@ namespace App\Filament\Resources\Modules\Content\Models\TwoWheels;
 
 use App\Filament\Resources\Modules\Content\Models\TwoWheels\GalleryResource\Pages;
 use App\Modules\Content\Models\Media;
-use App\Modules\Core\Traits\HasFeatureAccess;
 use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -21,8 +20,6 @@ use Illuminate\Support\Str;
  */
 final class GalleryResource extends Resource
 {
-    use HasFeatureAccess;
-
     protected static ?string $model = Media::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-photo';
@@ -35,14 +32,7 @@ final class GalleryResource extends Resource
 
     protected static ?string $navigationGroup = 'MotoRent Demo';
 
-    protected static string $featureName = 'gallery';
-
     public const COLLECTION_GALLERY = 'gallery';
-
-    public static function shouldRegisterNavigation(): bool
-    {
-        return static::canAccessFeature();
-    }
 
     public static function getEloquentQuery(): Builder
     {
@@ -87,7 +77,7 @@ final class GalleryResource extends Resource
                 Tables\Actions\Action::make('crop')
                     ->label('Kadruj')
                     ->icon('heroicon-o-pencil-square')
-                    ->visible(fn (): bool => static::canEditFeature())
+                    ->visible(fn (): bool => true)
                     ->fillForm(fn (Media $record): array => [
                         'new_image' => $record->file_path,
                     ])
@@ -149,6 +139,6 @@ final class GalleryResource extends Resource
 
     public static function canCreate(): bool
     {
-        return static::canCreateFeature();
+        return true;
     }
 }

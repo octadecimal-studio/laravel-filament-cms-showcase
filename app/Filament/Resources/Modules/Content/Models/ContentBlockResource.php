@@ -26,6 +26,11 @@ final class ContentBlockResource extends Resource
 
     protected static ?string $model = ContentBlock::class;
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
+
     protected static ?string $navigationIcon = 'heroicon-o-squares-2x2';
 
     protected static ?string $navigationLabel = 'Bloki treści';
@@ -35,15 +40,6 @@ final class ContentBlockResource extends Resource
     protected static ?string $pluralModelLabel = 'Bloki treści';
 
     protected static ?string $navigationGroup = 'Content';
-
-    /**
-     * Tylko super admin widzi bloki treści.
-     */
-    public static function shouldRegisterNavigation(): bool
-    {
-        $user = auth()->user();
-        return $user && ($user->is_super_admin || $user->hasRole('super_admin'));
-    }
 
     public static function form(Form $form): Form
     {

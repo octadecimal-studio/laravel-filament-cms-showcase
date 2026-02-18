@@ -28,6 +28,11 @@ final class MediaResource extends Resource
     use HasGlobalBulkActions;
     use RemembersTableSettings;
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
+
     protected static ?string $model = Media::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-photo';
@@ -39,19 +44,6 @@ final class MediaResource extends Resource
     protected static ?string $pluralModelLabel = 'Media';
 
     protected static ?string $navigationGroup = 'Content';
-
-    /**
-     * Tylko super admin widzi Media.
-     */
-    public static function shouldRegisterNavigation(): bool
-    {
-        /** @var \App\Models\User|null $user */
-        $user = Auth::user();
-        if (!$user) {
-            return false;
-        }
-        return $user->is_super_admin || (method_exists($user, 'hasRole') && $user->hasRole('super_admin'));
-    }
 
     /**
      * Formularz edycji/tworzenia media.
