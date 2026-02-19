@@ -320,9 +320,9 @@ class AdminPanelProvider extends PanelProvider
                 'info' => Color::Sky,
             ])
             ->brandName('MotoRent Demo')
-            ->brandLogo(asset('images/logo-motorent.png'))
-            ->darkModeBrandLogo(asset('images/logo-motorent.png'))
-            ->homeUrl('https://example-rental.test/')
+            ->brandLogo(asset('storage/motorent/logo.jpg'))
+            ->darkModeBrandLogo(asset('storage/motorent/logo.jpg'))
+            ->homeUrl(config('app.motorent_frontend_url', 'https://example-rental.test') . '/')
             ->favicon(asset('favicon.ico'))
 
             // Dark mode domyślnie
@@ -458,7 +458,7 @@ class AdminPanelProvider extends PanelProvider
                         ->label('Mój profil')
                         ->icon('heroicon-o-user-circle')
                         ->url('/admin/edit-profile')
-                        ->sort(999),
+                        ->sort(-5),
                     NavigationItem::make('Mailbox')
                         ->label('Mailbox')
                         ->icon('heroicon-o-envelope')

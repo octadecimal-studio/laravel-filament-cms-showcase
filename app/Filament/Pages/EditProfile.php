@@ -32,7 +32,7 @@ class EditProfile extends Page implements HasForms
 
     protected static ?string $title = 'Edytuj profil';
 
-    protected static ?int $navigationSort = 999;
+    protected static ?int $navigationSort = -5;
 
     protected static bool $shouldRegisterNavigation = true;
 

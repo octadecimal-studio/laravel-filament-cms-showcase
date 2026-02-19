@@ -61,6 +61,14 @@ final class SiteSetting extends Model
         'address',
         'opening_hours',
         'map_coordinates',
+        'google_analytics_code',
+        'pricing_title',
+        'pricing_subtitle',
+        'location_title',
+        'location_description',
+        'reservation_form_type',
+        'reservation_form_external_url',
+        'reservation_notification_email',
     ];
 
     /**

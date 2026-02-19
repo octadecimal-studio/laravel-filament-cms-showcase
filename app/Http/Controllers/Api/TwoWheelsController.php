@@ -6,17 +6,23 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Modules\Content\Models\Media;
+use App\Mail\ReservationNotification;
 use App\Modules\Content\Models\TwoWheels\Feature;
 use App\Modules\Content\Models\TwoWheels\Motorcycle;
 use App\Modules\Content\Models\TwoWheels\MotorcycleBrand;
 use App\Modules\Content\Models\TwoWheels\MotorcycleCategory;
+use App\Modules\Content\Models\TwoWheels\PricingNote;
 use App\Modules\Content\Models\TwoWheels\ProcessStep;
+use App\Modules\Content\Models\TwoWheels\RentalCondition;
 use App\Modules\Content\Models\TwoWheels\SiteSetting;
 use App\Modules\Content\Models\TwoWheels\Testimonial;
 use App\Modules\Core\Models\Tenant;
 use App\Modules\Core\Scopes\TenantScope;
+use App\Plugins\Reservations\Models\Reservation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Validator;
 
 /**
  * API Controller dla MotoRent Demo.
@@ -72,6 +78,11 @@ class TwoWheelsController extends Controller
                 'address' => $setting->address,
                 'opening_hours' => $setting->opening_hours,
                 'map_coordinates' => $setting->map_coordinates,
+                'google_analytics_code' => $setting->google_analytics_code,
+                'location_title' => $setting->location_title,
+                'location_description' => $setting->location_description,
+                'pricing_title' => $setting->pricing_title,
+                'pricing_subtitle' => $setting->pricing_subtitle,
             ],
         ]);
     }
@@ -422,6 +433,220 @@ class TwoWheelsController extends Controller
                 'images' => $images,
             ],
         ]);
+    }
+
+    /**
+     * Pobiera warunki wypożyczenia.
+     */
+    public function rentalConditions(Request $request): JsonResponse
+    {
+        $tenantId = $this->getTenantId($request);
+        if (! $this->isAdminRequest($request) && ! $tenantId) {
+            return response()->json(['error' => 'Tenant not found'], 404);
+        }
+
+        $query = RentalCondition::withoutGlobalScope(TenantScope::class)
+            ->where('is_active', true)
+            ->orderBy('sort_order');
+
+        if ($tenantId) {
+            $query->where('tenant_id', $tenantId);
+        }
+
+        $conditions = $query->get();
+
+        return response()->json([
+            'data' => $conditions->map(fn ($c) => [
+                'id' => $c->id,
+                'title' => $c->title,
+                'description' => $c->description,
+                'icon' => $c->icon,
+                'sort_order' => $c->sort_order,
+            ]),
+        ]);
+    }
+
+    /**
+     * Pobiera ustawienia cennika z cenami motocykli i uwagami.
+     */
+    public function pricingSettings(Request $request): JsonResponse
+    {
+        $tenantId = $this->getTenantId($request);
+        if (! $tenantId) {
+            return response()->json(['error' => 'Tenant not found'], 404);
+        }
+
+        $setting = SiteSetting::withoutGlobalScope(TenantScope::class)
+            ->where('tenant_id', $tenantId)
+            ->first();
+
+        $motorcycles = Motorcycle::withoutGlobalScope(TenantScope::class)
+            ->where('tenant_id', $tenantId)
+            ->where('published', true)
+            ->orderBy('name')
+            ->get(['id', 'name', 'slug', 'price_per_day', 'price_per_week', 'price_per_month', 'deposit']);
+
+        $notes = PricingNote::withoutGlobalScope(TenantScope::class)
+            ->where('tenant_id', $tenantId)
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->get();
+
+        return response()->json([
+            'data' => [
+                'title' => $setting?->pricing_title ?? 'Cennik',
+                'subtitle' => $setting?->pricing_subtitle,
+                'motorcycles' => $motorcycles->map(fn ($m) => [
+                    'id' => $m->id,
+                    'name' => $m->name,
+                    'slug' => $m->slug,
+                    'price_per_day' => (float) $m->price_per_day,
+                    'price_per_week' => (float) $m->price_per_week,
+                    'price_per_month' => (float) $m->price_per_month,
+                    'deposit' => (float) $m->deposit,
+                ]),
+                'notes' => $notes->map(fn ($n) => [
+                    'id' => $n->id,
+                    'content' => $n->content,
+                ]),
+            ],
+        ]);
+    }
+
+    /**
+     * Pobiera uwagi cennika.
+     */
+    public function pricingNotes(Request $request): JsonResponse
+    {
+        $tenantId = $this->getTenantId($request);
+        if (! $this->isAdminRequest($request) && ! $tenantId) {
+            return response()->json(['error' => 'Tenant not found'], 404);
+        }
+
+        $query = PricingNote::withoutGlobalScope(TenantScope::class)
+            ->where('is_active', true)
+            ->orderBy('sort_order');
+
+        if ($tenantId) {
+            $query->where('tenant_id', $tenantId);
+        }
+
+        $notes = $query->get();
+
+        return response()->json([
+            'data' => $notes->map(fn ($n) => [
+                'id' => $n->id,
+                'content' => $n->content,
+                'sort_order' => $n->sort_order,
+            ]),
+        ]);
+    }
+
+    /**
+     * Pobiera ustawienia formularza rezerwacji.
+     */
+    public function reservationSettings(Request $request): JsonResponse
+    {
+        $tenantId = $this->getTenantId($request);
+        if (! $tenantId) {
+            return response()->json(['error' => 'Tenant not found'], 404);
+        }
+
+        $setting = SiteSetting::withoutGlobalScope(TenantScope::class)
+            ->where('tenant_id', $tenantId)
+            ->first();
+
+        return response()->json([
+            'data' => [
+                'form_type' => $setting?->reservation_form_type ?? 'internal',
+                'external_url' => $setting?->reservation_form_external_url,
+            ],
+        ]);
+    }
+
+    /**
+     * Przyjmuje rezerwację z formularza i wysyła powiadomienie email.
+     */
+    public function submitReservation(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'customer_name' => 'required|string|max:255',
+            'customer_email' => 'required|email|max:255',
+            'customer_phone' => 'required|string|max:20',
+            'motorcycle_id' => 'nullable|string|uuid',
+            'pickup_date' => 'required|date|after_or_equal:today',
+            'return_date' => 'required|date|after:pickup_date',
+            'notes' => 'nullable|string|max:1000',
+            'rodo_consent' => 'required|accepted',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $validated = $validator->validated();
+
+        $tenantId = $this->getTenantId($request);
+        if (! $tenantId) {
+            return response()->json(['error' => 'Tenant not found'], 404);
+        }
+
+        $tenant = Tenant::find($tenantId);
+        if ($tenant) {
+            app()->instance('current_tenant', $tenant);
+        }
+
+        // Find site for reservation
+        $site = \App\Models\Site::first();
+
+        $reservation = Reservation::create([
+            'site_id' => $site?->id,
+            'motorcycle_id' => $validated['motorcycle_id'] ?? null,
+            'customer_name' => $validated['customer_name'],
+            'customer_email' => $validated['customer_email'],
+            'customer_phone' => $validated['customer_phone'],
+            'pickup_date' => $validated['pickup_date'],
+            'return_date' => $validated['return_date'],
+            'notes' => $validated['notes'] ?? null,
+            'rodo_consent' => true,
+            'rodo_consent_at' => now(),
+            'status' => Reservation::STATUS_PENDING,
+        ]);
+
+        // Send email notification
+        $setting = SiteSetting::withoutGlobalScope(TenantScope::class)
+            ->where('tenant_id', $tenantId)
+            ->first();
+
+        $notificationEmail = $setting?->reservation_notification_email;
+        if ($notificationEmail) {
+            try {
+                $motorcycle = $validated['motorcycle_id']
+                    ? Motorcycle::withoutGlobalScope(TenantScope::class)->find($validated['motorcycle_id'])
+                    : null;
+
+                Mail::to($notificationEmail)->send(new ReservationNotification(
+                    reservation: $reservation,
+                    motorcycleName: $motorcycle?->name,
+                ));
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error('Failed to send reservation notification: ' . $e->getMessage());
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Rezerwacja została przyjęta. Skontaktujemy się wkrótce.',
+            'data' => [
+                'id' => $reservation->id,
+                'status' => $reservation->status,
+                'pickup_date' => $reservation->pickup_date?->toDateString(),
+                'return_date' => $reservation->return_date?->toDateString(),
+            ],
+        ], 201);
     }
 
     /**

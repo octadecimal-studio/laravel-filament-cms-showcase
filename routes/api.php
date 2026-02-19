@@ -50,6 +50,11 @@ Route::prefix('motorent')->middleware('web')->group(function () {
     Route::get('/process-steps', [TwoWheelsController::class, 'processSteps'])->name('api.motorent.process-steps');
     Route::get('/site-setting', [TwoWheelsController::class, 'siteSetting'])->name('api.motorent.site-setting');
     Route::get('/gallery', [TwoWheelsController::class, 'gallery'])->name('api.motorent.gallery');
+    Route::get('/rental-conditions', [TwoWheelsController::class, 'rentalConditions'])->name('api.motorent.rental-conditions');
+    Route::get('/pricing', [TwoWheelsController::class, 'pricingSettings'])->name('api.motorent.pricing');
+    Route::get('/pricing-notes', [TwoWheelsController::class, 'pricingNotes'])->name('api.motorent.pricing-notes');
+    Route::get('/reservation-settings', [TwoWheelsController::class, 'reservationSettings'])->name('api.motorent.reservation-settings');
+    Route::post('/reservation', [TwoWheelsController::class, 'submitReservation'])->name('api.motorent.reservation');
 });
 
 // ============================================================

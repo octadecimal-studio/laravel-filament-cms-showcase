@@ -163,6 +163,7 @@ final class SiteSettingResource extends Resource
                     ]),
 
                 Forms\Components\Section::make('Kontakt')
+                    ->description('Dane kontaktowe i lokalizacja są edytowane na stronie Lokalizacja.')
                     ->schema([
                         Forms\Components\TextInput::make('contact_phone')
                             ->label('Telefon')
@@ -196,6 +197,17 @@ final class SiteSettingResource extends Resource
                             ->columnSpanFull(),
                     ])
                     ->columns(2),
+
+                Forms\Components\Section::make('Google Analytics')
+                    ->description('Wklej kod śledzenia Google Analytics (np. tag gtag.js).')
+                    ->schema([
+                        Forms\Components\Textarea::make('google_analytics_code')
+                            ->label('Kod Google Analytics')
+                            ->rows(5)
+                            ->placeholder('<!-- Google tag (gtag.js) -->...')
+                            ->columnSpanFull(),
+                    ])
+                    ->collapsed(),
             ]);
     }
 

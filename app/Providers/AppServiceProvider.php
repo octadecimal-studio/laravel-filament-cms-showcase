@@ -6,6 +6,7 @@ use App\Plugins\Reservations\Models\Reservation;
 use App\Policies\ReservationPolicy;
 use App\Session\DatabaseSessionHandler;
 use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\URL;
@@ -53,6 +54,30 @@ class AppServiceProvider extends ServiceProvider
 
         if (class_exists(\App\Modules\Content\Models\SiteContent::class)) {
             \App\Modules\Content\Models\SiteContent::observe(\App\Observers\SiteContentObserver::class);
+        }
+
+        // Clear application cache when any MotoRent content model is saved or deleted
+        $twoWheelsModels = [
+            \App\Modules\Content\Models\TwoWheels\SiteSetting::class,
+            \App\Modules\Content\Models\TwoWheels\Feature::class,
+            \App\Modules\Content\Models\TwoWheels\Motorcycle::class,
+            \App\Modules\Content\Models\TwoWheels\MotorcycleBrand::class,
+            \App\Modules\Content\Models\TwoWheels\MotorcycleCategory::class,
+            \App\Modules\Content\Models\TwoWheels\Testimonial::class,
+            \App\Modules\Content\Models\TwoWheels\ProcessStep::class,
+            \App\Modules\Content\Models\TwoWheels\RentalCondition::class,
+            \App\Modules\Content\Models\TwoWheels\PricingNote::class,
+        ];
+
+        $clearCache = function () {
+            Artisan::call('cache:clear');
+        };
+
+        foreach ($twoWheelsModels as $model) {
+            if (class_exists($model)) {
+                $model::saved($clearCache);
+                $model::deleted($clearCache);
+            }
         }
 
         // Configure rate limiting
