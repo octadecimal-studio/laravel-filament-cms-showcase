@@ -1,13 +1,52 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { FiArrowLeft, FiX } from 'react-icons/fi';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { getAssetPath, MONDAY_RESERVATION_FORM_URL } from '@/lib/paths';
-import type { Motorcycle, SiteData, NavigationData, FooterData, ContactData } from '@/lib/api';
+import type { Motorcycle, MotorcycleImage, SiteData, NavigationData, FooterData, ContactData } from '@/lib/api';
+
+const TENANT_ID = process.env.NEXT_PUBLIC_TENANT_ID || '';
+const FETCH_OPTS: RequestInit = { cache: 'no-store', headers: { Accept: 'application/json' } };
+
+function freshApiUrl(endpoint: string): string {
+  const sp = new URLSearchParams();
+  if (TENANT_ID) sp.set('tenant_id', TENANT_ID);
+  sp.set('_t', String(Date.now()));
+  return `/api/motorent${endpoint}?${sp}`;
+}
+
+function getStorageUrl(path: string | null | undefined): string {
+  if (!path) return '/img/placeholder.jpg';
+  if (path.startsWith('http')) return path;
+  return path;
+}
+
+function mapApiMotorcycle(m: any): Motorcycle {
+  const mainImage = m.main_image ? { ...m.main_image, url: getStorageUrl(m.main_image.url) } : undefined;
+  const gallery: MotorcycleImage[] = (m.gallery || []).map((img: any) => ({
+    id: img.id, url: getStorageUrl(img.url), alt: img.alt_text || img.alt || m.name,
+  }));
+  const allImages = mainImage ? [mainImage, ...gallery] : gallery;
+  return {
+    id: m.id, name: m.name, slug: m.slug, brand: m.brand, category: m.category,
+    main_image: mainImage, price_per_day: m.price_per_day, price_per_week: m.price_per_week,
+    price_per_month: m.price_per_month, deposit: m.deposit,
+    specs: {
+      engine: m.specifications?.engine || `${m.engine_capacity}cc`,
+      power: m.specifications?.power || '', weight: m.specifications?.weight || '',
+      seat_height: '', seats: m.specifications?.seats,
+    },
+    images: allImages, gallery, features: [],
+    available: m.available !== undefined ? m.available : true,
+    featured: m.featured || false, year: m.year,
+    engine_capacity: m.engine_capacity, description: m.description,
+    specifications: m.specifications,
+  };
+}
 
 interface MotorcycleDetailClientProps {
   motorcycle: Motorcycle;
@@ -18,14 +57,31 @@ interface MotorcycleDetailClientProps {
 }
 
 export default function MotorcycleDetailClient({
-  motorcycle,
+  motorcycle: initialMotorcycle,
   site,
   navigation,
   footer,
   contact,
 }: MotorcycleDetailClientProps) {
+  const [motorcycle, setMotorcycle] = useState(initialMotorcycle);
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+
+  // Fetch fresh motorcycle data on mount
+  useEffect(() => {
+    let cancelled = false;
+    async function refresh() {
+      try {
+        const res = await fetch(freshApiUrl(`/motorcycles/${initialMotorcycle.slug}`), FETCH_OPTS);
+        if (!res.ok || cancelled) return;
+        const json = await res.json();
+        const data = json.data || json;
+        if (!cancelled && data) setMotorcycle(mapApiMotorcycle(data));
+      } catch { /* keep initial data */ }
+    }
+    refresh();
+    return () => { cancelled = true; };
+  }, [initialMotorcycle.slug]);
 
   // Wszystkie obrazy: main_image + gallery
   const allImages = motorcycle.images || (motorcycle.main_image ? [motorcycle.main_image] : []);
