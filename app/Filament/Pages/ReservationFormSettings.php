@@ -84,13 +84,21 @@ class ReservationFormSettings extends Page implements HasForms
         $data = $this->form->getState();
         $setting = $this->getSiteSetting();
 
-        if ($setting) {
-            $setting->update([
-                'reservation_form_type' => $data['reservation_form_type'],
-                'reservation_form_external_url' => $data['reservation_form_external_url'],
-                'reservation_notification_email' => $data['reservation_notification_email'],
-            ]);
+        if (! $setting) {
+            Notification::make()
+                ->title('Błąd')
+                ->body('Nie znaleziono ustawień strony. Sprawdź konfigurację tenanta.')
+                ->danger()
+                ->send();
+
+            return;
         }
+
+        $setting->update([
+            'reservation_form_type' => $data['reservation_form_type'],
+            'reservation_form_external_url' => $data['reservation_form_external_url'],
+            'reservation_notification_email' => $data['reservation_notification_email'],
+        ]);
 
         Notification::make()
             ->title('Zapisano')

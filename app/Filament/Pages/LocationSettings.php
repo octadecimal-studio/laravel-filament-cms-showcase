@@ -133,23 +133,31 @@ class LocationSettings extends Page implements HasForms
         $data = $this->form->getState();
         $setting = $this->getSiteSetting();
 
-        if ($setting) {
-            $setting->update([
-                'location_title' => $data['location_title'],
-                'location_description' => $data['location_description'],
-                'address' => $data['address'],
-                'map_coordinates' => $data['map_coordinates'],
-                'contact_phone' => $data['contact_phone'],
-                'contact_email' => $data['contact_email'],
-                'opening_hours' => $data['opening_hours'],
-                'company_data' => [
-                    'company_name' => $data['company_name'] ?? null,
-                    'nip' => $data['nip'] ?? null,
-                    'krs' => $data['krs'] ?? null,
-                    'regon' => $data['regon'] ?? null,
-                ],
-            ]);
+        if (! $setting) {
+            Notification::make()
+                ->title('Błąd')
+                ->body('Nie znaleziono ustawień strony. Sprawdź konfigurację tenanta.')
+                ->danger()
+                ->send();
+
+            return;
         }
+
+        $setting->update([
+            'location_title' => $data['location_title'],
+            'location_description' => $data['location_description'],
+            'address' => $data['address'],
+            'map_coordinates' => $data['map_coordinates'],
+            'contact_phone' => $data['contact_phone'],
+            'contact_email' => $data['contact_email'],
+            'opening_hours' => $data['opening_hours'],
+            'company_data' => [
+                'company_name' => $data['company_name'] ?? null,
+                'nip' => $data['nip'] ?? null,
+                'krs' => $data['krs'] ?? null,
+                'regon' => $data['regon'] ?? null,
+            ],
+        ]);
 
         Notification::make()
             ->title('Zapisano')
