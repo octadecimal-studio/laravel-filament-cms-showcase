@@ -152,11 +152,11 @@ final class MotorcycleResource extends Resource
                                 if (!$record || $record->gallery->isEmpty()) {
                                     return new \Illuminate\Support\HtmlString('<span class="text-gray-500">Brak zdjęć w galerii</span>');
                                 }
-                                $html = '<div class="grid grid-cols-4 gap-2">';
+                                $html = '<div class="flex flex-wrap gap-3">';
                                 foreach ($record->gallery as $media) {
                                     $url = asset('storage/' . $media->file_path);
-                                    $html .= '<img src="' . $url . '" alt="' . e($media->file_name) . '" 
-                                              class="h-24 w-full rounded object-cover" />';
+                                    $html .= '<img src="' . $url . '" alt="' . e($media->file_name) . '"
+                                              class="h-32 w-32 rounded-lg object-cover shadow-sm" />';
                                 }
                                 $html .= '</div>';
                                 return new \Illuminate\Support\HtmlString($html);

@@ -32,6 +32,8 @@ final class GalleryResource extends Resource
 
     protected static ?int $navigationSort = 20;
 
+    protected static bool $shouldRegisterNavigation = false;
+
     public const COLLECTION_GALLERY = 'gallery';
 
     public static function getEloquentQuery(): Builder

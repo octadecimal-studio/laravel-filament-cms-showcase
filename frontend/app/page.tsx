@@ -1,9 +1,8 @@
 import DynamicContent from '@/components/DynamicContent';
 import { getAllContent, getMotorcycles } from '@/lib/api';
 
-// Force dynamic rendering - fetch fresh data on every request
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+// ISR: regenerate every 60 seconds
+export const revalidate = 60;
 
 export default async function Home() {
   const [content, motorcycles] = await Promise.all([

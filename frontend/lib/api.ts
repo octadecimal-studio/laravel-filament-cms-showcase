@@ -799,23 +799,108 @@ export async function getFooterData(): Promise<FooterData> {
   return mockContent.content.footer;
 }
 
-// Funkcja uniwersalna - pobiera wszystkie dane content naraz
+// Funkcja uniwersalna - pobiera wszystkie dane content naraz (zoptymalizowana)
 export async function getAllContent() {
+  // Fetch siteData once and all independent endpoints in parallel
+  const [
+    siteData,
+    navigation,
+    fleet,
+    howItWorks,
+    pricing,
+    terms,
+    gallery,
+    testimonials,
+    footer,
+    reservationSettings,
+  ] = await Promise.all([
+    getSiteData(),
+    getNavigationData(),
+    getFleetData(),
+    getHowItWorksData(),
+    getPricingData(),
+    getTermsData(),
+    getGalleryData(),
+    getTestimonialsData(),
+    getFooterData(),
+    getReservationSettings(),
+  ]);
+
+  // Build dependent data from siteData (no extra API calls)
+  const hero: HeroData = {
+    ...mockContent.content.sections.hero,
+    description: siteData.description,
+  };
+
+  // Features still needs its own API call, but we use the already-fetched siteData
+  let whyUs: WhyUsData;
+  try {
+    const featuresResponse = await fetch(buildApiUrl('/features'), { cache: 'no-store' });
+    if (!featuresResponse.ok) throw new Error(`API error: ${featuresResponse.status}`);
+    const apiData = await featuresResponse.json();
+    const features: Feature[] = (apiData.data || [])
+      .sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
+      .map((apiFeature: any) => ({
+        id: apiFeature.id,
+        title: apiFeature.title,
+        description: apiFeature.description,
+        icon: getStorageUrl(apiFeature.icon?.url),
+        order: apiFeature.order,
+      }));
+    whyUs = {
+      title: mockContent.content.sections.whyUs.title,
+      subtitle: mockContent.content.sections.whyUs.subtitle,
+      aboutUsContent: siteData.aboutUsContent || undefined,
+      features,
+    };
+  } catch {
+    whyUs = {
+      ...mockContent.content.sections.whyUs as WhyUsData,
+      aboutUsContent: siteData.aboutUsContent || undefined,
+    };
+  }
+
+  const location: LocationData = {
+    title: siteData.locationTitle || mockContent.content.sections.location.title,
+    subtitle: siteData.locationDescription || mockContent.content.sections.location.subtitle,
+  };
+
+  // Build contact from siteData (no extra API call)
+  const contactMock = mockContent.content.sections.contact;
+  const addressParts = siteData.address?.split('\n') || [];
+  const street = addressParts[0] || contactMock.address.street;
+  const cityZip = addressParts[1] || `${contactMock.address.zip} ${contactMock.address.city}`;
+  const [zip, ...cityParts] = cityZip.split(' ').reverse();
+  const city = cityParts.reverse().join(' ') || contactMock.address.city;
+  const hoursParts = siteData.openingHours?.split('\n').filter(Boolean) || [];
+  const contact: ContactData = {
+    ...contactMock,
+    phone: siteData.phone || contactMock.phone,
+    email: siteData.email || contactMock.email,
+    address: { street, city, zip: zip || contactMock.address.zip },
+    hours: {
+      weekdays: hoursParts[0] || contactMock.hours.weekdays,
+      saturday: hoursParts[1] || contactMock.hours.saturday,
+      sunday: hoursParts[2] || contactMock.hours.sunday,
+    },
+    mapCoordinates: siteData.mapCoordinates,
+  };
+
   return {
-    site: await getSiteData(),
-    navigation: await getNavigationData(),
-    hero: await getHeroData(),
-    whyUs: await getWhyUsData(),
-    fleet: await getFleetData(),
-    howItWorks: await getHowItWorksData(),
-    pricing: await getPricingData(),
-    terms: await getTermsData(),
-    gallery: await getGalleryData(),
-    testimonials: await getTestimonialsData(),
-    location: await getLocationData(),
-    contact: await getContactData(),
-    footer: await getFooterData(),
-    reservationSettings: await getReservationSettings(),
+    site: siteData,
+    navigation,
+    hero,
+    whyUs,
+    fleet,
+    howItWorks,
+    pricing,
+    terms,
+    gallery,
+    testimonials,
+    location,
+    contact,
+    footer,
+    reservationSettings,
   };
 }
 

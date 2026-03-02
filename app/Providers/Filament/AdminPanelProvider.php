@@ -343,6 +343,8 @@ class AdminPanelProvider extends PanelProvider
                 . '.fi-body { background-color: #fff !important; } .dark .fi-body { background-color: #fff !important; }'
                 . '.fi-sidebar, .fi-sidebar-header, .fi-topbar, .fi-topbar > div { background-color: rgb(229, 231, 235) !important; }'
                 . '.dark .fi-sidebar, .dark .fi-sidebar-header, .dark .fi-topbar, .dark .fi-topbar > div { background-color: rgb(229, 231, 235) !important; }'
+                . '.fi-sidebar-header img, .fi-sidebar-header .fi-logo img { max-height: 5rem; width: auto; }'
+                . '.fi-simple-layout .fi-logo img { max-height: 10rem; width: auto; }'
                 
                 // === DODATKOWE OPCJE POZYCJONOWANIA SIDEBAR ===
                 
@@ -380,9 +382,6 @@ class AdminPanelProvider extends PanelProvider
             ->discoverResources(in: app_path('Modules/Content'), for: 'App\\Modules\\Content')
             ->discoverResources(in: app_path('Plugins'), for: 'App\\Plugins')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
-            ->pages([
-                Pages\Dashboard::class,
-            ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,

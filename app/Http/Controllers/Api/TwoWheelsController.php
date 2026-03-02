@@ -83,6 +83,7 @@ class TwoWheelsController extends Controller
                 'location_description' => $setting->location_description,
                 'pricing_title' => $setting->pricing_title,
                 'pricing_subtitle' => $setting->pricing_subtitle,
+                'company_data' => $setting->company_data,
             ],
         ]);
     }

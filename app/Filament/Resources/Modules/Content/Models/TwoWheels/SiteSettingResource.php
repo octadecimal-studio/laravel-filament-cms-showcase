@@ -162,41 +162,18 @@ final class SiteSettingResource extends Resource
                         Forms\Components\Hidden::make('logo_id'),
                     ]),
 
-                Forms\Components\Section::make('Kontakt')
-                    ->description('Dane kontaktowe i lokalizacja są edytowane na stronie Lokalizacja.')
+                Forms\Components\Section::make('Kontakt i lokalizacja')
                     ->schema([
-                        Forms\Components\TextInput::make('contact_phone')
-                            ->label('Telefon')
-                            ->tel()
-                            ->maxLength(20)
-                            ->required(),
-
-                        Forms\Components\TextInput::make('contact_email')
-                            ->label('Email')
-                            ->email()
-                            ->maxLength(255)
-                            ->required(),
-
-                        Forms\Components\Textarea::make('address')
-                            ->label('Adres')
-                            ->rows(2)
-                            ->required()
+                        Forms\Components\Placeholder::make('contact_redirect')
+                            ->label('')
+                            ->content(new HtmlString(
+                                '<div class="text-sm text-gray-500 dark:text-gray-400">'
+                                . 'Dane kontaktowe, adres, godziny otwarcia i współrzędne mapy '
+                                . 'edytuj w <a href="/admin/location-settings" class="font-medium text-primary-600 hover:underline">Lokalizacja</a>.'
+                                . '</div>'
+                            ))
                             ->columnSpanFull(),
-
-                        Forms\Components\Textarea::make('opening_hours')
-                            ->label('Godziny otwarcia')
-                            ->rows(2)
-                            ->required()
-                            ->columnSpanFull(),
-
-                        Forms\Components\TextInput::make('map_coordinates')
-                            ->label('Współrzędne mapy')
-                            ->placeholder('52.2297,21.0122')
-                            ->helperText('Format: szerokość,długość (np. 52.2297,21.0122)')
-                            ->required()
-                            ->columnSpanFull(),
-                    ])
-                    ->columns(2),
+                    ]),
 
                 Forms\Components\Section::make('Google Analytics')
                     ->description('Wklej kod śledzenia Google Analytics (np. tag gtag.js).')

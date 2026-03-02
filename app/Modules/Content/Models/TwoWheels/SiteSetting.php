@@ -69,7 +69,20 @@ final class SiteSetting extends Model
         'reservation_form_type',
         'reservation_form_external_url',
         'reservation_notification_email',
+        'company_data',
     ];
+
+    /**
+     * Atrybuty rzutowane.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'company_data' => 'array',
+        ];
+    }
 
     /**
      * Relacja: Logo (Media).

@@ -3,9 +3,8 @@ import { getMotorcycleBySlug, getAllContent } from '@/lib/api';
 import MotorcycleDetailClient from './MotorcycleDetailClient';
 import mockMotorcycles from '@/data/mock-motorcycles.json';
 
-// Force dynamic rendering - fetch fresh data on every request
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+// ISR: regenerate every 60 seconds
+export const revalidate = 60;
 export const dynamicParams = true;
 
 const FALLBACK_SLUGS = (mockMotorcycles.data as { slug: string }[]).map((m) => ({ slug: m.slug }));

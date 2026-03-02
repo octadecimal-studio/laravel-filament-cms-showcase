@@ -14,6 +14,8 @@ class Dashboard extends Page
 {
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
 
+    protected static ?string $navigationLabel = 'Panel';
+
     protected static string $view = 'filament.pages.dashboard';
 
     protected function getHeaderActions(): array

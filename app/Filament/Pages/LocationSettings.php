@@ -33,6 +33,7 @@ class LocationSettings extends Page implements HasForms
     public function mount(): void
     {
         $setting = $this->getSiteSetting();
+        $companyData = $setting?->company_data ?? [];
 
         $this->form->fill([
             'location_title' => $setting?->location_title ?? 'Lokalizacja',
@@ -42,6 +43,10 @@ class LocationSettings extends Page implements HasForms
             'contact_phone' => $setting?->contact_phone,
             'contact_email' => $setting?->contact_email,
             'opening_hours' => $setting?->opening_hours,
+            'company_name' => $companyData['company_name'] ?? null,
+            'nip' => $companyData['nip'] ?? null,
+            'krs' => $companyData['krs'] ?? null,
+            'regon' => $companyData['regon'] ?? null,
         ]);
     }
 
@@ -97,6 +102,28 @@ class LocationSettings extends Page implements HasForms
                             ->columnSpanFull(),
                     ])
                     ->columns(2),
+
+                Forms\Components\Section::make('Dane firmy')
+                    ->description('Dane rejestrowe firmy wyświetlane w stopce i dokumentach.')
+                    ->schema([
+                        Forms\Components\TextInput::make('company_name')
+                            ->label('Nazwa firmy')
+                            ->maxLength(255)
+                            ->columnSpanFull(),
+
+                        Forms\Components\TextInput::make('nip')
+                            ->label('NIP')
+                            ->maxLength(20),
+
+                        Forms\Components\TextInput::make('krs')
+                            ->label('KRS')
+                            ->maxLength(20),
+
+                        Forms\Components\TextInput::make('regon')
+                            ->label('REGON')
+                            ->maxLength(20),
+                    ])
+                    ->columns(3),
             ])
             ->statePath('data');
     }
@@ -115,6 +142,12 @@ class LocationSettings extends Page implements HasForms
                 'contact_phone' => $data['contact_phone'],
                 'contact_email' => $data['contact_email'],
                 'opening_hours' => $data['opening_hours'],
+                'company_data' => [
+                    'company_name' => $data['company_name'] ?? null,
+                    'nip' => $data['nip'] ?? null,
+                    'krs' => $data['krs'] ?? null,
+                    'regon' => $data['regon'] ?? null,
+                ],
             ]);
         }
 
