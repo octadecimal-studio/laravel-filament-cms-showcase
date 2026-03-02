@@ -110,9 +110,13 @@ class ReservationFormSettings extends Page implements HasForms
     private function getSiteSetting(): ?SiteSetting
     {
         $user = auth()->user();
-        $tenantId = $user?->tenant_id
-            ?? Tenant::where('slug', 'demo-studio')->where('is_active', true)->value('id')
-            ?? Tenant::where('is_active', true)->value('id');
+        $tenantId = $user?->tenant_id;
+
+        // Super admin (system tenant) — fallback to first real tenant with settings
+        if (! $tenantId || $tenantId === '00000000-0000-0000-0000-000000000000') {
+            $tenantId = Tenant::where('slug', 'demo-studio')->where('is_active', true)->value('id')
+                ?? Tenant::where('is_active', true)->where('id', '!=', '00000000-0000-0000-0000-000000000000')->value('id');
+        }
 
         return SiteSetting::withoutGlobalScope(TenantScope::class)
             ->where('tenant_id', $tenantId)
