@@ -7,6 +7,11 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
+        hostname: 'example-rental.test',
+        pathname: '/storage/**',
+      },
+      {
+        protocol: 'https',
         hostname: 'api.example.test',
         pathname: '/storage/**',
       },

@@ -30,6 +30,7 @@ return [
 
     'allowed_origins_patterns' => [
         '/^https?:\/\/.*\.octadecimal\.studio$/',
+        '/^https?:\/\/.*\.vercel\.app$/',
         '/^https?:\/\/localhost:\d+$/',
         '/^https?:\/\/127\.0\.0\.1:\d+$/',
     ],
