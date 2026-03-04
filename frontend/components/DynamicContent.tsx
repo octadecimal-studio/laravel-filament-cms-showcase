@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Hero from '@/components/sections/Hero';
@@ -16,8 +17,50 @@ import type {
   SiteData, NavigationData, HeroData, WhyUsData, FleetData,
   HowItWorksData, PricingData, TermsData, GalleryData,
   TestimonialsData, LocationData, ContactData, FooterData,
-  ReservationSettings, Motorcycle,
+  ReservationSettings, Motorcycle, MotorcycleImage,
 } from '@/lib/api';
+
+const TENANT_ID = process.env.NEXT_PUBLIC_TENANT_ID || '';
+
+function freshApiUrl(endpoint: string): string {
+  const sp = new URLSearchParams();
+  if (TENANT_ID) sp.set('tenant_id', TENANT_ID);
+  sp.set('_t', String(Date.now()));
+  return `/api/motorent${endpoint}?${sp}`;
+}
+
+function getStorageUrl(path: string | null | undefined): string {
+  if (!path) return '/img/placeholder.jpg';
+  if (path.startsWith('http')) return path;
+  return path;
+}
+
+function mapApiMotorcycle(m: any): Motorcycle {
+  const mainImage = m.main_image
+    ? { ...m.main_image, url: getStorageUrl(m.main_image.url) }
+    : undefined;
+  const gallery: MotorcycleImage[] = (m.gallery || []).map((img: any) => ({
+    id: img.id,
+    url: getStorageUrl(img.url),
+    alt: img.alt_text || img.alt || m.name,
+  }));
+  const allImages = mainImage ? [mainImage, ...gallery] : gallery;
+  return {
+    id: m.id, name: m.name, slug: m.slug, brand: m.brand, category: m.category,
+    main_image: mainImage, price_per_day: m.price_per_day, price_per_week: m.price_per_week,
+    price_per_month: m.price_per_month, deposit: m.deposit,
+    specs: {
+      engine: m.specifications?.engine || `${m.engine_capacity}cc`,
+      power: m.specifications?.power || '', weight: m.specifications?.weight || '',
+      seat_height: '', seats: m.specifications?.seats,
+    },
+    images: allImages, gallery, features: [],
+    available: m.available !== undefined ? m.available : true,
+    featured: m.featured || false, year: m.year,
+    engine_capacity: m.engine_capacity, description: m.description,
+    specifications: m.specifications,
+  };
+}
 
 interface AllContent {
   site: SiteData;
@@ -48,8 +91,32 @@ export default function DynamicContent({
   totalBikes,
 }: DynamicContentProps) {
   const content = initialContent;
-  const bikes = initialBikes;
-  const bikeCount = totalBikes;
+  const [bikes, setBikes] = useState<Motorcycle[]>(initialBikes);
+  const [bikeCount, setBikeCount] = useState(totalBikes);
+
+  // CSR: fetch fresh motorcycle data on mount so CMS changes appear immediately
+  useEffect(() => {
+    let cancelled = false;
+    async function refreshBikes() {
+      try {
+        const res = await fetch(freshApiUrl('/motorcycles'), {
+          cache: 'no-store',
+          headers: { Accept: 'application/json' },
+        });
+        if (!res.ok || cancelled) return;
+        const json = await res.json();
+        const freshBikes = (json.data || []).map(mapApiMotorcycle);
+        if (!cancelled && freshBikes.length > 0) {
+          setBikes(freshBikes);
+          setBikeCount(freshBikes.length);
+        }
+      } catch {
+        // Keep initial (build-time) data on error
+      }
+    }
+    refreshBikes();
+    return () => { cancelled = true; };
+  }, []);
 
   return (
     <main className="min-h-screen">

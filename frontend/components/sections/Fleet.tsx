@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import BikeCard from '../BikeCard';
 import type { FleetData, Motorcycle } from '@/lib/api';
 
@@ -13,6 +13,11 @@ interface FleetProps {
 export default function Fleet({ fleet, initialBikes, totalBikes }: FleetProps) {
   const [selectedCategory, setSelectedCategory] = useState('wszystkie');
   const [bikes, setBikes] = useState<Motorcycle[]>(initialBikes);
+
+  // Sync bikes when parent provides fresh data (CSR refresh)
+  useEffect(() => {
+    setBikes(initialBikes);
+  }, [initialBikes]);
 
   // Użyj categories z API
   const categories = fleet.categories || [];
