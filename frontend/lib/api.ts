@@ -904,23 +904,26 @@ export async function getAllContent() {
 
   // Build contact from siteData (no extra API call)
   const contactMock = mockContent.content.sections.contact;
-  const addressParts = siteData.address?.split('\n') || [];
-  const street = addressParts[0] || contactMock.address.street;
-  const cityZip = addressParts[1] || `${contactMock.address.zip} ${contactMock.address.city}`;
-  const [zip, ...cityParts] = cityZip.split(' ').reverse();
-  const city = cityParts.reverse().join(' ') || contactMock.address.city;
+  const addressRaw2 = siteData.address?.trim() || '';
+  const addressParts2 = addressRaw2.split('\n').filter(Boolean);
+  const street = addressParts2[0] || '';
+  const cityZip = addressParts2.length > 1 ? addressParts2[1] : '';
+  const zipMatch2 = cityZip.match(/(\d{2}-\d{3})/);
+  const zip = zipMatch2 ? zipMatch2[1] : '';
+  const city = cityZip.replace(/\d{2}-\d{3}/, '').replace(/,/g, '').trim();
   const hoursParts = siteData.openingHours?.split('\n').filter(Boolean) || [];
   const contact: ContactData = {
     ...contactMock,
     phone: siteData.phone || contactMock.phone,
     email: siteData.email || contactMock.email,
-    address: { street, city, zip: zip || contactMock.address.zip },
+    address: { street, city, zip },
     hours: {
       weekdays: hoursParts[0] || contactMock.hours.weekdays,
       saturday: hoursParts[1] || contactMock.hours.saturday,
       sunday: hoursParts[2] || contactMock.hours.sunday,
     },
     mapCoordinates: siteData.mapCoordinates,
+    companyData: siteData.companyData,
   };
 
   return {
