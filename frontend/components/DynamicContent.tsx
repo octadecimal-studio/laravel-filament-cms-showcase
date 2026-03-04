@@ -91,7 +91,7 @@ export default function DynamicContent({
   initialBikes,
   totalBikes,
 }: DynamicContentProps) {
-  const content = initialContent;
+  const [content, setContent] = useState(initialContent);
   const [bikes, setBikes] = useState<Motorcycle[]>(initialBikes);
   const [bikeCount, setBikeCount] = useState(totalBikes);
 
@@ -116,6 +116,41 @@ export default function DynamicContent({
       }
     }
     refreshBikes();
+    return () => { cancelled = true; };
+  }, []);
+
+  // CSR: fetch fresh gallery data on mount
+  useEffect(() => {
+    let cancelled = false;
+    async function refreshGallery() {
+      try {
+        const res = await fetch(freshApiUrl('/gallery'), {
+          cache: 'no-store',
+          headers: { Accept: 'application/json' },
+        });
+        if (!res.ok || cancelled) return;
+        const json = await res.json();
+        const data = json.data || {};
+        const images = (data.images || []).map((img: { id?: string; url: string; alt: string }) => ({
+          id: img.id,
+          url: img.url.startsWith('http') ? img.url : getStorageUrl(img.url),
+          alt: img.alt || '',
+        }));
+        if (!cancelled && images.length > 0) {
+          setContent(prev => ({
+            ...prev,
+            gallery: {
+              title: data.title || prev.gallery.title,
+              subtitle: data.subtitle || prev.gallery.subtitle,
+              images,
+            },
+          }));
+        }
+      } catch {
+        // Keep initial (build-time) data on error
+      }
+    }
+    refreshGallery();
     return () => { cancelled = true; };
   }, []);
 
