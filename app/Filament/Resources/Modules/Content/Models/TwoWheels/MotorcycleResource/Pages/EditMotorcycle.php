@@ -49,28 +49,8 @@ class EditMotorcycle extends EditRecord
             $data['main_image_id'] = $media->id;
         }
         unset($data['new_main_image']);
-        unset($data['new_gallery_images']); // Będzie obsłużone w afterSave
 
         return $data;
-    }
-
-    /**
-     * Po zapisie rekordu - obsługa galerii.
-     */
-    protected function afterSave(): void
-    {
-        $data = $this->form->getState();
-
-        // Przetwórz nowe zdjęcia galerii
-        if (!empty($data['new_gallery_images'])) {
-            $mediaIds = [];
-            foreach ($data['new_gallery_images'] as $filePath) {
-                $media = $this->createMediaFromUpload($filePath, 'motorcycles-gallery');
-                $mediaIds[] = $media->id;
-            }
-            // Dodaj nowe zdjęcia do istniejącej galerii
-            $this->record->gallery()->syncWithoutDetaching($mediaIds);
-        }
     }
 
     /**

@@ -145,29 +145,15 @@ final class MotorcycleResource extends Resource
 
                 Forms\Components\Section::make('Galeria zdjęć')
                     ->schema([
-                        // Podgląd aktualnej galerii (tylko w edycji)
-                        Forms\Components\Placeholder::make('current_gallery_preview')
-                            ->label('Aktualna galeria')
-                            ->content(function (?Motorcycle $record): \Illuminate\Contracts\Support\Htmlable {
-                                if (!$record || $record->gallery->isEmpty()) {
-                                    return new \Illuminate\Support\HtmlString('<span class="text-gray-500">Brak zdjęć w galerii</span>');
-                                }
-                                $html = '<div class="flex flex-wrap gap-3">';
-                                foreach ($record->gallery as $media) {
-                                    $url = asset('storage/' . $media->file_path);
-                                    $html .= '<img src="' . $url . '" alt="' . e($media->file_name) . '"
-                                              class="h-32 w-32 rounded-lg object-cover shadow-sm" />';
-                                }
-                                $html .= '</div>';
-                                return new \Illuminate\Support\HtmlString($html);
-                            })
+                        Forms\Components\Livewire::make('motorcycle-gallery-manager')
+                            ->lazy()
                             ->visible(fn (string $operation): bool => $operation === 'edit')
                             ->columnSpanFull(),
 
-                        // Upload wielu zdjęć do galerii
+                        // Upload galerii przy tworzeniu (Livewire komponent wymaga istniejącego rekordu)
                         Forms\Components\FileUpload::make('new_gallery_images')
-                            ->label(fn (string $operation): string => $operation === 'create' ? 'Wgraj zdjęcia do galerii' : 'Dodaj nowe zdjęcia do galerii')
-                            ->helperText('Możesz wybrać wiele zdjęć naraz. Każde można wykadrować przed wgraniem.')
+                            ->label('Wgraj zdjęcia do galerii')
+                            ->helperText('Możesz wybrać wiele zdjęć naraz.')
                             ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
                             ->maxSize(5120)
                             ->disk('public')
@@ -176,33 +162,8 @@ final class MotorcycleResource extends Resource
                             ->multiple()
                             ->reorderable()
                             ->imagePreviewHeight('100')
-                            ->imageEditor()
-                            ->imageEditorAspectRatios([
-                                null,
-                                '16:9',
-                                '4:3',
-                                '1:1',
-                            ])
-                            ->openable()
-                            ->columnSpanFull(),
-
-                        // Zarządzanie istniejącą galerią
-                        Forms\Components\Select::make('gallery')
-                            ->label('Zarządzaj istniejącymi zdjęciami')
-                            ->helperText('Usuń zaznaczenie, aby usunąć zdjęcie z galerii')
-                            ->relationship('gallery', 'file_name', fn ($query) => $query->where('mime_type', 'like', 'image/%'))
-                            ->multiple()
-                            ->searchable()
-                            ->preload()
-                            ->getOptionLabelFromRecordUsing(fn ($record) => $record->file_name)
-                            ->saveRelationshipsUsing(function (Motorcycle $record, array $state): void {
-                                $record->gallery()->sync($state);
-                            })
-                            ->loadStateFromRelationshipsUsing(function (Motorcycle $record): array {
-                                return $record->gallery->pluck('id')->toArray();
-                            })
-                            ->visible(fn (string $operation): bool => $operation === 'edit')
-                            ->columnSpanFull(),
+                            ->columnSpanFull()
+                            ->visible(fn (string $operation): bool => $operation === 'create'),
                     ])
                     ->collapsible(),
 
