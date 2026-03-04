@@ -164,6 +164,7 @@ final class SiteSettingResource extends Resource
 
                 Forms\Components\Section::make('Social Media')
                     ->description('Linki do profili w mediach społecznościowych. Zostawiaj puste, jeśli nie chcesz wyświetlać danej platformy.')
+                    ->hidden()
                     ->schema([
                         Forms\Components\TextInput::make('social_media.facebook')
                             ->label('Facebook')
