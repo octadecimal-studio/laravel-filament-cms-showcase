@@ -175,6 +175,46 @@ final class SiteSettingResource extends Resource
                             ->columnSpanFull(),
                     ]),
 
+                Forms\Components\Section::make('Social Media')
+                    ->description('Linki do profili w mediach społecznościowych. Zostawiaj puste, jeśli nie chcesz wyświetlać danej platformy.')
+                    ->schema([
+                        Forms\Components\TextInput::make('social_media.facebook')
+                            ->label('Facebook')
+                            ->url()
+                            ->placeholder('https://facebook.com/twoj-profil')
+                            ->prefixIcon('heroicon-o-globe-alt')
+                            ->columnSpan(1),
+
+                        Forms\Components\TextInput::make('social_media.instagram')
+                            ->label('Instagram')
+                            ->url()
+                            ->placeholder('https://instagram.com/twoj-profil')
+                            ->prefixIcon('heroicon-o-camera')
+                            ->columnSpan(1),
+
+                        Forms\Components\TextInput::make('social_media.tiktok')
+                            ->label('TikTok')
+                            ->url()
+                            ->placeholder('https://tiktok.com/@twoj-profil')
+                            ->prefixIcon('heroicon-o-play')
+                            ->columnSpan(1),
+
+                        Forms\Components\TextInput::make('social_media.youtube')
+                            ->label('YouTube')
+                            ->url()
+                            ->placeholder('https://youtube.com/@twoj-kanal')
+                            ->prefixIcon('heroicon-o-video-camera')
+                            ->columnSpan(1),
+
+                        Forms\Components\TextInput::make('social_media.linkedin')
+                            ->label('LinkedIn')
+                            ->url()
+                            ->placeholder('https://linkedin.com/company/twoja-firma')
+                            ->prefixIcon('heroicon-o-briefcase')
+                            ->columnSpan(1),
+                    ])
+                    ->columns(2),
+
                 Forms\Components\Section::make('Google Analytics')
                     ->description('Wklej kod śledzenia Google Analytics (np. tag gtag.js).')
                     ->schema([

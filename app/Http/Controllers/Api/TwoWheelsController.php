@@ -84,6 +84,7 @@ class TwoWheelsController extends Controller
                 'pricing_title' => $setting->pricing_title,
                 'pricing_subtitle' => $setting->pricing_subtitle,
                 'company_data' => $setting->company_data,
+                'social_media' => $setting->social_media,
             ],
         ]);
     }

@@ -91,6 +91,13 @@ export interface SiteData {
   googleAnalyticsCode?: string | null;
   locationTitle?: string | null;
   locationDescription?: string | null;
+  socialMedia?: {
+    facebook?: string;
+    instagram?: string;
+    tiktok?: string;
+    linkedin?: string;
+    youtube?: string;
+  };
 }
 
 export interface ReservationSettings {
@@ -437,6 +444,7 @@ export async function getSiteData(): Promise<SiteData> {
       googleAnalyticsCode: setting.google_analytics_code || null,
       locationTitle: setting.location_title || null,
       locationDescription: setting.location_description || null,
+      socialMedia: setting.social_media || undefined,
     };
   } catch (error) {
     console.error('Error fetching site setting from API:', error);
@@ -799,7 +807,17 @@ export async function getContactData(): Promise<ContactData> {
 }
 
 export async function getFooterData(): Promise<FooterData> {
-  return mockContent.content.footer;
+  const footer: FooterData = { ...mockContent.content.footer };
+  // Merge social_media from API (site-setting) if available
+  try {
+    const siteData = await getSiteData();
+    if (siteData.socialMedia && Object.values(siteData.socialMedia).some(Boolean)) {
+      footer.socialMedia = siteData.socialMedia;
+    }
+  } catch {
+    // Keep mock social links on error
+  }
+  return footer;
 }
 
 // Funkcja uniwersalna - pobiera wszystkie dane content naraz (zoptymalizowana)

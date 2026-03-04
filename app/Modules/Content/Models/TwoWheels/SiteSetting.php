@@ -70,6 +70,7 @@ final class SiteSetting extends Model
         'reservation_form_external_url',
         'reservation_notification_email',
         'company_data',
+        'social_media',
     ];
 
     /**
@@ -81,6 +82,7 @@ final class SiteSetting extends Model
     {
         return [
             'company_data' => 'array',
+            'social_media' => 'array',
         ];
     }
 
