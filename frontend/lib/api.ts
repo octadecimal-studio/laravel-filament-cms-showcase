@@ -91,6 +91,12 @@ export interface SiteData {
   googleAnalyticsCode?: string | null;
   locationTitle?: string | null;
   locationDescription?: string | null;
+  companyData?: {
+    company_name?: string;
+    nip?: string;
+    krs?: string;
+    regon?: string;
+  };
   socialMedia?: {
     facebook?: string;
     instagram?: string;
@@ -248,6 +254,12 @@ export interface ContactData {
     sunday: string;
   };
   mapCoordinates?: string;
+  companyData?: {
+    company_name?: string;
+    nip?: string;
+    krs?: string;
+    regon?: string;
+  };
   form: {
     namePlaceholder: string;
     emailPlaceholder: string;
@@ -444,6 +456,7 @@ export async function getSiteData(): Promise<SiteData> {
       googleAnalyticsCode: setting.google_analytics_code || null,
       locationTitle: setting.location_title || null,
       locationDescription: setting.location_description || null,
+      companyData: setting.company_data || undefined,
       socialMedia: setting.social_media || undefined,
     };
   } catch (error) {
@@ -794,6 +807,7 @@ export async function getContactData(): Promise<ContactData> {
         sunday,
       },
       mapCoordinates: siteData.mapCoordinates,
+      companyData: siteData.companyData,
     };
   } catch (error) {
     console.error('Error fetching contact data:', error);

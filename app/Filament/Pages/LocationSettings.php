@@ -68,8 +68,25 @@ class LocationSettings extends Page implements HasForms
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make('Dane kontaktowe')
+                Forms\Components\Section::make('Dane kontaktowe i firmowe')
                     ->schema([
+                        Forms\Components\TextInput::make('company_name')
+                            ->label('Nazwa firmy')
+                            ->maxLength(255)
+                            ->columnSpanFull(),
+
+                        Forms\Components\TextInput::make('nip')
+                            ->label('NIP')
+                            ->maxLength(20),
+
+                        Forms\Components\TextInput::make('krs')
+                            ->label('KRS')
+                            ->maxLength(20),
+
+                        Forms\Components\TextInput::make('regon')
+                            ->label('REGON')
+                            ->maxLength(20),
+
                         Forms\Components\TextInput::make('contact_phone')
                             ->label('Telefon')
                             ->tel()
@@ -100,28 +117,6 @@ class LocationSettings extends Page implements HasForms
                             ->helperText('Format: szerokość,długość (np. 52.2297,21.0122)')
                             ->required()
                             ->columnSpanFull(),
-                    ])
-                    ->columns(2),
-
-                Forms\Components\Section::make('Dane firmy')
-                    ->description('Dane rejestrowe firmy wyświetlane w stopce i dokumentach.')
-                    ->schema([
-                        Forms\Components\TextInput::make('company_name')
-                            ->label('Nazwa firmy')
-                            ->maxLength(255)
-                            ->columnSpanFull(),
-
-                        Forms\Components\TextInput::make('nip')
-                            ->label('NIP')
-                            ->maxLength(20),
-
-                        Forms\Components\TextInput::make('krs')
-                            ->label('KRS')
-                            ->maxLength(20),
-
-                        Forms\Components\TextInput::make('regon')
-                            ->label('REGON')
-                            ->maxLength(20),
                     ])
                     ->columns(3),
             ])

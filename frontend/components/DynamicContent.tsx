@@ -170,10 +170,11 @@ export default function DynamicContent({
       <Gallery gallery={content.gallery} bikes={bikes} />
       <Testimonials testimonials={content.testimonials} />
       <Location location={content.location} contact={content.contact} />
-      <ContactForm
+      {/* ContactForm ukryty na życzenie L0 — funkcjonalność zachowana */}
+      {/* <ContactForm
         contact={content.contact}
         reservationSettings={content.reservationSettings}
-      />
+      /> */}
       <Footer
         site={content.site}
         footer={content.footer}

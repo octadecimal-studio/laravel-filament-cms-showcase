@@ -8,13 +8,14 @@ interface LocationProps {
 
 export default function Location({ location, contact }: LocationProps) {
   const mapUrl = generateMapUrl(contact.address, contact.mapCoordinates);
+  const company = contact.companyData;
 
   return (
     <section id="kontakt" className="py-20 bg-white">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="font-heading text-4xl md:text-5xl font-bold mb-4">
-            {location.title}
+            Dane kontaktowe
           </h2>
           <p className="text-lg text-gray-medium max-w-2xl mx-auto">
             {location.subtitle}
@@ -38,13 +39,34 @@ export default function Location({ location, contact }: LocationProps) {
 
           {/* Informacje */}
           <div className="space-y-6">
-            <div>
-              <h3 className="font-heading text-xl font-bold mb-2">Adres</h3>
-              <p className="text-gray-medium">
-                {contact.address.street}<br />
-                {contact.address.zip} {contact.address.city}
-              </p>
-            </div>
+            {company?.company_name && (
+              <div>
+                <h3 className="font-heading text-xl font-bold mb-2">{company.company_name}</h3>
+                <p className="text-gray-medium">
+                  {contact.address.street}<br />
+                  {contact.address.zip} {contact.address.city}
+                </p>
+                {(company.nip || company.krs || company.regon) && (
+                  <p className="text-gray-medium mt-1 text-sm">
+                    {company.nip && <>NIP: {company.nip}</>}
+                    {company.nip && company.regon && <> &middot; </>}
+                    {company.regon && <>REGON: {company.regon}</>}
+                    {(company.nip || company.regon) && company.krs && <> &middot; </>}
+                    {company.krs && <>KRS: {company.krs}</>}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {!company?.company_name && (
+              <div>
+                <h3 className="font-heading text-xl font-bold mb-2">Adres</h3>
+                <p className="text-gray-medium">
+                  {contact.address.street}<br />
+                  {contact.address.zip} {contact.address.city}
+                </p>
+              </div>
+            )}
 
             <div>
               <h3 className="font-heading text-xl font-bold mb-2">Kontakt</h3>
