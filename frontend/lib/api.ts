@@ -779,12 +779,14 @@ export async function getContactData(): Promise<ContactData> {
     const siteData = await getSiteData();
     const contactMock = mockContent.content.sections.contact;
     
-    // Parsuj adres z API
-    const addressParts = siteData.address?.split('\n') || [];
-    const street = addressParts[0] || contactMock.address.street;
-    const cityZip = addressParts[1] || `${contactMock.address.zip} ${contactMock.address.city}`;
-    const [zip, ...cityParts] = cityZip.split(' ').reverse();
-    const city = cityParts.reverse().join(' ') || contactMock.address.city;
+    // Parsuj adres z API — raw text, bez fallbacku do mocków
+    const addressRaw = siteData.address?.trim() || '';
+    const addressParts = addressRaw.split('\n').filter(Boolean);
+    const street = addressParts[0] || '';
+    const cityZip = addressParts.length > 1 ? addressParts[1] : '';
+    const zipMatch = cityZip.match(/(\d{2}-\d{3})/);
+    const zip = zipMatch ? zipMatch[1] : '';
+    const city = cityZip.replace(/\d{2}-\d{3}/, '').replace(/,/g, '').trim();
     
     // Parsuj godziny otwarcia
     const hoursParts = siteData.openingHours?.split('\n').filter(Boolean) || [];
@@ -799,7 +801,7 @@ export async function getContactData(): Promise<ContactData> {
       address: {
         street,
         city,
-        zip: zip || contactMock.address.zip,
+        zip,
       },
       hours: {
         weekdays,

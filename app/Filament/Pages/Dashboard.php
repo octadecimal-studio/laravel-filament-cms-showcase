@@ -16,6 +16,8 @@ class Dashboard extends Page
 
     protected static ?string $navigationLabel = 'Panel';
 
+    protected static bool $shouldRegisterNavigation = false;
+
     protected static string $view = 'filament.pages.dashboard';
 
     protected function getHeaderActions(): array

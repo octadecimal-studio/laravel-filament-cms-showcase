@@ -44,8 +44,10 @@ export default function Location({ location, contact }: LocationProps) {
               <h3 className="font-heading text-xl font-bold mb-2">Adres</h3>
               <p className="text-gray-medium">
                 {company?.company_name && <>{company.company_name}<br /></>}
-                {contact.address.street}<br />
-                {contact.address.zip} {contact.address.city}
+                {contact.address.street}
+                {(contact.address.zip || contact.address.city) && (
+                  <><br />{[contact.address.zip, contact.address.city].filter(Boolean).join(' ')}</>
+                )}
               </p>
               {(company?.nip || company?.krs || company?.regon) && (
                 <p className="text-gray-medium mt-2">
