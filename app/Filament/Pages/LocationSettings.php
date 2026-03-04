@@ -18,13 +18,13 @@ class LocationSettings extends Page implements HasForms
 {
     use InteractsWithForms;
 
-    protected static ?string $navigationIcon = 'heroicon-o-map-pin';
+    protected static ?string $navigationIcon = 'heroicon-o-identification';
 
     protected static string $view = 'filament.pages.location-settings';
 
-    protected static ?string $navigationLabel = 'Lokalizacja';
+    protected static ?string $navigationLabel = 'Dane kontaktowe';
 
-    protected static ?string $title = 'Ustawienia lokalizacji';
+    protected static ?string $title = 'Dane kontaktowe';
 
     protected static ?int $navigationSort = 65;
 

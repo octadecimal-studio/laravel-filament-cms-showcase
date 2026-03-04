@@ -7,8 +7,6 @@ namespace App\Filament\Resources\Modules\Content\Models\TwoWheels;
 use App\Filament\Resources\Modules\Content\Models\TwoWheels\SiteSettingResource\Pages;
 use App\Filament\Resources\Modules\Content\Models\TwoWheels\SiteSettingResource\RelationManagers;
 use App\Modules\Content\Models\TwoWheels\SiteSetting;
-use Illuminate\Contracts\Support\Htmlable;
-use Illuminate\Support\HtmlString;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -162,19 +160,6 @@ final class SiteSettingResource extends Resource
                         Forms\Components\Hidden::make('logo_id'),
                     ]),
 
-                Forms\Components\Section::make('Kontakt i lokalizacja')
-                    ->schema([
-                        Forms\Components\Placeholder::make('contact_redirect')
-                            ->label('')
-                            ->content(new HtmlString(
-                                '<div class="text-sm text-gray-500 dark:text-gray-400">'
-                                . 'Dane kontaktowe, adres, godziny otwarcia i współrzędne mapy '
-                                . 'edytuj w <a href="/admin/location-settings" class="font-medium text-primary-600 hover:underline">Lokalizacja</a>.'
-                                . '</div>'
-                            ))
-                            ->columnSpanFull(),
-                    ]),
-
                 Forms\Components\Section::make('Social Media')
                     ->description('Linki do profili w mediach społecznościowych. Zostawiaj puste, jeśli nie chcesz wyświetlać danej platformy.')
                     ->schema([
@@ -255,21 +240,6 @@ final class SiteSettingResource extends Resource
                     ->label('Logo')
                     ->height(40)
                     ->width(40)
-                    ->toggleable(),
-
-                Tables\Columns\TextColumn::make('contact_phone')
-                    ->label('Telefon')
-                    ->searchable()
-                    ->toggleable(),
-
-                Tables\Columns\TextColumn::make('contact_email')
-                    ->label('Email')
-                    ->searchable()
-                    ->toggleable(),
-
-                Tables\Columns\TextColumn::make('address')
-                    ->label('Adres')
-                    ->limit(30)
                     ->toggleable(),
 
                 Tables\Columns\TextColumn::make('created_at')
