@@ -280,29 +280,7 @@ export default function MotorcycleDetailClient({
             </div>
           </div>
 
-          {/* Pełna galeria (jeśli więcej niż 4 zdjęcia) */}
-          {allImages.length > 4 && (
-            <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-              <h2 className="font-heading text-2xl font-bold mb-6">Galeria zdjęć</h2>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {allImages.map((img, index) => (
-                  <div
-                    key={index}
-                    className="relative h-48 cursor-pointer hover:opacity-75 transition-opacity rounded-lg overflow-hidden"
-                    onClick={() => openLightbox(index)}
-                  >
-                    <Image
-                      src={img.url.startsWith('http') ? img.url : getAssetPath(img.url)}
-                      alt={img.alt || `${motorcycle.name} - zdjęcie ${index + 1}`}
-                      fill
-                      className="object-cover"
-                      unoptimized={img.url.startsWith('http')}
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          {/* Pełna galeria — ukryta, wystarczą miniaturki w karcie motocykla */}
 
           {/* Sekcja rezerwacji */}
           <div id="rezerwacja" className="bg-white rounded-xl shadow-lg p-6 lg:p-12 mb-8">
