@@ -13,6 +13,7 @@ import Gallery from '@/components/sections/Gallery';
 import Testimonials from '@/components/sections/Testimonials';
 import Location from '@/components/sections/Location';
 import ContactForm from '@/components/sections/ContactForm';
+import FloatingActions from '@/components/FloatingActions';
 import type {
   SiteData, NavigationData, HeroData, WhyUsData, FleetData,
   HowItWorksData, PricingData, TermsData, GalleryData,
@@ -142,6 +143,11 @@ export default function DynamicContent({
         site={content.site}
         footer={content.footer}
         contact={content.contact}
+      />
+      <FloatingActions
+        footer={content.footer}
+        contact={content.contact}
+        reservationSettings={content.reservationSettings}
       />
     </main>
   );

@@ -269,6 +269,7 @@ export interface FooterData {
   socialMedia?: {
     facebook?: string;
     instagram?: string;
+    tiktok?: string;
     linkedin?: string;
     youtube?: string;
   };
@@ -449,7 +450,7 @@ export async function getSiteData(): Promise<SiteData> {
 }
 
 export async function getNavigationData(): Promise<NavigationData> {
-  const nav = { ...mockContent.content.navigation, links: [...mockContent.content.navigation.links] };
+  const nav: NavigationData = { ...mockContent.content.navigation, links: [...mockContent.content.navigation.links], cta: { ...mockContent.content.navigation.cta } };
   // Replace LOGIN_ADMIN placeholder with actual admin URL
   nav.links = nav.links.map(link =>
     link.href === 'LOGIN_ADMIN'
@@ -457,16 +458,18 @@ export async function getNavigationData(): Promise<NavigationData> {
       : link
   );
 
-  // Update CTA with reservation settings
+  // Update CTA with reservation settings — always show "Rezerwuj" instead of login
+  nav.cta.label = 'Rezerwuj';
+  nav.cta.variant = 'primary';
   try {
     const resSetting = await getReservationSettings();
     if (resSetting.formType === 'external' && resSetting.externalUrl) {
-      nav.cta = { ...nav.cta, href: resSetting.externalUrl };
-    } else if (resSetting.formType === 'internal') {
-      nav.cta = { ...nav.cta, href: '#rezerwacja' };
+      nav.cta.href = resSetting.externalUrl;
+    } else {
+      nav.cta.href = '#rezerwacja';
     }
   } catch {
-    // Keep mock CTA on error
+    nav.cta.href = '#rezerwacja';
   }
 
   return nav;
