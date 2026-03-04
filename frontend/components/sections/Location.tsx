@@ -39,35 +39,24 @@ export default function Location({ location, contact }: LocationProps) {
 
           {/* Informacje */}
           <div className="space-y-6">
-            {company?.company_name && (
-              <div>
-                <h3 className="font-heading text-xl font-bold mb-2">{company.company_name}</h3>
-                <p className="text-gray-medium">
-                  {contact.address.street}<br />
-                  {contact.address.zip} {contact.address.city}
+            {/* Adres */}
+            <div>
+              <h3 className="font-heading text-xl font-bold mb-2">Adres</h3>
+              <p className="text-gray-medium">
+                {company?.company_name && <>{company.company_name}<br /></>}
+                {contact.address.street}<br />
+                {contact.address.zip} {contact.address.city}
+              </p>
+              {(company?.nip || company?.krs || company?.regon) && (
+                <p className="text-gray-medium mt-2">
+                  {company.nip && <>NIP: {company.nip}<br /></>}
+                  {company.krs && <>KRS: {company.krs}<br /></>}
+                  {company.regon && <>REGON: {company.regon}</>}
                 </p>
-                {(company.nip || company.krs || company.regon) && (
-                  <p className="text-gray-medium mt-1 text-sm">
-                    {company.nip && <>NIP: {company.nip}</>}
-                    {company.nip && company.regon && <> &middot; </>}
-                    {company.regon && <>REGON: {company.regon}</>}
-                    {(company.nip || company.regon) && company.krs && <> &middot; </>}
-                    {company.krs && <>KRS: {company.krs}</>}
-                  </p>
-                )}
-              </div>
-            )}
+              )}
+            </div>
 
-            {!company?.company_name && (
-              <div>
-                <h3 className="font-heading text-xl font-bold mb-2">Adres</h3>
-                <p className="text-gray-medium">
-                  {contact.address.street}<br />
-                  {contact.address.zip} {contact.address.city}
-                </p>
-              </div>
-            )}
-
+            {/* Kontakt */}
             <div>
               <h3 className="font-heading text-xl font-bold mb-2">Kontakt</h3>
               <p className="text-gray-medium">
@@ -77,6 +66,7 @@ export default function Location({ location, contact }: LocationProps) {
               </p>
             </div>
 
+            {/* Godziny otwarcia */}
             <div>
               <h3 className="font-heading text-xl font-bold mb-2">Godziny otwarcia</h3>
               <p className="text-gray-medium">

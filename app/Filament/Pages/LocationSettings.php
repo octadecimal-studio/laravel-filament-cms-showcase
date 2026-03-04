@@ -68,11 +68,17 @@ class LocationSettings extends Page implements HasForms
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make('Dane kontaktowe i firmowe')
+                Forms\Components\Section::make('Adres')
                     ->schema([
                         Forms\Components\TextInput::make('company_name')
                             ->label('Nazwa firmy')
                             ->maxLength(255)
+                            ->columnSpanFull(),
+
+                        Forms\Components\Textarea::make('address')
+                            ->label('Adres')
+                            ->rows(2)
+                            ->required()
                             ->columnSpanFull(),
 
                         Forms\Components\TextInput::make('nip')
@@ -86,7 +92,11 @@ class LocationSettings extends Page implements HasForms
                         Forms\Components\TextInput::make('regon')
                             ->label('REGON')
                             ->maxLength(20),
+                    ])
+                    ->columns(3),
 
+                Forms\Components\Section::make('Kontakt')
+                    ->schema([
                         Forms\Components\TextInput::make('contact_phone')
                             ->label('Telefon')
                             ->tel()
@@ -98,27 +108,27 @@ class LocationSettings extends Page implements HasForms
                             ->email()
                             ->maxLength(255)
                             ->required(),
+                    ])
+                    ->columns(2),
 
-                        Forms\Components\Textarea::make('address')
-                            ->label('Adres')
-                            ->rows(2)
-                            ->required()
-                            ->columnSpanFull(),
-
+                Forms\Components\Section::make('Godziny otwarcia')
+                    ->schema([
                         Forms\Components\Textarea::make('opening_hours')
                             ->label('Godziny otwarcia')
-                            ->rows(2)
+                            ->rows(3)
                             ->required()
                             ->columnSpanFull(),
+                    ]),
 
+                Forms\Components\Section::make('Mapa')
+                    ->schema([
                         Forms\Components\TextInput::make('map_coordinates')
                             ->label('Współrzędne mapy')
                             ->placeholder('52.2297,21.0122')
                             ->helperText('Format: szerokość,długość (np. 52.2297,21.0122)')
                             ->required()
                             ->columnSpanFull(),
-                    ])
-                    ->columns(3),
+                    ]),
             ])
             ->statePath('data');
     }
