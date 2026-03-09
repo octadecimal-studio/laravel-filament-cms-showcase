@@ -174,6 +174,7 @@ export default function DynamicContent({
       <ContactForm
         contact={content.contact}
         reservationSettings={content.reservationSettings}
+        bikes={bikes}
       />
       <Footer
         site={content.site}
