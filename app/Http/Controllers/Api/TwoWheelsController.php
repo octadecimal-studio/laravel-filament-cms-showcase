@@ -196,7 +196,7 @@ class TwoWheelsController extends Controller
             });
         }
 
-        $motorcycles = $query->orderBy('name')->get();
+        $motorcycles = $query->orderByDesc('price_per_day')->get();
 
         return response()->json([
             'data' => $motorcycles->map(fn ($moto) => [
@@ -485,7 +485,7 @@ class TwoWheelsController extends Controller
         $motorcycles = Motorcycle::withoutGlobalScope(TenantScope::class)
             ->where('tenant_id', $tenantId)
             ->where('published', true)
-            ->orderBy('name')
+            ->orderByDesc('price_per_day')
             ->get(['id', 'name', 'slug', 'price_per_day', 'price_per_week', 'price_per_month', 'deposit']);
 
         $notes = PricingNote::withoutGlobalScope(TenantScope::class)
