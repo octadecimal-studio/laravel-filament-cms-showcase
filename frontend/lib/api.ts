@@ -98,6 +98,8 @@ export interface SiteData {
     regon?: string;
     phone_owner?: string;
     phone_client?: string;
+    phones?: { label: string; number: string }[];
+    whatsapp?: { label: string; number: string }[];
   };
   socialMedia?: {
     facebook?: string;
@@ -265,6 +267,7 @@ export interface ContactData {
     phone_owner?: string;
     phone_client?: string;
   };
+  whatsapp?: { label: string; number: string }[];
   form: {
     namePlaceholder: string;
     emailPlaceholder: string;
@@ -397,16 +400,34 @@ function getStorageUrl(path: string | null | undefined): string {
   return path;
 }
 
-// Helper: build labeled phone list from main phone + company_data extras
+// Helper: build labeled phone list from company_data.phones[] or legacy fields
 function buildPhonesList(
   mainPhone: string,
-  companyData?: { phone_owner?: string; phone_client?: string },
+  companyData?: {
+    phone_owner?: string;
+    phone_client?: string;
+    phones?: { label: string; number: string }[];
+  },
 ): { label: string; number: string }[] {
+  // Priority 1: new phones[] array from CMS Repeater
+  if (companyData?.phones && companyData.phones.length > 0) {
+    return companyData.phones;
+  }
+  // Priority 2: legacy phone_owner/phone_client fields
   const phones: { label: string; number: string }[] = [];
   if (companyData?.phone_owner) phones.push({ label: 'Piotrek', number: companyData.phone_owner });
   if (companyData?.phone_client) phones.push({ label: 'Demo Client', number: companyData.phone_client });
-  if (phones.length === 0 && mainPhone) phones.push({ label: '', number: mainPhone });
-  return phones;
+  if (phones.length > 0) return phones;
+  // Priority 3: fallback to main contact_phone
+  if (mainPhone) return [{ label: '', number: mainPhone }];
+  return [];
+}
+
+// Helper: build WhatsApp contacts list from company_data.whatsapp[]
+function buildWhatsAppList(
+  companyData?: { whatsapp?: { label: string; number: string }[] },
+): { label: string; number: string }[] {
+  return companyData?.whatsapp ?? [];
 }
 
 // Helper function to generate Google Maps embed URL from address or coordinates
@@ -824,6 +845,7 @@ export async function getContactData(): Promise<ContactData> {
       mapCoordinates: siteData.mapCoordinates,
       companyData: siteData.companyData,
       phones: buildPhonesList(siteData.phone || contactMock.phone, siteData.companyData),
+      whatsapp: buildWhatsAppList(siteData.companyData),
     };
   } catch (error) {
     console.error('Error fetching contact data:', error);
@@ -939,6 +961,7 @@ export async function getAllContent() {
     mapCoordinates: siteData.mapCoordinates,
     companyData: siteData.companyData,
     phones: buildPhonesList(siteData.phone || contactMock.phone, siteData.companyData),
+    whatsapp: buildWhatsAppList(siteData.companyData),
   };
 
   return {

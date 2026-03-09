@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { FiX, FiCalendar, FiPhone } from 'react-icons/fi';
+import { FiX, FiCalendar, FiPhone, FiMessageCircle } from 'react-icons/fi';
 import type { FooterData, ContactData, ReservationSettings } from '@/lib/api';
 import { MONDAY_RESERVATION_FORM_URL } from '@/lib/paths';
 
@@ -67,6 +67,24 @@ export default function FloatingActions({ footer, contact, reservationSettings }
               </span>
               <span className="font-semibold text-sm text-gray-dark group-hover:text-green-600 transition-colors whitespace-nowrap">
                 {p.label ? `${p.label}: ${p.number}` : p.number}
+              </span>
+            </a>
+          ))}
+
+          {/* WhatsApp */}
+          {contact.whatsapp?.map((w, i) => (
+            <a
+              key={`wa-${i}`}
+              href={`https://wa.me/${w.number.replace(/[^0-9+]/g, '')}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 bg-white shadow-lg rounded-full pl-4 pr-5 py-3 hover:shadow-xl transition-shadow group"
+            >
+              <span className="w-10 h-10 bg-[#25D366] rounded-full flex items-center justify-center text-white shrink-0">
+                <FiMessageCircle size={20} />
+              </span>
+              <span className="font-semibold text-sm text-gray-dark group-hover:text-[#25D366] transition-colors whitespace-nowrap">
+                WhatsApp: {w.label}
               </span>
             </a>
           ))}
