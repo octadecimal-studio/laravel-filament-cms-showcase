@@ -36,18 +36,24 @@ export default function FloatingActions({ footer, contact, reservationSettings }
             </span>
           </a>
 
-          {/* Phone */}
-          <a
-            href={`tel:${contact.phone}`}
-            className="flex items-center gap-3 bg-white shadow-lg rounded-full pl-4 pr-5 py-3 hover:shadow-xl transition-shadow group"
-          >
-            <span className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center text-white shrink-0">
-              <FiPhone size={20} />
-            </span>
-            <span className="font-semibold text-sm text-gray-dark group-hover:text-green-600 transition-colors whitespace-nowrap">
-              {contact.phone}
-            </span>
-          </a>
+          {/* Phone buttons */}
+          {(contact.phones && contact.phones.length > 0
+            ? contact.phones
+            : [{ label: '', number: contact.phone }]
+          ).map((p, i) => (
+            <a
+              key={i}
+              href={`tel:${p.number.replace(/\s/g, '')}`}
+              className="flex items-center gap-3 bg-white shadow-lg rounded-full pl-4 pr-5 py-3 hover:shadow-xl transition-shadow group"
+            >
+              <span className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center text-white shrink-0">
+                <FiPhone size={20} />
+              </span>
+              <span className="font-semibold text-sm text-gray-dark group-hover:text-green-600 transition-colors whitespace-nowrap">
+                {p.label ? `${p.label}: ${p.number}` : p.number}
+              </span>
+            </a>
+          ))}
 
           {/* Facebook */}
           {social?.facebook && (

@@ -62,8 +62,16 @@ export default function Location({ location, contact }: LocationProps) {
             <div>
               <h3 className="font-heading text-xl font-bold mb-2">Kontakt</h3>
               <p className="text-gray-medium">
-                Telefon: <a href={`tel:${contact.phone.replace(/\s/g, '')}`} className="text-accent-red hover:underline">{contact.phone}</a>
-                <br />
+                {contact.phones && contact.phones.length > 0
+                  ? contact.phones.map((p, i) => (
+                      <span key={i}>
+                        {p.label ? `${p.label}: ` : 'Telefon: '}
+                        <a href={`tel:${p.number.replace(/\s/g, '')}`} className="text-accent-red hover:underline">{p.number}</a>
+                        <br />
+                      </span>
+                    ))
+                  : <>Telefon: <a href={`tel:${contact.phone.replace(/\s/g, '')}`} className="text-accent-red hover:underline">{contact.phone}</a><br /></>
+                }
                 Email: <a href={`mailto:${contact.email}`} className="text-accent-red hover:underline">{contact.email}</a>
               </p>
             </div>

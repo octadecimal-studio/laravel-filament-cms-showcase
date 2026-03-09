@@ -96,6 +96,8 @@ export interface SiteData {
     nip?: string;
     krs?: string;
     regon?: string;
+    phone_owner?: string;
+    phone_client?: string;
   };
   socialMedia?: {
     facebook?: string;
@@ -247,6 +249,7 @@ export interface ContactData {
     zip: string;
   };
   phone: string;
+  phones?: { label: string; number: string }[];
   email: string;
   hours: {
     weekdays: string;
@@ -259,6 +262,8 @@ export interface ContactData {
     nip?: string;
     krs?: string;
     regon?: string;
+    phone_owner?: string;
+    phone_client?: string;
   };
   form: {
     namePlaceholder: string;
@@ -392,6 +397,18 @@ function getStorageUrl(path: string | null | undefined): string {
   return path;
 }
 
+// Helper: build labeled phone list from main phone + company_data extras
+function buildPhonesList(
+  mainPhone: string,
+  companyData?: { phone_owner?: string; phone_client?: string },
+): { label: string; number: string }[] {
+  const phones: { label: string; number: string }[] = [];
+  if (companyData?.phone_owner) phones.push({ label: 'Piotrek', number: companyData.phone_owner });
+  if (companyData?.phone_client) phones.push({ label: 'Demo Client', number: companyData.phone_client });
+  if (phones.length === 0 && mainPhone) phones.push({ label: '', number: mainPhone });
+  return phones;
+}
+
 // Helper function to generate Google Maps embed URL from address or coordinates
 export function generateMapUrl(
   address: { street: string; city: string; zip: string },
@@ -472,12 +489,8 @@ export async function getSiteData(): Promise<SiteData> {
 
 export async function getNavigationData(): Promise<NavigationData> {
   const nav: NavigationData = { ...mockContent.content.navigation, links: [...mockContent.content.navigation.links], cta: { ...mockContent.content.navigation.cta } };
-  // Replace LOGIN_ADMIN placeholder with actual admin URL
-  nav.links = nav.links.map(link =>
-    link.href === 'LOGIN_ADMIN'
-      ? { ...link, href: `${API_DOMAIN}/admin` }
-      : link
-  );
+  // Filtruj link Login — usunięty z nawigacji (KML-0034)
+  nav.links = nav.links.filter(link => link.href !== 'LOGIN_ADMIN');
 
   // Update CTA with reservation settings — always show "Rezerwuj" instead of login
   nav.cta.label = 'Rezerwuj';
@@ -810,6 +823,7 @@ export async function getContactData(): Promise<ContactData> {
       },
       mapCoordinates: siteData.mapCoordinates,
       companyData: siteData.companyData,
+      phones: buildPhonesList(siteData.phone || contactMock.phone, siteData.companyData),
     };
   } catch (error) {
     console.error('Error fetching contact data:', error);
@@ -924,6 +938,7 @@ export async function getAllContent() {
     },
     mapCoordinates: siteData.mapCoordinates,
     companyData: siteData.companyData,
+    phones: buildPhonesList(siteData.phone || contactMock.phone, siteData.companyData),
   };
 
   return {
