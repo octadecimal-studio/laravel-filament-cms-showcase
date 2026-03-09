@@ -52,13 +52,10 @@ export default function FloatingActions({ footer, contact, reservationSettings }
             </a>
           )}
 
-          {/* Phone buttons */}
-          {(contact.phones && contact.phones.length > 0
-            ? contact.phones
-            : [{ label: '', number: contact.phone }]
-          ).map((p, i) => (
+          {/* Phone buttons - only if configured in CMS */}
+          {contact.phones?.map((p, i) => (
             <a
-              key={i}
+              key={`phone-${i}`}
               href={`tel:${p.number.replace(/\s/g, '')}`}
               className="flex items-center gap-3 bg-white shadow-lg rounded-full pl-4 pr-5 py-3 hover:shadow-xl transition-shadow group"
             >
@@ -66,7 +63,7 @@ export default function FloatingActions({ footer, contact, reservationSettings }
                 <FiPhone size={20} />
               </span>
               <span className="font-semibold text-sm text-gray-dark group-hover:text-green-600 transition-colors whitespace-nowrap">
-                {p.label ? `${p.label}: ${p.number}` : p.number}
+                {p.label}: {p.number}
               </span>
             </a>
           ))}

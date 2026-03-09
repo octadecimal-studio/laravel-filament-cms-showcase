@@ -400,27 +400,15 @@ function getStorageUrl(path: string | null | undefined): string {
   return path;
 }
 
-// Helper: build labeled phone list from company_data.phones[] or legacy fields
+// Helper: build labeled phone list from company_data.phones[] (FAB only, no fallback)
 function buildPhonesList(
-  mainPhone: string,
   companyData?: {
-    phone_owner?: string;
-    phone_client?: string;
     phones?: { label: string; number: string }[];
   },
 ): { label: string; number: string }[] {
-  // Priority 1: new phones[] array from CMS Repeater
-  if (companyData?.phones && companyData.phones.length > 0) {
-    return companyData.phones;
-  }
-  // Priority 2: legacy phone_owner/phone_client fields
-  const phones: { label: string; number: string }[] = [];
-  if (companyData?.phone_owner) phones.push({ label: 'Piotrek', number: companyData.phone_owner });
-  if (companyData?.phone_client) phones.push({ label: 'Demo Client', number: companyData.phone_client });
-  if (phones.length > 0) return phones;
-  // Priority 3: fallback to main contact_phone
-  if (mainPhone) return [{ label: '', number: mainPhone }];
-  return [];
+  // Only return phones from CMS Repeater - no fallback to contact_phone
+  // contact_phone is for Location section (near map), not for FloatingActions
+  return companyData?.phones ?? [];
 }
 
 // Helper: build WhatsApp contacts list from company_data.whatsapp[]
@@ -844,7 +832,7 @@ export async function getContactData(): Promise<ContactData> {
       },
       mapCoordinates: siteData.mapCoordinates,
       companyData: siteData.companyData,
-      phones: buildPhonesList(siteData.phone || contactMock.phone, siteData.companyData),
+      phones: buildPhonesList(siteData.companyData),
       whatsapp: buildWhatsAppList(siteData.companyData),
     };
   } catch (error) {
@@ -960,7 +948,7 @@ export async function getAllContent() {
     },
     mapCoordinates: siteData.mapCoordinates,
     companyData: siteData.companyData,
-    phones: buildPhonesList(siteData.phone || contactMock.phone, siteData.companyData),
+    phones: buildPhonesList(siteData.companyData),
     whatsapp: buildWhatsAppList(siteData.companyData),
   };
 
