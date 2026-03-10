@@ -6,7 +6,8 @@ import Image from 'next/image';
 import { FiArrowLeft, FiX } from 'react-icons/fi';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { getAssetPath, MONDAY_RESERVATION_FORM_URL } from '@/lib/paths';
+import MotorcycleReservationForm from '@/components/sections/MotorcycleReservationForm';
+import { getAssetPath } from '@/lib/paths';
 import type { Motorcycle, MotorcycleImage, SiteData, NavigationData, FooterData, ContactData } from '@/lib/api';
 
 const TENANT_ID = process.env.NEXT_PUBLIC_TENANT_ID || '';
@@ -257,9 +258,7 @@ export default function MotorcycleFallbackPage() {
                 </div>
                 <div className="flex flex-col sm:flex-row gap-4">
                   <a
-                    href={motorcycle.available ? MONDAY_RESERVATION_FORM_URL : undefined}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    href={motorcycle.available ? '#rezerwacja' : undefined}
                     className={`px-8 py-4 rounded-lg font-semibold text-lg transition-colors text-center ${
                       motorcycle.available
                         ? 'bg-accent-red text-white hover:bg-red-700 cursor-pointer'
@@ -303,23 +302,10 @@ export default function MotorcycleFallbackPage() {
             </div>
           )}
 
-          {/* Reservation CTA */}
-          <div className="bg-white rounded-xl shadow-lg p-6 lg:p-12 mb-8">
-            <div className="max-w-2xl mx-auto text-center">
-              <h2 className="font-heading text-3xl font-bold mb-2">
-                Zarezerwuj {motorcycle.brand.name} {motorcycle.name}
-              </h2>
-              <p className="text-gray-medium mb-8">Kliknij poniżej, aby wypełnić formularz rezerwacji</p>
-              <a
-                href={MONDAY_RESERVATION_FORM_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block bg-accent-red text-white px-10 py-4 rounded-lg font-semibold text-lg hover:bg-red-700 transition-colors"
-              >
-                Rezerwuj teraz
-              </a>
-            </div>
-          </div>
+          {/* Reservation form */}
+          {motorcycle.available && (
+            <MotorcycleReservationForm motorcycle={motorcycle} />
+          )}
         </div>
       </main>
 
