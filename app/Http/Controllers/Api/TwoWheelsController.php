@@ -626,8 +626,9 @@ class TwoWheelsController extends Controller
         $notificationEmail = $setting?->reservation_notification_email;
         if ($notificationEmail) {
             try {
-                $motorcycle = $validated['motorcycle_id']
-                    ? Motorcycle::withoutGlobalScope(TenantScope::class)->find($validated['motorcycle_id'])
+                $motorcycleId = $validated['motorcycle_id'] ?? null;
+                $motorcycle = $motorcycleId
+                    ? Motorcycle::withoutGlobalScope(TenantScope::class)->find($motorcycleId)
                     : null;
 
                 Mail::to($notificationEmail)->send(new ReservationNotification(
