@@ -9,13 +9,13 @@
 
 import mockContent from '@/data/mock-api-v2.json';
 
-const LARAVEL_CMS_API = 'https://tst.example-rental.test/api/motorent';
-const LARAVEL_CMS_DOMAIN = 'https://tst.example-rental.test';
+const LARAVEL_CMS_API = 'https://cms.example-rental.test/api/motorent';
+const LARAVEL_CMS_DOMAIN = 'https://cms.example-rental.test';
 
 // API Configuration (produkcja = Laravel CMS, lokalnie = localhost)
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || LARAVEL_CMS_API;
 const API_DOMAIN = process.env.NEXT_PUBLIC_API_DOMAIN || LARAVEL_CMS_DOMAIN;
-const TENANT_ID = process.env.NEXT_PUBLIC_TENANT_ID || process.env.TENANT_ID || '019c6cfd-55bb-7082-a6c2-e5c07e61ee07';
+const TENANT_ID = process.env.NEXT_PUBLIC_TENANT_ID || process.env.TENANT_ID || 'a0e1ef09-91b0-476a-aec1-45ae89c36bd4';
 
 // Helper do budowania URL z tenant_id
 function buildApiUrl(endpoint: string, params?: Record<string, string>): string {
