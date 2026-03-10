@@ -36,6 +36,29 @@ class EditSiteSetting extends EditRecord
         }
         unset($data['new_logo']);
 
+        // Merge phones and whatsapp into company_data
+        $companyData = $this->record->company_data ?? [];
+
+        // Clean phones array - extract only label/number pairs
+        if (isset($data['phones'])) {
+            $companyData['phones'] = array_values(array_map(
+                fn($p) => ['label' => $p['label'] ?? '', 'number' => $p['number'] ?? ''],
+                array_filter($data['phones'] ?? [], fn($p) => is_array($p) && !empty($p['label']))
+            ));
+            unset($data['phones']);
+        }
+
+        // Clean whatsapp array - extract only label/number pairs
+        if (isset($data['whatsapp'])) {
+            $companyData['whatsapp'] = array_values(array_map(
+                fn($w) => ['label' => $w['label'] ?? '', 'number' => $w['number'] ?? ''],
+                array_filter($data['whatsapp'] ?? [], fn($w) => is_array($w) && !empty($w['label']))
+            ));
+            unset($data['whatsapp']);
+        }
+
+        $data['company_data'] = $companyData;
+
         return $data;
     }
 

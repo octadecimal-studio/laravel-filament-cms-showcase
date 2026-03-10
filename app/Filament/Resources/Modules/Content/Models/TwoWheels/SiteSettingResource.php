@@ -165,7 +165,7 @@ final class SiteSettingResource extends Resource
                 Forms\Components\Section::make('Telefony kontaktowe')
                     ->description('Numery telefonów wyświetlane na stronie (przyciski "Zadzwoń"). Dodaj dowolną liczbę wpisów.')
                     ->schema([
-                        Forms\Components\Repeater::make('company_data.phones')
+                        Forms\Components\Repeater::make('phones')
                             ->label('Telefony')
                             ->schema([
                                 Forms\Components\TextInput::make('label')
@@ -185,13 +185,21 @@ final class SiteSettingResource extends Resource
                             ->reorderable()
                             ->collapsible()
                             ->itemLabel(fn (array $state): ?string => ($state['label'] ?? '') . ' — ' . ($state['number'] ?? ''))
+                            ->afterStateHydrated(function ($component, ?SiteSetting $record) {
+                                if ($record) {
+                                    $companyData = $record->company_data ?? [];
+                                    $phones = $companyData['phones'] ?? [];
+                                    // Ensure it's a clean indexed array
+                                    $component->state(array_values(array_filter($phones, fn($p) => is_array($p) && isset($p['label']))));
+                                }
+                            })
                             ->columnSpanFull(),
                     ]),
 
                 Forms\Components\Section::make('WhatsApp')
                     ->description('Kontakty WhatsApp wyświetlane jako przyciski na stronie. Numer bez spacji (np. +48662145475).')
                     ->schema([
-                        Forms\Components\Repeater::make('company_data.whatsapp')
+                        Forms\Components\Repeater::make('whatsapp')
                             ->label('Kontakty WhatsApp')
                             ->schema([
                                 Forms\Components\TextInput::make('label')
@@ -211,6 +219,14 @@ final class SiteSettingResource extends Resource
                             ->reorderable()
                             ->collapsible()
                             ->itemLabel(fn (array $state): ?string => ($state['label'] ?? '') . ' — ' . ($state['number'] ?? ''))
+                            ->afterStateHydrated(function ($component, ?SiteSetting $record) {
+                                if ($record) {
+                                    $companyData = $record->company_data ?? [];
+                                    $whatsapp = $companyData['whatsapp'] ?? [];
+                                    // Ensure it's a clean indexed array
+                                    $component->state(array_values(array_filter($whatsapp, fn($w) => is_array($w) && isset($w['label']))));
+                                }
+                            })
                             ->columnSpanFull(),
                     ]),
 
