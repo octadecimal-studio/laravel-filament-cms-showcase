@@ -219,7 +219,6 @@ export default function ContactForm({ contact, reservationSettings, bikes }: Con
                 </>
               )}
             </div>
-          </div>
         </div>
       </div>
     </section>
