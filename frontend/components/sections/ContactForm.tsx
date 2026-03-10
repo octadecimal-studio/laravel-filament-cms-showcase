@@ -150,38 +150,8 @@ export default function ContactForm({ contact, reservationSettings, bikes }: Con
             </form>
           </div>
 
-          {/* Contact Info + Reservation CTA */}
+          {/* Reservation CTA */}
           <div className="flex flex-col gap-6">
-            <div className="bg-white rounded-xl shadow-lg p-8">
-              <h3 className="font-heading text-2xl font-bold mb-6">Dane kontaktowe</h3>
-              <div className="space-y-4">
-                <div>
-                  <p className="text-sm text-gray-medium mb-1">Adres</p>
-                  <p className="font-semibold">{contact.address.street}</p>
-                  <p className="font-semibold">{contact.address.zip} {contact.address.city}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-medium mb-1">Telefon</p>
-                  <a href={`tel:${contact.phone}`} className="font-semibold text-accent-red hover:underline">
-                    {contact.phone}
-                  </a>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-medium mb-1">Email</p>
-                  <a href={`mailto:${contact.email}`} className="font-semibold text-accent-red hover:underline">
-                    {contact.email}
-                  </a>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-medium mb-1">Godziny otwarcia</p>
-                  <p>{contact.hours.weekdays}</p>
-                  <p>{contact.hours.saturday}</p>
-                  <p>{contact.hours.sunday}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Reservation CTA */}
             <div id="rezerwacja" className="bg-primary-black rounded-xl shadow-lg p-8 text-center">
               <h3 className="font-heading text-2xl font-bold mb-4 text-white">Zarezerwuj motocykl</h3>
               {formType === 'external' && externalUrl ? (

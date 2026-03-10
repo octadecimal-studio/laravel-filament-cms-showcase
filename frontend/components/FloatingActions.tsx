@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { FiX, FiCalendar, FiPhone, FiMessageCircle } from 'react-icons/fi';
+import { FiX, FiCalendar, FiPhone, FiMessageCircle, FiMail } from 'react-icons/fi';
 import type { FooterData, ContactData, ReservationSettings } from '@/lib/api';
 import { MONDAY_RESERVATION_FORM_URL } from '@/lib/paths';
 
@@ -85,6 +85,21 @@ export default function FloatingActions({ footer, contact, reservationSettings }
               </span>
             </a>
           ))}
+
+          {/* Email */}
+          {contact.email && (
+            <a
+              href={`mailto:${contact.email}`}
+              className="flex items-center gap-3 bg-white shadow-lg rounded-full pl-4 pr-5 py-3 hover:shadow-xl transition-shadow group"
+            >
+              <span className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white shrink-0">
+                <FiMail size={20} />
+              </span>
+              <span className="font-semibold text-sm text-gray-dark group-hover:text-blue-600 transition-colors whitespace-nowrap">
+                Napisz email
+              </span>
+            </a>
+          )}
 
           {/* Facebook */}
           {social?.facebook && (
