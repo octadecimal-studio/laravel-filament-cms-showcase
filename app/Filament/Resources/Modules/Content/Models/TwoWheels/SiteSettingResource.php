@@ -162,9 +162,60 @@ final class SiteSettingResource extends Resource
                         Forms\Components\Hidden::make('logo_id'),
                     ]),
 
+                Forms\Components\Section::make('Telefony kontaktowe')
+                    ->description('Numery telefonów wyświetlane na stronie (przyciski "Zadzwoń"). Dodaj dowolną liczbę wpisów.')
+                    ->schema([
+                        Forms\Components\Repeater::make('company_data.phones')
+                            ->label('Telefony')
+                            ->schema([
+                                Forms\Components\TextInput::make('label')
+                                    ->label('Etykieta')
+                                    ->placeholder('np. Piotrek')
+                                    ->required()
+                                    ->maxLength(50),
+                                Forms\Components\TextInput::make('number')
+                                    ->label('Numer')
+                                    ->placeholder('+48 662 145 475')
+                                    ->required()
+                                    ->tel()
+                                    ->maxLength(20),
+                            ])
+                            ->columns(2)
+                            ->defaultItems(0)
+                            ->reorderable()
+                            ->collapsible()
+                            ->itemLabel(fn (array $state): ?string => ($state['label'] ?? '') . ' — ' . ($state['number'] ?? ''))
+                            ->columnSpanFull(),
+                    ]),
+
+                Forms\Components\Section::make('WhatsApp')
+                    ->description('Kontakty WhatsApp wyświetlane jako przyciski na stronie. Numer bez spacji (np. +48662145475).')
+                    ->schema([
+                        Forms\Components\Repeater::make('company_data.whatsapp')
+                            ->label('Kontakty WhatsApp')
+                            ->schema([
+                                Forms\Components\TextInput::make('label')
+                                    ->label('Etykieta')
+                                    ->placeholder('np. Piotrek')
+                                    ->required()
+                                    ->maxLength(50),
+                                Forms\Components\TextInput::make('number')
+                                    ->label('Numer')
+                                    ->placeholder('+48662145475')
+                                    ->required()
+                                    ->tel()
+                                    ->maxLength(20),
+                            ])
+                            ->columns(2)
+                            ->defaultItems(0)
+                            ->reorderable()
+                            ->collapsible()
+                            ->itemLabel(fn (array $state): ?string => ($state['label'] ?? '') . ' — ' . ($state['number'] ?? ''))
+                            ->columnSpanFull(),
+                    ]),
+
                 Forms\Components\Section::make('Social Media')
                     ->description('Linki do profili w mediach społecznościowych. Zostawiaj puste, jeśli nie chcesz wyświetlać danej platformy.')
-                    ->hidden()
                     ->schema([
                         Forms\Components\TextInput::make('social_media.facebook')
                             ->label('Facebook')

@@ -156,12 +156,12 @@ class LocationSettings extends Page implements HasForms
             'contact_phone' => $data['contact_phone'],
             'contact_email' => $data['contact_email'],
             'opening_hours' => $data['opening_hours'],
-            'company_data' => [
+            'company_data' => array_merge($setting->company_data ?? [], [
                 'company_name' => $data['company_name'] ?? null,
                 'nip' => $data['nip'] ?? null,
                 'krs' => $data['krs'] ?? null,
                 'regon' => $data['regon'] ?? null,
-            ],
+            ]),
         ]);
 
         Notification::make()
