@@ -40,7 +40,7 @@ Route::prefix('v1')->group(function () {
 // ============================================================
 // MotoRent Demo API (public, no auth)
 // ============================================================
-Route::prefix('motorent')->middleware('web')->group(function () {
+Route::prefix('motorent')->group(function () {
     Route::get('/motorcycles', [TwoWheelsController::class, 'motorcycles'])->name('api.motorent.motorcycles');
     Route::get('/motorcycles/{slug}', [TwoWheelsController::class, 'motorcycle'])->name('api.motorent.motorcycle');
     Route::get('/brands', [TwoWheelsController::class, 'brands'])->name('api.motorent.brands');
