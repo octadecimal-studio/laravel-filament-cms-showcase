@@ -15,21 +15,6 @@ export default function ContactForm({ contact, reservationSettings, bikes }: Con
   const formType = reservationSettings?.formType || 'external';
   const externalUrl = reservationSettings?.externalUrl || MONDAY_RESERVATION_FORM_URL;
 
-  // Formularz kontaktowy (mailto)
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [message, setMessage] = useState('');
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const subject = encodeURIComponent(`Zapytanie od ${name}`);
-    const body = encodeURIComponent(
-      `Imię i nazwisko: ${name}\nEmail: ${email}\nTelefon: ${phone}\n\n${message}`
-    );
-    window.location.href = `mailto:${contact.email}?subject=${subject}&body=${body}`;
-  };
-
   // Formularz rezerwacji (wewnętrzny)
   const [resName, setResName] = useState('');
   const [resEmail, setResEmail] = useState('');
@@ -92,66 +77,7 @@ export default function ContactForm({ contact, reservationSettings, bikes }: Con
           </p>
         </div>
 
-        <div className="max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Contact Form */}
-          <div className="bg-white rounded-xl shadow-lg p-8">
-            <h3 className="font-heading text-2xl font-bold mb-6">Napisz do nas</h3>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <input
-                  type="text"
-                  required
-                  placeholder={contact.form.namePlaceholder}
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className={inputClass}
-                />
-              </div>
-              <div>
-                <input
-                  type="email"
-                  required
-                  placeholder={contact.form.emailPlaceholder}
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className={inputClass}
-                />
-              </div>
-              {contact.form.phonePlaceholder && (
-                <div>
-                  <input
-                    type="tel"
-                    placeholder={contact.form.phonePlaceholder}
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    className={inputClass}
-                  />
-                </div>
-              )}
-              <div>
-                <textarea
-                  required
-                  placeholder={contact.form.messagePlaceholder}
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  rows={5}
-                  className={`${inputClass} resize-none`}
-                />
-              </div>
-              {contact.form.consentText && (
-                <p className="text-xs text-gray-medium">{contact.form.consentText}</p>
-              )}
-              <button
-                type="submit"
-                className="w-full bg-accent-red text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-red-700 transition-colors"
-              >
-                {contact.form.submitButton}
-              </button>
-            </form>
-          </div>
-
-          {/* Reservation CTA */}
-          <div className="flex flex-col gap-6">
+        <div className="max-w-xl mx-auto">
             <div id="rezerwacja" className="bg-primary-black rounded-xl shadow-lg p-8 text-center">
               <h3 className="font-heading text-2xl font-bold mb-4 text-white">Zarezerwuj motocykl</h3>
               {formType === 'external' && externalUrl ? (
