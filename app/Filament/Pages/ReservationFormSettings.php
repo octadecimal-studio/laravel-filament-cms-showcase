@@ -95,9 +95,9 @@ class ReservationFormSettings extends Page implements HasForms
         }
 
         $setting->update([
-            'reservation_form_type' => $data['reservation_form_type'],
-            'reservation_form_external_url' => $data['reservation_form_external_url'],
-            'reservation_notification_email' => $data['reservation_notification_email'],
+            'reservation_form_type' => $data['reservation_form_type'] ?? 'external',
+            'reservation_form_external_url' => $data['reservation_form_external_url'] ?? null,
+            'reservation_notification_email' => $data['reservation_notification_email'] ?? null,
         ]);
 
         Notification::make()
