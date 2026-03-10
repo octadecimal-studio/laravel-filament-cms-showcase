@@ -5,12 +5,17 @@ declare(strict_types=1);
 namespace App\Plugins\Reservations\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Mail\ReservationNotification;
 use App\Models\Site;
+use App\Modules\Content\Models\TwoWheels\Motorcycle;
+use App\Modules\Content\Models\TwoWheels\SiteSetting;
+use App\Modules\Core\Scopes\TenantScope;
 use App\Plugins\Reservations\Http\Requests\StoreReservationRequest;
 use App\Plugins\Reservations\Models\Reservation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 /**
  * Controller API dla rezerwacji.
@@ -116,8 +121,27 @@ class ReservationController extends Controller
             'pickup_date' => $reservation->pickup_date?->toDateString(),
         ]);
 
-        // TODO: Wysłać email z potwierdzeniem
-        // TODO: Wysłać powiadomienie do admina
+        // Wysyłka powiadomienia email do admina
+        $setting = SiteSetting::withoutGlobalScope(TenantScope::class)
+            ->where('tenant_id', $tenant->id)
+            ->first();
+
+        $notificationEmail = $setting?->reservation_notification_email;
+        if ($notificationEmail) {
+            try {
+                $motorcycleId = $validated['motorcycle_id'] ?? null;
+                $motorcycle = $motorcycleId
+                    ? Motorcycle::withoutGlobalScope(TenantScope::class)->find($motorcycleId)
+                    : null;
+
+                Mail::to($notificationEmail)->send(new ReservationNotification(
+                    reservation: $reservation,
+                    motorcycleName: $motorcycle?->name,
+                ));
+            } catch (\Exception $e) {
+                Log::error('Failed to send reservation notification: ' . $e->getMessage());
+            }
+        }
 
         return response()->json([
             'success' => true,
