@@ -36,6 +36,21 @@ export default function MotorcycleReservationForm({ motorcycle }: MotorcycleRese
         rodo_consent: rodoConsent,
       });
       setResStatus('success');
+
+      // DataLayer event dla GTM — śledzenie konwersji
+      if (typeof window !== 'undefined') {
+        const w = window as Window & { dataLayer?: Record<string, unknown>[] };
+        w.dataLayer = w.dataLayer || [];
+        w.dataLayer.push({
+          event: 'form_submission',
+          form_name: 'reservation',
+          motorcycle_name: motorcycle.name,
+          motorcycle_brand: motorcycle.brand?.name,
+          pickup_date: pickupDate,
+          return_date: returnDate,
+        });
+      }
+
       setResName('');
       setResEmail('');
       setResPhone('');
