@@ -50,6 +50,11 @@ class EditMotorcycle extends EditRecord
         }
         unset($data['new_main_image']);
 
+        // Zabezpieczenie: ustaw published_at gdy published=true a brak daty
+        if (!empty($data['published']) && empty($data['published_at'])) {
+            $data['published_at'] = now();
+        }
+
         return $data;
     }
 

@@ -246,7 +246,13 @@ final class MotorcycleResource extends Resource
 
                         Forms\Components\Toggle::make('published')
                             ->label('Opublikowany')
-                            ->default(false),
+                            ->default(false)
+                            ->live()
+                            ->afterStateUpdated(function (Forms\Set $set, Forms\Get $get, bool $state): void {
+                                if ($state && !$get('published_at')) {
+                                    $set('published_at', now()->format('Y-m-d H:i:s'));
+                                }
+                            }),
 
                         Forms\Components\DateTimePicker::make('published_at')
                             ->label('Data publikacji')

@@ -35,7 +35,12 @@ class CreateMotorcycle extends CreateRecord
         }
         unset($data['new_main_image']);
         unset($data['new_gallery_images']); // Będzie obsłużone w afterCreate
-        
+
+        // Zabezpieczenie: ustaw published_at gdy published=true a brak daty
+        if (!empty($data['published']) && empty($data['published_at'])) {
+            $data['published_at'] = now();
+        }
+
         return $data;
     }
 
