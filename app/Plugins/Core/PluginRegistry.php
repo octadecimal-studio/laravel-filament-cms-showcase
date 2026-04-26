@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Plugins\Core;
 
+use InvalidArgumentException;
+use RuntimeException;
+use Exception;
 use App\Models\Site;
 use App\Plugins\Core\Contracts\PluginInterface;
 use App\Plugins\Core\Models\PluginInstallation;
@@ -130,22 +133,22 @@ class PluginRegistry
      * @param Site $site
      * @param array $config
      * @return PluginInstallation
-     * @throws \Exception
+     * @throws Exception
      */
     public function install(string $slug, Site $site, array $config = []): PluginInstallation
     {
         $plugin = $this->get($slug);
 
         if (!$plugin) {
-            throw new \InvalidArgumentException("Plugin '{$slug}' nie istnieje.");
+            throw new InvalidArgumentException("Plugin '{$slug}' nie istnieje.");
         }
 
         if (!$plugin::isEnabled()) {
-            throw new \RuntimeException("Plugin '{$slug}' jest wyłączony.");
+            throw new RuntimeException("Plugin '{$slug}' jest wyłączony.");
         }
 
         if ($plugin->isInstalled($site)) {
-            throw new \RuntimeException("Plugin '{$slug}' jest już zainstalowany na tej stronie.");
+            throw new RuntimeException("Plugin '{$slug}' jest już zainstalowany na tej stronie.");
         }
 
         // Uruchom instalację w pluginie
@@ -169,7 +172,7 @@ class PluginRegistry
         $plugin = $this->get($slug);
 
         if (!$plugin) {
-            throw new \InvalidArgumentException("Plugin '{$slug}' nie istnieje.");
+            throw new InvalidArgumentException("Plugin '{$slug}' nie istnieje.");
         }
 
         $plugin->uninstall($site);

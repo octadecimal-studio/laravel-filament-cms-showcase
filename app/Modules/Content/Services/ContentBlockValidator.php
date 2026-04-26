@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Content\Services;
 
+use Illuminate\Validation\ValidationException;
 use App\Modules\Content\Models\ContentBlock;
 use Illuminate\Support\Facades\Validator;
 
@@ -18,7 +19,7 @@ final class ContentBlockValidator
      * @param  array<string, mixed>  $data  Dane do walidacji
      * @param  ContentBlock  $contentBlock  ContentBlock z schema
      * @return array<string, mixed> Walidowane dane
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws ValidationException
      */
     public function validate(array $data, ContentBlock $contentBlock): array
     {

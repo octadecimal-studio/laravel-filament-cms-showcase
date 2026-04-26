@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Modules\Core\Models;
 
+use Database\Factories\TenantFactory;
+use Illuminate\Support\Carbon;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -23,20 +27,20 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string|null $database_name Nazwa dedykowanej bazy (dla enterprise)
  * @property array<string, mixed> $settings Ustawienia tenanta w formacie JSON
  * @property bool $is_active Czy tenant jest aktywny
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, User> $users
- * @property-read \Illuminate\Database\Eloquent\Collection<int, TenantFeatureAccess> $featureAccess
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
+ * @property-read Collection<int, User> $users
+ * @property-read Collection<int, TenantFeatureAccess> $featureAccess
  *
- * @method static \Illuminate\Database\Eloquent\Builder<static> where($column, $operator = null, $value = null, $boolean = 'and')
- * @method static \Illuminate\Database\Eloquent\Builder<static> query()
+ * @method static Builder<static> where($column, $operator = null, $value = null, $boolean = 'and')
+ * @method static Builder<static> query()
  *
- * @use HasFactory<\Database\Factories\TenantFactory>
+ * @use HasFactory<TenantFactory>
  */
 final class Tenant extends Model
 {
-    /** @use HasFactory<\Database\Factories\TenantFactory> */
+    /** @use HasFactory<TenantFactory> */
     use HasFactory;
 
     use HasUuids;
@@ -45,9 +49,9 @@ final class Tenant extends Model
     /**
      * Nazwa factory dla modelu.
      */
-    protected static function newFactory(): \Database\Factories\TenantFactory
+    protected static function newFactory(): TenantFactory
     {
-        return \Database\Factories\TenantFactory::new();
+        return TenantFactory::new();
     }
 
     /**

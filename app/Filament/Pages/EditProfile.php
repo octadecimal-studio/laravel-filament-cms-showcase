@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Filament\Pages;
 
+use Filament\Schemas\Schema;
+use Filament\Actions\Action;
 use App\Models\User;
 use App\Models\UserCustomNavigationItem;
 use Filament\Forms;
@@ -24,9 +26,9 @@ class EditProfile extends Page implements HasForms
 {
     use InteractsWithForms;
 
-    protected static ?string $navigationIcon = 'heroicon-o-user-circle';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-user-circle';
 
-    protected static string $view = 'filament.pages.edit-profile';
+    protected string $view = 'filament.pages.edit-profile';
 
     protected static ?string $navigationLabel = 'Mój profil';
 
@@ -36,7 +38,7 @@ class EditProfile extends Page implements HasForms
 
     protected static bool $shouldRegisterNavigation = true;
 
-    protected static ?string $navigationGroup = null;
+    protected static string | \UnitEnum | null $navigationGroup = null;
 
     /**
      * Sprawdza czy strona powinna być widoczna w nawigacji.
@@ -77,11 +79,11 @@ class EditProfile extends Page implements HasForms
         ]);
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Section::make('Dane personalne')
+        return $schema
+            ->components([
+                \Filament\Schemas\Components\Section::make('Dane personalne')
                     ->schema([
                         TextInput::make('name')
                             ->label('Imię i nazwisko')
@@ -109,7 +111,7 @@ class EditProfile extends Page implements HasForms
                     ])
                     ->columns(2),
 
-                Section::make('Personalizacja panelu')
+                \Filament\Schemas\Components\Section::make('Personalizacja panelu')
                     ->schema([
                         FileUpload::make('wallpaper_url')
                             ->label('Tapeta')
@@ -127,7 +129,7 @@ class EditProfile extends Page implements HasForms
                     ])
                     ->columns(2),
 
-                Section::make('Niestandardowe linki w menu')
+                \Filament\Schemas\Components\Section::make('Niestandardowe linki w menu')
                     ->description('Dodaj własne linki do menu po lewej stronie')
                     ->schema([
                         Repeater::make('custom_navigation_items')
@@ -232,7 +234,7 @@ class EditProfile extends Page implements HasForms
     protected function getFormActions(): array
     {
         return [
-            \Filament\Forms\Components\Actions\Action::make('save')
+            Action::make('save')
                 ->label('Zapisz zmiany')
                 ->submit('save')
                 ->color('primary'),

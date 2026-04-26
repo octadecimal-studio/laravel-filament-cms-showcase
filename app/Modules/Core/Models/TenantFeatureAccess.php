@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Core\Models;
 
+use Illuminate\Support\Carbon;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -23,8 +24,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property bool $can_create Czy może tworzyć
  * @property bool $can_edit Czy może edytować
  * @property bool $can_delete Czy może usuwać
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  * @property-read Tenant $tenant
  */
 final class TenantFeatureAccess extends Model

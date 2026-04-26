@@ -4,6 +4,24 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Forms\Components\Select;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use App\Filament\Resources\UserResource\Pages\ListUsers;
+use App\Filament\Resources\UserResource\Pages\CreateUser;
+use App\Filament\Resources\UserResource\Pages\EditUser;
 use App\Filament\Resources\UserResource\Pages;
 use App\Models\User;
 use App\Modules\Core\Models\Tenant;
@@ -24,7 +42,7 @@ class UserResource extends Resource
 {
     protected static ?string $model = User::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-users';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-users';
 
     protected static ?string $navigationLabel = 'Użytkownicy';
 
@@ -34,25 +52,25 @@ class UserResource extends Resource
 
     protected static ?int $navigationSort = 90;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make('Dane podstawowe')
+        return $schema
+            ->components([
+                Section::make('Dane podstawowe')
                     ->schema([
-                        Forms\Components\TextInput::make('name')
+                        TextInput::make('name')
                             ->label('Imię i nazwisko')
                             ->required()
                             ->maxLength(255),
 
-                        Forms\Components\TextInput::make('email')
+                        TextInput::make('email')
                             ->label('Email')
                             ->email()
                             ->required()
                             ->unique(ignoreRecord: true)
                             ->maxLength(255),
 
-                        Forms\Components\TextInput::make('password')
+                        TextInput::make('password')
                             ->label('Hasło')
                             ->password()
                             ->required(fn (string $operation): bool => $operation === 'create')
@@ -61,19 +79,19 @@ class UserResource extends Resource
                             ->minLength(8)
                             ->helperText('Minimum 8 znaków. Pozostaw puste przy edycji, aby nie zmieniać hasła.'),
 
-                        Forms\Components\Toggle::make('email_verified_at')
+                        Toggle::make('email_verified_at')
                             ->label('Email zweryfikowany')
                             ->default(true)
                             ->dehydrated(false)
-                            ->afterStateUpdated(function ($state, Forms\Set $set) {
+                            ->afterStateUpdated(function ($state, Set $set) {
                                 $set('email_verified_at', $state ? now() : null);
                             }),
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make('Uprawnienia')
+                Section::make('Uprawnienia')
                     ->schema([
-                        Forms\Components\Select::make('role')
+                        Select::make('role')
                             ->label('Rola')
                             ->options(function () {
                                 return Role::where('guard_name', 'web')
@@ -84,31 +102,31 @@ class UserResource extends Resource
                             ->default('tenant_admin')
                             ->helperText('Wybierz rolę użytkownika. Super Admin ma dostęp do wszystkich tenantów.'),
 
-                        Forms\Components\Toggle::make('is_super_admin')
+                        Toggle::make('is_super_admin')
                             ->label('Super Administrator')
                             ->default(false)
                             ->helperText('Super admin ma dostęp do wszystkich tenantów i pełne uprawnienia.')
                             ->visible(fn ($get) => $get('role') === 'super_admin')
-                            ->afterStateUpdated(function ($state, Forms\Set $set) {
+                            ->afterStateUpdated(function ($state, Set $set) {
                                 if ($state) {
                                     // Przypisz do system tenant (Tenant 0)
-                                    $systemTenant = \App\Modules\Core\Models\Tenant::getSystemTenant();
+                                    $systemTenant = Tenant::getSystemTenant();
                                     if ($systemTenant) {
                                         $set('tenant_id', $systemTenant->id);
                                     }
                                 }
                             }),
 
-                        Forms\Components\Select::make('tenant_id')
+                        Select::make('tenant_id')
                             ->label('Tenant')
                             ->relationship('tenant', 'name', fn ($query) => $query->where('slug', '!=', 'system'))
                             ->searchable()
                             ->preload()
-                            ->required(fn (Forms\Get $get) => $get('role') !== 'super_admin')
-                            ->visible(fn (Forms\Get $get) => $get('role') !== 'super_admin')
+                            ->required(fn (Get $get) => $get('role') !== 'super_admin')
+                            ->visible(fn (Get $get) => $get('role') !== 'super_admin')
                             ->helperText('Wybierz tenant dla użytkownika. Super Admin jest automatycznie przypisany do Tenant System.'),
 
-                        Forms\Components\Toggle::make('send_invitation')
+                        Toggle::make('send_invitation')
                             ->label('Wyślij email z zaproszeniem')
                             ->default(true)
                             ->helperText('Wyślij email z linkiem do ustawienia hasła (jeśli włączone).')
@@ -122,19 +140,19 @@ class UserResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                     ->label('Imię i nazwisko')
                     ->searchable()
                     ->sortable()
                     ->weight('bold'),
 
-                Tables\Columns\TextColumn::make('email')
+                TextColumn::make('email')
                     ->label('Email')
                     ->searchable()
                     ->sortable()
                     ->copyable(),
 
-                Tables\Columns\TextColumn::make('roles.name')
+                TextColumn::make('roles.name')
                     ->label('Rola')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
@@ -146,59 +164,59 @@ class UserResource extends Resource
                     })
                     ->searchable(),
 
-                Tables\Columns\IconColumn::make('is_super_admin')
+                IconColumn::make('is_super_admin')
                     ->label('Super Admin')
                     ->boolean()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('tenant.name')
+                TextColumn::make('tenant.name')
                     ->label('Tenant')
                     ->searchable()
                     ->sortable()
                     ->default('—'),
 
-                Tables\Columns\IconColumn::make('email_verified_at')
+                IconColumn::make('email_verified_at')
                     ->label('Email zweryfikowany')
                     ->boolean()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->label('Utworzono')
                     ->dateTime('d.m.Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('role')
+                SelectFilter::make('role')
                     ->label('Rola')
                     ->relationship('roles', 'name')
                     ->multiple(),
 
-                Tables\Filters\TernaryFilter::make('is_super_admin')
+                TernaryFilter::make('is_super_admin')
                     ->label('Super Admin')
                     ->placeholder('Wszyscy')
                     ->trueLabel('Tylko Super Admini')
                     ->falseLabel('Bez Super Adminów'),
 
-                Tables\Filters\SelectFilter::make('tenant_id')
+                SelectFilter::make('tenant_id')
                     ->label('Tenant')
                     ->relationship('tenant', 'name')
                     ->searchable()
                     ->preload(),
 
-                Tables\Filters\TernaryFilter::make('email_verified_at')
+                TernaryFilter::make('email_verified_at')
                     ->label('Email zweryfikowany')
                     ->placeholder('Wszyscy')
                     ->trueLabel('Zweryfikowani')
                     ->falseLabel('Niezwerfikowani'),
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+            ->recordActions([
+                EditAction::make(),
+                DeleteAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ])
             ->defaultSort('created_at', 'desc');
@@ -214,9 +232,9 @@ class UserResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListUsers::route('/'),
-            'create' => Pages\CreateUser::route('/create'),
-            'edit' => Pages\EditUser::route('/{record}/edit'),
+            'index' => ListUsers::route('/'),
+            'create' => CreateUser::route('/create'),
+            'edit' => EditUser::route('/{record}/edit'),
         ];
     }
 

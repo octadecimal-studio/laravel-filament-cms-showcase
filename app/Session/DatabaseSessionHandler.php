@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Session;
 
+use Exception;
 use Illuminate\Session\DatabaseSessionHandler as LaravelDatabaseSessionHandler;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -46,7 +47,7 @@ class DatabaseSessionHandler extends LaravelDatabaseSessionHandler
                 $this->connection->table($this->table)
                     ->where('id', $sessionId)
                     ->update(['user_id' => $userId]);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 // Loguj błąd, ale nie przerywaj zapisu sesji
                 Log::warning('DatabaseSessionHandler: Failed to update user_id in session', [
                     'error' => $e->getMessage(),

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Modules\Content\Models\TwoWheels\MotorcycleResource\Pages;
 
+use Filament\Actions\DeleteAction;
 use App\Filament\Resources\Modules\Content\Models\TwoWheels\MotorcycleResource;
 use App\Modules\Content\Models\Media;
 use Filament\Actions;
@@ -26,7 +27,7 @@ class EditMotorcycle extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            DeleteAction::make(),
         ];
     }
 

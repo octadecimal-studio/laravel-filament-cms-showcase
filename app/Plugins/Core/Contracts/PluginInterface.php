@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Core\Contracts;
 
+use Exception;
 use App\Models\Site;
 
 /**
@@ -77,7 +78,7 @@ interface PluginInterface
      * @param Site $site Strona, na której instalujemy plugin
      * @param array $config Opcjonalna konfiguracja początkowa
      * @return void
-     * @throws \Exception Gdy instalacja nie powiedzie się
+     * @throws Exception Gdy instalacja nie powiedzie się
      */
     public function install(Site $site, array $config = []): void;
 

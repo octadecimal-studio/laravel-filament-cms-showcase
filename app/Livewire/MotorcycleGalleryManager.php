@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Livewire;
 
+use Illuminate\Support\Collection;
+use Illuminate\Contracts\View\View;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use App\Modules\Content\Models\Media;
 use App\Modules\Content\Models\TwoWheels\Motorcycle;
 use Filament\Actions\Action;
@@ -26,7 +29,7 @@ class MotorcycleGalleryManager extends Component implements HasActions, HasForms
 
     public string $motorcycleId = '';
 
-    /** @var array<int, \Livewire\Features\SupportFileUploads\TemporaryUploadedFile> */
+    /** @var array<int, TemporaryUploadedFile> */
     public array $newFiles = [];
 
     /**
@@ -44,7 +47,7 @@ class MotorcycleGalleryManager extends Component implements HasActions, HasForms
         return Motorcycle::withoutGlobalScopes()->findOrFail($this->motorcycleId);
     }
 
-    public function getImagesProperty(): \Illuminate\Support\Collection
+    public function getImagesProperty(): Collection
     {
         return $this->motorcycle->gallery()
             ->orderBy('two_wheels_motorcycle_gallery.order')
@@ -125,7 +128,7 @@ class MotorcycleGalleryManager extends Component implements HasActions, HasForms
             ->send();
     }
 
-    public function render(): \Illuminate\Contracts\View\View
+    public function render(): View
     {
         return view('livewire.motorcycle-gallery-manager', [
             'images' => $this->images,

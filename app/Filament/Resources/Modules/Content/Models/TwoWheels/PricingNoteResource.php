@@ -4,6 +4,25 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Modules\Content\Models\TwoWheels;
 
+use App\Modules\Core\Scopes\TenantScope;
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Filters\TernaryFilter;
+use Filament\Tables\Filters\TrashedFilter;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\RestoreAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\RestoreBulkAction;
+use App\Filament\Resources\Modules\Content\Models\TwoWheels\PricingNoteResource\Pages\ListPricingNotes;
+use App\Filament\Resources\Modules\Content\Models\TwoWheels\PricingNoteResource\Pages\CreatePricingNote;
+use App\Filament\Resources\Modules\Content\Models\TwoWheels\PricingNoteResource\Pages\EditPricingNote;
 use App\Filament\Resources\Modules\Content\Models\TwoWheels\PricingNoteResource\Pages;
 use App\Modules\Content\Models\TwoWheels\PricingNote;
 use Filament\Forms;
@@ -21,7 +40,7 @@ final class PricingNoteResource extends Resource
 {
     protected static ?string $model = PricingNote::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-text';
 
     protected static ?string $navigationLabel = 'Uwagi cennika';
 
@@ -36,7 +55,7 @@ final class PricingNoteResource extends Resource
         $query = parent::getEloquentQuery()
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
-                \App\Modules\Core\Scopes\TenantScope::class,
+                TenantScope::class,
             ]);
 
         $user = auth()->user();
@@ -46,25 +65,25 @@ final class PricingNoteResource extends Resource
         return $query;
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make('Uwaga cennika')
+        return $schema
+            ->components([
+                Section::make('Uwaga cennika')
                     ->schema([
-                        Forms\Components\Textarea::make('content')
+                        Textarea::make('content')
                             ->label('Treść')
                             ->required()
                             ->rows(3)
                             ->columnSpanFull(),
 
-                        Forms\Components\TextInput::make('sort_order')
+                        TextInput::make('sort_order')
                             ->label('Kolejność')
                             ->numeric()
                             ->default(0)
                             ->required(),
 
-                        Forms\Components\Toggle::make('is_active')
+                        Toggle::make('is_active')
                             ->label('Aktywna')
                             ->default(true),
                     ])
@@ -78,46 +97,46 @@ final class PricingNoteResource extends Resource
             ->reorderable('sort_order')
             ->defaultSort('sort_order')
             ->columns([
-                Tables\Columns\TextColumn::make('sort_order')
+                TextColumn::make('sort_order')
                     ->label('#')
                     ->sortable()
                     ->badge(),
 
-                Tables\Columns\TextColumn::make('content')
+                TextColumn::make('content')
                     ->label('Treść')
                     ->limit(80)
                     ->searchable()
                     ->weight('bold'),
 
-                Tables\Columns\IconColumn::make('is_active')
+                IconColumn::make('is_active')
                     ->label('Aktywna')
                     ->boolean()
                     ->toggleable(),
 
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->label('Utworzono')
                     ->dateTime('d.m.Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\TernaryFilter::make('is_active')
+                TernaryFilter::make('is_active')
                     ->label('Aktywna')
                     ->placeholder('Wszystkie')
                     ->trueLabel('Tak')
                     ->falseLabel('Nie'),
 
-                Tables\Filters\TrashedFilter::make(),
+                TrashedFilter::make(),
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
-                Tables\Actions\RestoreAction::make(),
+            ->recordActions([
+                EditAction::make(),
+                DeleteAction::make(),
+                RestoreAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
                 ]),
             ]);
     }
@@ -130,9 +149,9 @@ final class PricingNoteResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListPricingNotes::route('/'),
-            'create' => Pages\CreatePricingNote::route('/create'),
-            'edit' => Pages\EditPricingNote::route('/{record}/edit'),
+            'index' => ListPricingNotes::route('/'),
+            'create' => CreatePricingNote::route('/create'),
+            'edit' => EditPricingNote::route('/{record}/edit'),
         ];
     }
 }

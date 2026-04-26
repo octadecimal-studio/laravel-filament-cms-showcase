@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Modules\Content\Models\MediaResource\Pages;
 
+use InvalidArgumentException;
 use App\Filament\Resources\Modules\Content\Models\MediaResource;
 use App\Models\User;
 use App\Modules\Content\Services\MediaService;
@@ -26,20 +27,20 @@ class CreateMedia extends CreateRecord
         $file = $data['file'] ?? null;
 
         if (! $file instanceof UploadedFile) {
-            throw new \InvalidArgumentException('File is required');
+            throw new InvalidArgumentException('File is required');
         }
 
         // Pobierz tenant_id z aktualnego użytkownika
         $user = Auth::user();
 
         if (! $user instanceof User) {
-            throw new \InvalidArgumentException('User must be authenticated');
+            throw new InvalidArgumentException('User must be authenticated');
         }
 
         $tenantId = $user->tenant_id;
 
         if (! $tenantId) {
-            throw new \InvalidArgumentException('User must belong to a tenant');
+            throw new InvalidArgumentException('User must belong to a tenant');
         }
 
         // Upload pliku używając MediaService

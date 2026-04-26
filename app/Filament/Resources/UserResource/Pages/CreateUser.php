@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\UserResource\Pages;
 
+use App\Modules\Core\Models\Tenant;
+use Exception;
 use App\Filament\Resources\UserResource;
 use App\Models\User;
 use Filament\Notifications\Notification;
@@ -33,7 +35,7 @@ class CreateUser extends CreateRecord
 
         // Jeśli super_admin, przypisz do system tenant (Tenant 0)
         if (isset($data['is_super_admin']) && $data['is_super_admin']) {
-            $systemTenant = \App\Modules\Core\Models\Tenant::getSystemTenant();
+            $systemTenant = Tenant::getSystemTenant();
             if ($systemTenant) {
                 $data['tenant_id'] = $systemTenant->id;
             }
@@ -76,7 +78,7 @@ class CreateUser extends CreateRecord
                         ->warning()
                         ->send();
                 }
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 Notification::make()
                     ->title('Błąd podczas wysyłania emaila: ' . $e->getMessage())
                     ->danger()

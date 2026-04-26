@@ -4,6 +4,31 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Modules\Content\Models\TwoWheels;
 
+use App\Modules\Core\Scopes\TenantScope;
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\ColorPicker;
+use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Actions\Action;
+use App\Modules\Core\Models\Tenant;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ColorColumn;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Filters\TernaryFilter;
+use Filament\Tables\Filters\TrashedFilter;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\RestoreAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\RestoreBulkAction;
+use App\Filament\Resources\Modules\Content\Models\TwoWheels\MotorcycleCategoryResource\Pages\ListMotorcycleCategories;
+use App\Filament\Resources\Modules\Content\Models\TwoWheels\MotorcycleCategoryResource\Pages\CreateMotorcycleCategory;
+use App\Filament\Resources\Modules\Content\Models\TwoWheels\MotorcycleCategoryResource\Pages\EditMotorcycleCategory;
 use App\Filament\Resources\Modules\Content\Models\TwoWheels\MotorcycleCategoryResource\Pages;
 use App\Filament\Resources\Modules\Content\Models\TwoWheels\MotorcycleCategoryResource\RelationManagers;
 use App\Modules\Content\Models\TwoWheels\MotorcycleCategory;
@@ -22,7 +47,7 @@ final class MotorcycleCategoryResource extends Resource
 {
     protected static ?string $model = MotorcycleCategory::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-tag';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-tag';
 
     protected static ?string $navigationLabel = 'Kategorie';
 
@@ -40,7 +65,7 @@ final class MotorcycleCategoryResource extends Resource
         $query = parent::getEloquentQuery()
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
-                \App\Modules\Core\Scopes\TenantScope::class,
+                TenantScope::class,
             ]);
 
         $user = auth()->user();
@@ -50,45 +75,45 @@ final class MotorcycleCategoryResource extends Resource
         return $query;
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make('Podstawowe informacje')
+        return $schema
+            ->components([
+                Section::make('Podstawowe informacje')
                     ->schema([
-                        Forms\Components\TextInput::make('name')
+                        TextInput::make('name')
                             ->label('Nazwa')
                             ->required()
                             ->maxLength(255)
                             ->columnSpanFull(),
 
-                        Forms\Components\TextInput::make('slug')
+                        TextInput::make('slug')
                             ->label('Slug')
                             ->maxLength(255)
                             ->unique(ignoreRecord: true)
                             ->helperText('URL-friendly identyfikator (generowany automatycznie)'),
 
-                        Forms\Components\Textarea::make('description')
+                        Textarea::make('description')
                             ->label('Opis')
                             ->rows(3)
                             ->columnSpanFull(),
 
-                        Forms\Components\ColorPicker::make('color')
+                        ColorPicker::make('color')
                             ->label('Kolor')
                             ->default('#3B82F6')
                             ->helperText('Kolor kategorii'),
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make('Status')
+                Section::make('Status')
                     ->schema([
-                        Forms\Components\Toggle::make('published')
+                        Toggle::make('published')
                             ->label('Opublikowany')
                             ->default(false),
 
-                        Forms\Components\DateTimePicker::make('published_at')
+                        DateTimePicker::make('published_at')
                             ->label('Data publikacji')
-                            ->visible(fn (Forms\Get $get): bool => $get('published') === true),
+                            ->visible(fn (Get $get): bool => $get('published') === true),
                     ])
                     ->columns(2),
             ]);
@@ -98,7 +123,7 @@ final class MotorcycleCategoryResource extends Resource
     {
         return $table
             ->headerActions([
-                Tables\Actions\Action::make('view_api')
+                Action::make('view_api')
                     ->label('Zobacz API')
                     ->icon('heroicon-o-code-bracket')
                     ->url(function () {
@@ -107,66 +132,66 @@ final class MotorcycleCategoryResource extends Resource
                         if ($u?->isSuperAdmin()) {
                             return $base;
                         }
-                        return $base . '?tenant_id=' . ($u?->tenant_id ?? \App\Modules\Core\Models\Tenant::where('slug', 'demo-studio')->where('is_active', true)->value('id') ?? '');
+                        return $base . '?tenant_id=' . ($u?->tenant_id ?? Tenant::where('slug', 'demo-studio')->where('is_active', true)->value('id') ?? '');
                     })
                     ->openUrlInNewTab()
                     ->color('info'),
             ])
             ->columns([
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                     ->label('Nazwa')
                     ->searchable()
                     ->sortable()
                     ->weight('bold'),
 
-                Tables\Columns\TextColumn::make('slug')
+                TextColumn::make('slug')
                     ->label('Slug')
                     ->searchable()
                     ->toggleable(),
 
-                Tables\Columns\TextColumn::make('description')
+                TextColumn::make('description')
                     ->label('Opis')
                     ->limit(50)
                     ->toggleable(),
 
-                Tables\Columns\ColorColumn::make('color')
+                ColorColumn::make('color')
                     ->label('Kolor')
                     ->toggleable(),
 
-                Tables\Columns\TextColumn::make('motorcycles_count')
+                TextColumn::make('motorcycles_count')
                     ->label('Motocykle')
                     ->counts('motorcycles')
                     ->sortable(),
 
-                Tables\Columns\IconColumn::make('published')
+                IconColumn::make('published')
                     ->label('Opublikowany')
                     ->boolean()
                     ->toggleable(),
 
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->label('Utworzono')
                     ->dateTime('d.m.Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\TernaryFilter::make('published')
+                TernaryFilter::make('published')
                     ->label('Opublikowany')
                     ->placeholder('Wszystkie')
                     ->trueLabel('Tak')
                     ->falseLabel('Nie'),
 
-                Tables\Filters\TrashedFilter::make(),
+                TrashedFilter::make(),
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
-                Tables\Actions\RestoreAction::make(),
+            ->recordActions([
+                EditAction::make(),
+                DeleteAction::make(),
+                RestoreAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
                 ]),
             ]);
     }
@@ -181,9 +206,9 @@ final class MotorcycleCategoryResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListMotorcycleCategories::route('/'),
-            'create' => Pages\CreateMotorcycleCategory::route('/create'),
-            'edit' => Pages\EditMotorcycleCategory::route('/{record}/edit'),
+            'index' => ListMotorcycleCategories::route('/'),
+            'create' => CreateMotorcycleCategory::route('/create'),
+            'edit' => EditMotorcycleCategory::route('/{record}/edit'),
         ];
     }
 }

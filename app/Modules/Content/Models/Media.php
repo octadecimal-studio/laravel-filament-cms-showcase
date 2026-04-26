@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Modules\Content\Models;
 
+use Database\Factories\MediaFactory;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Carbon;
 use App\Modules\Core\Traits\BelongsToTenant;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -36,19 +39,19 @@ use Illuminate\Support\Facades\Storage;
  * @property array<string>|null $tags Tagi
  * @property bool $is_public Czy publiczny
  * @property bool $is_active Czy aktywny
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
  *
- * @method static \Illuminate\Database\Eloquent\Builder<static> where($column, $operator = null, $value = null, $boolean = 'and')
- * @method static \Illuminate\Database\Eloquent\Builder<static> query()
+ * @method static Builder<static> where($column, $operator = null, $value = null, $boolean = 'and')
+ * @method static Builder<static> query()
  * @method static static create(array<string, mixed> $attributes = [])
  */
 final class Media extends Model
 {
     use BelongsToTenant;
 
-    /** @use HasFactory<\Database\Factories\MediaFactory> */
+    /** @use HasFactory<MediaFactory> */
     use HasFactory;
 
     use HasUuids;
@@ -57,9 +60,9 @@ final class Media extends Model
     /**
      * Nazwa factory dla modelu.
      */
-    protected static function newFactory(): \Database\Factories\MediaFactory
+    protected static function newFactory(): MediaFactory
     {
-        return \Database\Factories\MediaFactory::new();
+        return MediaFactory::new();
     }
 
     /**
@@ -115,10 +118,10 @@ final class Media extends Model
     /**
      * Scope: Tylko aktywne media.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder<Media>  $query
-     * @return \Illuminate\Database\Eloquent\Builder<Media>
+     * @param Builder<Media> $query
+     * @return Builder<Media>
      */
-    public function scopeActive(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
+    public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_active', true);
     }
@@ -126,10 +129,10 @@ final class Media extends Model
     /**
      * Scope: Tylko publiczne media.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder<Media>  $query
-     * @return \Illuminate\Database\Eloquent\Builder<Media>
+     * @param Builder<Media> $query
+     * @return Builder<Media>
      */
-    public function scopePublic(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
+    public function scopePublic(Builder $query): Builder
     {
         return $query->where('is_public', true);
     }
@@ -137,10 +140,10 @@ final class Media extends Model
     /**
      * Scope: Filtruj po kolekcji.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder<Media>  $query
-     * @return \Illuminate\Database\Eloquent\Builder<Media>
+     * @param Builder<Media> $query
+     * @return Builder<Media>
      */
-    public function scopeInCollection(\Illuminate\Database\Eloquent\Builder $query, string $collection): \Illuminate\Database\Eloquent\Builder
+    public function scopeInCollection(Builder $query, string $collection): Builder
     {
         return $query->where('collection', $collection);
     }
@@ -148,10 +151,10 @@ final class Media extends Model
     /**
      * Scope: Tylko obrazy.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder<Media>  $query
-     * @return \Illuminate\Database\Eloquent\Builder<Media>
+     * @param Builder<Media> $query
+     * @return Builder<Media>
      */
-    public function scopeImages(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
+    public function scopeImages(Builder $query): Builder
     {
         return $query->where('mime_type', 'like', 'image/%');
     }

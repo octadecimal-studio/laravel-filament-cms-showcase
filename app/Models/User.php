@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Carbon;
+use Database\Factories\UserFactory;
 use App\Modules\Core\Models\Tenant;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasAvatar;
@@ -36,22 +40,22 @@ use Spatie\Permission\Traits\HasRoles;
  * @property string $email Adres email
  * @property string|null $tenant_id UUID tenanta (system tenant dla super_admin)
  * @property bool $is_super_admin Czy jest super administratorem
- * @property \Illuminate\Support\Carbon|null $email_verified_at
+ * @property Carbon|null $email_verified_at
  * @property string $password Zahashowane hasło
  * @property string|null $remember_token
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  * @property-read Tenant|null $tenant
  *
- * @method static \Illuminate\Database\Eloquent\Builder<static> where($column, $operator = null, $value = null, $boolean = 'and')
- * @method static \Illuminate\Database\Eloquent\Builder<static> query()
+ * @method static Builder<static> where($column, $operator = null, $value = null, $boolean = 'and')
+ * @method static Builder<static> query()
  * @method static static create(array<string, mixed> $attributes = [])
  */
 class User extends Authenticatable implements FilamentUser, HasTenants, HasAvatar, MustVerifyEmail
 {
     use HasApiTokens;
 
-    /** @use HasFactory<\Database\Factories\UserFactory> */
+    /** @use HasFactory<UserFactory> */
     use HasFactory;
 
     use HasRoles;
@@ -129,9 +133,9 @@ class User extends Authenticatable implements FilamentUser, HasTenants, HasAvata
     /**
      * Relacja: Custom navigation items użytkownika.
      *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany<UserCustomNavigationItem>
+     * @return HasMany<UserCustomNavigationItem>
      */
-    public function customNavigationItems(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function customNavigationItems(): HasMany
     {
         return $this->hasMany(UserCustomNavigationItem::class)->orderBy('sort_order');
     }
@@ -261,8 +265,8 @@ class User extends Authenticatable implements FilamentUser, HasTenants, HasAvata
      * Używaj tego scope do ręcznego filtrowania użytkowników:
      * User::forTenant($tenant)->get()
      *
-     * @param  \Illuminate\Database\Eloquent\Builder<static>  $query
-     * @return \Illuminate\Database\Eloquent\Builder<static>
+     * @param Builder<static> $query
+     * @return Builder<static>
      */
     public function scopeForTenant($query, Tenant|string $tenant)
     {
@@ -274,20 +278,20 @@ class User extends Authenticatable implements FilamentUser, HasTenants, HasAvata
     /**
      * Scope: Tylko użytkownicy z przypisanym tenantem (bez super adminów).
      *
-     * @param  \Illuminate\Database\Eloquent\Builder<static>  $query
-     * @return \Illuminate\Database\Eloquent\Builder<static>
+     * @param Builder<static> $query
+     * @return Builder<static>
      */
-    public function scopeWithTenant(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
+    public function scopeWithTenant(Builder $query): Builder
     {
-        /** @var \Illuminate\Database\Eloquent\Builder<static> */
+        /** @var Builder<static> */
         return $query->whereNotNull('tenant_id');
     }
 
     /**
      * Scope: Tylko super admini.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder<static>  $query
-     * @return \Illuminate\Database\Eloquent\Builder<static>
+     * @param Builder<static> $query
+     * @return Builder<static>
      */
     public function scopeSuperAdmins($query)
     {

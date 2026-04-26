@@ -4,6 +4,31 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Modules\Content\Models;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TagsInput;
+use Filament\Forms\Components\KeyValue;
+use Filament\Forms\Components\Toggle;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
+use Filament\Tables\Filters\TrashedFilter;
+use Filament\Actions\ViewAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\RestoreAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\RestoreBulkAction;
+use Filament\Actions\ForceDeleteBulkAction;
+use App\Filament\Resources\Modules\Content\Models\ContentTemplateResource\Pages\ListContentTemplates;
+use App\Filament\Resources\Modules\Content\Models\ContentTemplateResource\Pages\CreateContentTemplate;
+use App\Filament\Resources\Modules\Content\Models\ContentTemplateResource\Pages\ViewContentTemplate;
+use App\Filament\Resources\Modules\Content\Models\ContentTemplateResource\Pages\EditContentTemplate;
 use App\Filament\Concerns\HasGlobalBulkActions;
 use App\Filament\Concerns\RemembersTableSettings;
 use App\Filament\Resources\Modules\Content\Models\ContentTemplateResource\Pages;
@@ -31,7 +56,7 @@ final class ContentTemplateResource extends Resource
         return false;
     }
 
-    protected static ?string $navigationIcon = 'heroicon-o-document-duplicate';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-duplicate';
 
     protected static ?string $navigationLabel = 'Szablony';
 
@@ -39,28 +64,28 @@ final class ContentTemplateResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Szablony';
 
-    protected static ?string $navigationGroup = 'Content';
+    protected static string | \UnitEnum | null $navigationGroup = 'Content';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make('Podstawowe informacje')
+        return $schema
+            ->components([
+                Section::make('Podstawowe informacje')
                     ->schema([
-                        Forms\Components\TextInput::make('name')
+                        TextInput::make('name')
                             ->label('Nazwa')
                             ->required()
                             ->maxLength(255)
                             ->columnSpanFull(),
 
-                        Forms\Components\TextInput::make('slug')
+                        TextInput::make('slug')
                             ->label('Slug')
                             ->required()
                             ->maxLength(255)
                             ->unique(ignoreRecord: true)
                             ->helperText('Unikalny identyfikator szablonu'),
 
-                        Forms\Components\Select::make('category')
+                        Select::make('category')
                             ->label('Kategoria')
                             ->options([
                                 'page' => 'Strona',
@@ -69,40 +94,40 @@ final class ContentTemplateResource extends Resource
                             ])
                             ->native(false),
 
-                        Forms\Components\Textarea::make('description')
+                        Textarea::make('description')
                             ->label('Opis')
                             ->rows(3)
                             ->columnSpanFull(),
 
-                        Forms\Components\TextInput::make('thumbnail_url')
+                        TextInput::make('thumbnail_url')
                             ->label('URL miniaturki')
                             ->url()
                             ->maxLength(255)
                             ->columnSpanFull(),
 
-                        Forms\Components\TagsInput::make('tags')
+                        TagsInput::make('tags')
                             ->label('Tagi')
                             ->separator(',')
                             ->columnSpanFull(),
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make('Struktura i dane')
+                Section::make('Struktura i dane')
                     ->schema([
-                        Forms\Components\KeyValue::make('structure')
+                        KeyValue::make('structure')
                             ->label('Struktura (JSON)')
                             ->keyLabel('Klucz')
                             ->valueLabel('Wartość')
                             ->columnSpanFull()
                             ->helperText('Struktura bloków i layoutu'),
 
-                        Forms\Components\KeyValue::make('default_data')
+                        KeyValue::make('default_data')
                             ->label('Domyślne dane')
                             ->keyLabel('Klucz')
                             ->valueLabel('Wartość')
                             ->columnSpanFull(),
 
-                        Forms\Components\KeyValue::make('config')
+                        KeyValue::make('config')
                             ->label('Konfiguracja')
                             ->keyLabel('Klucz')
                             ->valueLabel('Wartość')
@@ -110,17 +135,17 @@ final class ContentTemplateResource extends Resource
                     ])
                     ->collapsible(),
 
-                Forms\Components\Section::make('Status i ocena')
+                Section::make('Status i ocena')
                     ->schema([
-                        Forms\Components\Toggle::make('is_active')
+                        Toggle::make('is_active')
                             ->label('Aktywny')
                             ->default(true),
 
-                        Forms\Components\Toggle::make('is_premium')
+                        Toggle::make('is_premium')
                             ->label('Premium')
                             ->default(false),
 
-                        Forms\Components\TextInput::make('rating')
+                        TextInput::make('rating')
                             ->label('Ocena')
                             ->numeric()
                             ->step(0.01)
@@ -142,50 +167,50 @@ final class ContentTemplateResource extends Resource
         
         $table = $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                     ->label('Nazwa')
                     ->searchable()
                     ->sortable()
                     ->weight('bold'),
 
-                Tables\Columns\TextColumn::make('slug')
+                TextColumn::make('slug')
                     ->label('Slug')
                     ->searchable()
                     ->toggleable(),
 
-                Tables\Columns\TextColumn::make('category')
+                TextColumn::make('category')
                     ->label('Kategoria')
                     ->badge()
                     ->searchable()
                     ->toggleable(),
 
-                Tables\Columns\IconColumn::make('is_active')
+                IconColumn::make('is_active')
                     ->label('Aktywny')
                     ->boolean(),
 
-                Tables\Columns\IconColumn::make('is_premium')
+                IconColumn::make('is_premium')
                     ->label('Premium')
                     ->boolean(),
 
-                Tables\Columns\TextColumn::make('rating')
+                TextColumn::make('rating')
                     ->label('Ocena')
                     ->sortable()
                     ->formatStateUsing(fn (?float $state): string => $state ? number_format($state, 2) : '-')
                     ->toggleable(),
 
-                Tables\Columns\TextColumn::make('usage_count')
+                TextColumn::make('usage_count')
                     ->label('Użycia')
                     ->sortable()
                     ->toggleable(),
 
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->label('Utworzono')
                     ->dateTime('d.m.Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('category')
+                SelectFilter::make('category')
                     ->label('Kategoria')
                     ->options([
                         'page' => 'Strona',
@@ -194,31 +219,31 @@ final class ContentTemplateResource extends Resource
                     ])
                     ->native(false),
 
-                Tables\Filters\TernaryFilter::make('is_active')
+                TernaryFilter::make('is_active')
                     ->label('Aktywny')
                     ->placeholder('Wszystkie')
                     ->trueLabel('Tak')
                     ->falseLabel('Nie'),
 
-                Tables\Filters\TernaryFilter::make('is_premium')
+                TernaryFilter::make('is_premium')
                     ->label('Premium')
                     ->placeholder('Wszystkie')
                     ->trueLabel('Tak')
                     ->falseLabel('Nie'),
 
-                Tables\Filters\TrashedFilter::make(),
+                TrashedFilter::make(),
             ])
-            ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
-                Tables\Actions\RestoreAction::make(),
+            ->recordActions([
+                ViewAction::make(),
+                EditAction::make(),
+                DeleteAction::make(),
+                RestoreAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
                 ]),
             ])
             ->defaultSort('created_at', 'desc');
@@ -239,10 +264,10 @@ final class ContentTemplateResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListContentTemplates::route('/'),
-            'create' => Pages\CreateContentTemplate::route('/create'),
-            'view' => Pages\ViewContentTemplate::route('/{record}'),
-            'edit' => Pages\EditContentTemplate::route('/{record}/edit'),
+            'index' => ListContentTemplates::route('/'),
+            'create' => CreateContentTemplate::route('/create'),
+            'view' => ViewContentTemplate::route('/{record}'),
+            'edit' => EditContentTemplate::route('/{record}/edit'),
         ];
     }
 

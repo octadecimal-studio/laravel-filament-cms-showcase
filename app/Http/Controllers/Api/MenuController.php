@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
+use Illuminate\Database\Eloquent\Collection;
 use App\Http\Controllers\Controller;
 use Datlechin\FilamentMenuBuilder\Models\Menu;
 use Illuminate\Http\JsonResponse;
@@ -45,7 +46,7 @@ class MenuController extends Controller
     /**
      * Formatuj elementy menu do struktury zagnieżdżonej.
      *
-     * @param  \Illuminate\Database\Eloquent\Collection  $items
+     * @param Collection $items
      * @return array<int, array<string, mixed>>
      */
     private function formatMenuItems($items): array

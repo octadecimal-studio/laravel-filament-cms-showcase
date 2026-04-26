@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Modules\Content\Models\ContentBlockResource\Pages;
 
+use Filament\Actions\EditAction;
 use App\Filament\Resources\Modules\Content\Models\ContentBlockResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ViewRecord;
@@ -15,7 +16,7 @@ class ViewContentBlock extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\EditAction::make(),
+            EditAction::make(),
         ];
     }
 }

@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { getAssetPath } from '@/lib/paths';
+import { getAssetPath, MONDAY_RESERVATION_FORM_URL } from '@/lib/paths';
 import type { Motorcycle } from '@/lib/api';
 
 interface BikeCardProps {
@@ -85,8 +85,10 @@ export default function BikeCard({ bike }: BikeCardProps) {
             >
               Szczegóły
             </Link>
-            <Link
-              href={bike.available ? `/motocykle/${bike.slug}#rezerwacja` : '#'}
+            <a
+              href={bike.available ? MONDAY_RESERVATION_FORM_URL : undefined}
+              target="_blank"
+              rel="noopener noreferrer"
               className={`inline-block px-6 py-2 rounded-lg font-semibold transition-colors text-center ${
                 bike.available
                   ? 'bg-accent-red text-white hover:bg-red-700 cursor-pointer'
@@ -94,7 +96,7 @@ export default function BikeCard({ bike }: BikeCardProps) {
               }`}
             >
               Rezerwuj
-            </Link>
+            </a>
           </div>
         </div>
       </div>

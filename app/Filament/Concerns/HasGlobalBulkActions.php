@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Filament\Concerns;
 
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\RestoreBulkAction;
+use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Tables;
 use Filament\Tables\Table;
 
@@ -26,11 +30,11 @@ trait HasGlobalBulkActions
         }
         
         // Dodaj podstawowe bulk actions
-        return $table->bulkActions([
-            Tables\Actions\BulkActionGroup::make([
-                Tables\Actions\DeleteBulkAction::make(),
-                Tables\Actions\RestoreBulkAction::make(),
-                Tables\Actions\ForceDeleteBulkAction::make(),
+        return $table->toolbarActions([
+            BulkActionGroup::make([
+                DeleteBulkAction::make(),
+                RestoreBulkAction::make(),
+                ForceDeleteBulkAction::make(),
             ]),
         ]);
     }

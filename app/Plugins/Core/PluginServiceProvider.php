@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Core;
 
+use Throwable;
 use App\Plugins\Core\Contracts\PluginInterface;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\ServiceProvider;
@@ -128,7 +129,7 @@ class PluginServiceProvider extends ServiceProvider
             try {
                 $plugin = $this->app->make($pluginClass);
                 $registry->register($plugin);
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 // Loguj błąd ale nie przerywaj bootstrap
                 report($e);
             }

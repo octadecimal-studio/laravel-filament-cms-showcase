@@ -4,6 +4,14 @@ declare(strict_types=1);
 
 namespace App\Modules\Plugins\Services;
 
+use RuntimeException;
+use ReflectionClass;
+use Throwable;
+use RecursiveIteratorIterator;
+use RecursiveDirectoryIterator;
+use Filament\Panel\Concerns\HasPlugins;
+use Composer\InstalledVersions;
+use App\Models\Plugin;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Facades\Log;
@@ -28,7 +36,7 @@ class PluginService
             ->run($command);
 
         if (!$result->successful()) {
-            throw new \RuntimeException("Błąd instalacji: " . $result->errorOutput());
+            throw new RuntimeException("Błąd instalacji: " . $result->errorOutput());
         }
 
         // Wywołaj package:discover aby zarejestrować service providers
@@ -45,7 +53,7 @@ class PluginService
             ->run("composer remove {$package}");
 
         if (!$result->successful()) {
-            throw new \RuntimeException("Błąd odinstalowania: " . $result->errorOutput());
+            throw new RuntimeException("Błąd odinstalowania: " . $result->errorOutput());
         }
 
         Artisan::call('package:discover');
@@ -230,7 +238,7 @@ class PluginService
                 $serviceProviderClass = $namespace . '\\ServiceProvider';
                 if (class_exists($serviceProviderClass, false)) {
                     try {
-                        $reflection = new \ReflectionClass($serviceProviderClass);
+                        $reflection = new ReflectionClass($serviceProviderClass);
                         $file = $reflection->getFileName();
                         $content = file_get_contents($file);
                         
@@ -239,7 +247,7 @@ class PluginService
                             $pluginClassName = $matches[1] ?? $matches[2];
                             $possibleClasses[] = $namespace . '\\' . $pluginClassName;
                         }
-                    } catch (\Throwable $e) {
+                    } catch (Throwable $e) {
                         // Ignoruj błędy
                     }
                 }
@@ -248,8 +256,8 @@ class PluginService
                 $vendorPath = base_path("vendor/{$package}");
                 if (is_dir($vendorPath)) {
                     // Szukaj plików *Plugin.php
-                    $iterator = new \RecursiveIteratorIterator(
-                        new \RecursiveDirectoryIterator($vendorPath)
+                    $iterator = new RecursiveIteratorIterator(
+                        new RecursiveDirectoryIterator($vendorPath)
                     );
                     
                     foreach ($iterator as $file) {
@@ -288,10 +296,10 @@ class PluginService
                     if (class_exists($class, false)) {
                         // Sprawdź czy implementuje odpowiedni interfejs (bez autoloadera)
                         try {
-                            if (method_exists($class, 'make') || @is_subclass_of($class, \Filament\Panel\Concerns\HasPlugins::class)) {
+                            if (method_exists($class, 'make') || @is_subclass_of($class, HasPlugins::class)) {
                                 return $class;
                             }
-                        } catch (\Throwable $e) {
+                        } catch (Throwable $e) {
                             // Ignoruj błędy sprawdzania
                             continue;
                         }
@@ -308,7 +316,7 @@ class PluginService
      */
     public function checkCompatibility(string $package, ?string $class = null): array
     {
-        $filamentVersion = \Composer\InstalledVersions::getVersion('filament/filament') ?? '3.0.0';
+        $filamentVersion = InstalledVersions::getVersion('filament/filament') ?? '3.0.0';
         $majorVersion = (int) explode('.', $filamentVersion)[0];
         
         // Sprawdź czy plugin wymaga filament/schemas (tylko v4+)
@@ -317,8 +325,8 @@ class PluginService
             // Sprawdź bezpośrednio w plikach vendor
             $vendorPath = base_path("vendor/{$package}");
             if (is_dir($vendorPath)) {
-                $iterator = new \RecursiveIteratorIterator(
-                    new \RecursiveDirectoryIterator($vendorPath)
+                $iterator = new RecursiveIteratorIterator(
+                    new RecursiveDirectoryIterator($vendorPath)
                 );
                 
                 foreach ($iterator as $file) {
@@ -381,7 +389,7 @@ class PluginService
         }, ARRAY_FILTER_USE_KEY);
 
         foreach ($filamentPackages as $package => $version) {
-            \App\Models\Plugin::updateOrCreate(
+            Plugin::updateOrCreate(
                 ['package' => $package],
                 [
                     'is_installed' => true,

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Modules\Content\Models\TwoWheels\RentalConditionResource\Pages;
 
+use Filament\Actions\DeleteAction;
 use App\Filament\Resources\Modules\Content\Models\TwoWheels\RentalConditionResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
@@ -15,7 +16,7 @@ class EditRentalCondition extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            DeleteAction::make(),
         ];
     }
 

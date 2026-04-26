@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Modules\Content\Services;
 
+use Illuminate\Cache\RedisStore;
+use App\Modules\Content\Models\SiteContent;
+use Illuminate\Redis\Connections\Connection;
 use App\Models\Site;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
@@ -55,7 +58,7 @@ final class ContentCacheService
      * Pobiera dane z cache.
      *
      * @param string $key Klucz cache
-     * @return Collection<int, \App\Modules\Content\Models\SiteContent>|null
+     * @return Collection<int, SiteContent>|null
      */
     public function get(string $key): ?Collection
     {
@@ -72,7 +75,7 @@ final class ContentCacheService
      * Zapisuje dane w cache.
      *
      * @param string $key Klucz cache
-     * @param Collection<int, \App\Modules\Content\Models\SiteContent> $data Dane
+     * @param Collection<int, SiteContent> $data Dane
      * @param int $ttl TTL w sekundach
      * @return void
      */
@@ -162,8 +165,8 @@ final class ContentCacheService
         $cacheStore = Cache::getStore();
 
         // Dla Redis
-        if ($cacheStore instanceof \Illuminate\Cache\RedisStore) {
-            /** @var \Illuminate\Redis\Connections\Connection $redis */
+        if ($cacheStore instanceof RedisStore) {
+            /** @var Connection $redis */
             $redis = $cacheStore->connection();
             $pattern = config('cache.prefix') . self::CACHE_PREFIX . "site:{$site->id}:*:env:{$env}";
             
@@ -191,8 +194,8 @@ final class ContentCacheService
     {
         $cacheStore = Cache::getStore();
 
-        if ($cacheStore instanceof \Illuminate\Cache\RedisStore) {
-            /** @var \Illuminate\Redis\Connections\Connection $redis */
+        if ($cacheStore instanceof RedisStore) {
+            /** @var Connection $redis */
             $redis = $cacheStore->connection();
             $pattern = config('cache.prefix') . self::CACHE_PREFIX . '*';
             
@@ -227,7 +230,7 @@ final class ContentCacheService
      *
      * @param Site $site Strona
      * @param string $env Środowisko
-     * @param Collection<int, \App\Modules\Content\Models\SiteContent> $contents Treści
+     * @param Collection<int, SiteContent> $contents Treści
      * @return void
      */
     public function warmCache(Site $site, string $env, Collection $contents): void

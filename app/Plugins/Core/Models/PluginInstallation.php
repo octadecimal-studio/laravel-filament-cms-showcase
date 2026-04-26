@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Plugins\Core\Models;
 
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\Site;
 use App\Models\User;
 use App\Modules\Core\Traits\BelongsToTenant;
@@ -24,10 +26,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $version
  * @property array $config
  * @property string $status
- * @property \Carbon\Carbon $installed_at
+ * @property Carbon $installed_at
  * @property string|null $installed_by
- * @property \Carbon\Carbon $created_at
- * @property \Carbon\Carbon $updated_at
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
  */
 class PluginInstallation extends Model
 {
@@ -109,8 +111,8 @@ class PluginInstallation extends Model
     /**
      * Scope: tylko aktywne instalacje.
      *
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @param Builder $query
+     * @return Builder
      */
     public function scopeActive($query)
     {
@@ -120,9 +122,9 @@ class PluginInstallation extends Model
     /**
      * Scope: instalacje konkretnego pluginu.
      *
-     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param Builder $query
      * @param string $slug
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @return Builder
      */
     public function scopeForPlugin($query, string $slug)
     {

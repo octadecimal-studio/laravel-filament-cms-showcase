@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Filament\Pages;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
 use App\Modules\Content\Models\TwoWheels\SiteSetting;
 use App\Modules\Core\Models\Tenant;
 use App\Modules\Core\Scopes\TenantScope;
@@ -18,9 +22,9 @@ class LocationSettings extends Page implements HasForms
 {
     use InteractsWithForms;
 
-    protected static ?string $navigationIcon = 'heroicon-o-identification';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-identification';
 
-    protected static string $view = 'filament.pages.location-settings';
+    protected string $view = 'filament.pages.location-settings';
 
     protected static ?string $navigationLabel = 'Dane kontaktowe';
 
@@ -50,60 +54,60 @@ class LocationSettings extends Page implements HasForms
         ]);
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make('Nagłówek sekcji lokalizacji')
+        return $schema
+            ->components([
+                Section::make('Nagłówek sekcji lokalizacji')
                     ->schema([
-                        Forms\Components\TextInput::make('location_title')
+                        TextInput::make('location_title')
                             ->label('Tytuł sekcji')
                             ->required()
                             ->maxLength(255),
 
-                        Forms\Components\Textarea::make('location_description')
+                        Textarea::make('location_description')
                             ->label('Opis sekcji')
                             ->rows(3)
                             ->columnSpanFull(),
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make('Adres')
+                Section::make('Adres')
                     ->schema([
-                        Forms\Components\TextInput::make('company_name')
+                        TextInput::make('company_name')
                             ->label('Nazwa firmy')
                             ->maxLength(255)
                             ->columnSpanFull(),
 
-                        Forms\Components\Textarea::make('address')
+                        Textarea::make('address')
                             ->label('Adres')
                             ->rows(2)
                             ->required()
                             ->columnSpanFull(),
 
-                        Forms\Components\TextInput::make('nip')
+                        TextInput::make('nip')
                             ->label('NIP')
                             ->maxLength(20),
 
-                        Forms\Components\TextInput::make('krs')
+                        TextInput::make('krs')
                             ->label('KRS')
                             ->maxLength(20),
 
-                        Forms\Components\TextInput::make('regon')
+                        TextInput::make('regon')
                             ->label('REGON')
                             ->maxLength(20),
                     ])
                     ->columns(3),
 
-                Forms\Components\Section::make('Kontakt')
+                Section::make('Kontakt')
                     ->schema([
-                        Forms\Components\TextInput::make('contact_phone')
+                        TextInput::make('contact_phone')
                             ->label('Telefon')
                             ->tel()
                             ->maxLength(20)
                             ->required(),
 
-                        Forms\Components\TextInput::make('contact_email')
+                        TextInput::make('contact_email')
                             ->label('Email')
                             ->email()
                             ->maxLength(255)
@@ -111,18 +115,18 @@ class LocationSettings extends Page implements HasForms
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make('Godziny otwarcia')
+                Section::make('Godziny otwarcia')
                     ->schema([
-                        Forms\Components\Textarea::make('opening_hours')
+                        Textarea::make('opening_hours')
                             ->label('Godziny otwarcia')
                             ->rows(3)
                             ->required()
                             ->columnSpanFull(),
                     ]),
 
-                Forms\Components\Section::make('Mapa')
+                Section::make('Mapa')
                     ->schema([
-                        Forms\Components\TextInput::make('map_coordinates')
+                        TextInput::make('map_coordinates')
                             ->label('Współrzędne mapy')
                             ->placeholder('52.2297,21.0122')
                             ->helperText('Format: szerokość,długość (np. 52.2297,21.0122)')

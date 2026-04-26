@@ -4,6 +4,13 @@ declare(strict_types=1);
 
 namespace App\Providers\Filament;
 
+use Exception;
+use App\Modules\Plugins\Services\PluginService;
+use Throwable;
+use Datlechin\FilamentMenuBuilder\Models\Menu;
+use Filament\Navigation\MenuItem;
+use Filament\Widgets\AccountWidget;
+use Filament\Panel\Concerns\HasPlugins;
 use App\Http\Middleware\UpdateSessionUserId;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use App\Models\Plugin;
@@ -86,7 +93,7 @@ class AdminPanelProvider extends PanelProvider
             }
 
             return $items;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // Jeśli błąd (np. tabela nie istnieje), zwróć pustą tablicę
             return [];
         }
@@ -95,7 +102,7 @@ class AdminPanelProvider extends PanelProvider
     /**
      * Pobiera włączone pluginy z bazy danych.
      *
-     * @return array<int, \Filament\Panel\Concerns\HasPlugins>
+     * @return array<int, HasPlugins>
      */
     private static function getEnabledPluginsFromDatabase(): array
     {
@@ -109,7 +116,7 @@ class AdminPanelProvider extends PanelProvider
             foreach ($enabledPlugins as $plugin) {
                 try {
                     // Sprawdź kompatybilność PRZED próbą utworzenia instancji
-                    $service = app(\App\Modules\Plugins\Services\PluginService::class);
+                    $service = app(PluginService::class);
                     $compatibility = $service->checkCompatibility($plugin->package, $plugin->class_name);
                     
                     if (!$compatibility['compatible']) {
@@ -121,7 +128,7 @@ class AdminPanelProvider extends PanelProvider
                     if ($instance) {
                         $plugins[] = $instance;
                     }
-                } catch (\Throwable $e) {
+                } catch (Throwable $e) {
                     // Używamy Throwable aby złapać również Fatal Errors
                     Log::error("Błąd ładowania pluginu {$plugin->package}: " . $e->getMessage());
                     continue; // Pomijamy ten plugin i kontynuujemy z następnymi
@@ -129,7 +136,7 @@ class AdminPanelProvider extends PanelProvider
             }
 
             return $plugins;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             // Jeśli błąd (np. tabela nie istnieje, błąd bazy), zwróć pustą tablicę
             Log::warning("Błąd pobierania pluginów z bazy: " . $e->getMessage());
             return [];
@@ -149,7 +156,7 @@ class AdminPanelProvider extends PanelProvider
 
             $wallpaperUrl = Storage::disk('public')->url($user->wallpaper_url);
             return '.fi-body { background-image: url("' . e($wallpaperUrl) . '") !important; background-size: cover !important; background-position: center !important; background-attachment: fixed !important; }';
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return '';
         }
     }
@@ -197,7 +204,7 @@ class AdminPanelProvider extends PanelProvider
             </style>';
 
             return $tabsHtml;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return '';
         }
     }
@@ -235,7 +242,7 @@ class AdminPanelProvider extends PanelProvider
                     }, 100);
                 });
             </script>';
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return '';
         }
     }
@@ -246,11 +253,11 @@ class AdminPanelProvider extends PanelProvider
      */
     private static function getHeaderMenuHtml(): string
     {
-        if (!class_exists(\Datlechin\FilamentMenuBuilder\Models\Menu::class)) {
+        if (!class_exists(Menu::class)) {
             return '';
         }
         try {
-            $menu = \Datlechin\FilamentMenuBuilder\Models\Menu::location('header');
+            $menu = Menu::location('header');
             
             if (!$menu || !$menu->is_visible || $menu->menuItems->isEmpty()) {
                 return '';
@@ -287,7 +294,7 @@ class AdminPanelProvider extends PanelProvider
             </script>';
 
             return $menuHtml;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::warning('Błąd podczas renderowania menu header: ' . $e->getMessage());
             return '';
         }
@@ -330,7 +337,7 @@ class AdminPanelProvider extends PanelProvider
 
             // User menu - linki
             ->userMenuItems([
-                \Filament\Navigation\MenuItem::make()
+                MenuItem::make()
                     ->label('Mój profil')
                     ->url('/admin/edit-profile')
                     ->icon('heroicon-o-user-circle'),
@@ -384,7 +391,7 @@ class AdminPanelProvider extends PanelProvider
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-                Widgets\AccountWidget::class,
+                AccountWidget::class,
             ])
 
             // Middleware

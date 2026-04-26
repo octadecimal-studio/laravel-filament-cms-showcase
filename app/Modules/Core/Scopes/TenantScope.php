@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Core\Scopes;
 
+use App\Models\User;
 use App\Modules\Core\Models\Tenant;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -47,11 +48,11 @@ final class TenantScope implements Scope
         } else {
             // Sprawdź czy użytkownik jest super adminem (z system tenant)
             // Super admin bez wybranego tenanta widzi wszystkie dane
-            /** @var \App\Models\User|null $user */
+            /** @var User|null $user */
             $user = Auth::user();
             if ($user !== null && ($user->is_super_admin || $user->hasRole('super_admin'))) {
                 // Sprawdź czy użytkownik ma system tenant
-                if ($user->tenant_id === \App\Modules\Core\Models\Tenant::SYSTEM_TENANT_ID) {
+                if ($user->tenant_id === Tenant::SYSTEM_TENANT_ID) {
                     // Super admin widzi wszystkie dane (bez filtrowania)
                     return;
                 }
@@ -91,7 +92,7 @@ final class TenantScope implements Scope
 
         // Fallback: pobierz od zalogowanego użytkownika
         // NIE używamy sesji bezpośrednio - to mogłoby prowadzić do manipulacji
-        /** @var \App\Models\User|null $user */
+        /** @var User|null $user */
         $user = Auth::user();
         if ($user !== null && isset($user->tenant_id) && $user->tenant_id !== '') {
             // Normalizuj tenant_id jeśli jest tablicą

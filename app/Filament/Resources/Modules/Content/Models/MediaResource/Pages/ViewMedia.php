@@ -4,6 +4,14 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Modules\Content\Models\MediaResource\Pages;
 
+use Filament\Actions\Action;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\Placeholder;
+use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Support\HtmlString;
+use Filament\Forms\Components\FileUpload;
+use Filament\Actions\EditAction;
+use Illuminate\Filesystem\FilesystemAdapter;
 use App\Filament\Resources\Modules\Content\Models\MediaResource;
 use App\Modules\Content\Models\Media;
 use Filament\Actions;
@@ -19,20 +27,20 @@ class ViewMedia extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\Action::make('edit_image')
+            Action::make('edit_image')
                 ->label('Edytuj obraz')
                 ->icon('heroicon-o-pencil-square')
                 ->color('warning')
                 ->visible(fn (Media $record): bool => $record->isImage())
-                ->form([
-                    Forms\Components\Section::make('Aktualny obraz')
+                ->schema([
+                    Section::make('Aktualny obraz')
                         ->schema([
-                            Forms\Components\Placeholder::make('current_image')
+                            Placeholder::make('current_image')
                                 ->label('')
-                                ->content(function (Media $record): \Illuminate\Contracts\Support\Htmlable {
+                                ->content(function (Media $record): Htmlable {
                                     // Użyj metody getUrl() z modelu Media
                                     $url = $record->getUrl();
-                                    return new \Illuminate\Support\HtmlString(
+                                    return new HtmlString(
                                         '<img src="' . e($url) . '" alt="' . e($record->file_name) . '" 
                                              class="max-h-64 rounded-lg shadow-md object-contain w-full" />'
                                     );
@@ -40,9 +48,9 @@ class ViewMedia extends ViewRecord
                                 ->columnSpanFull(),
                         ]),
 
-                    Forms\Components\Section::make('Zamień obraz')
+                    Section::make('Zamień obraz')
                         ->schema([
-                            Forms\Components\FileUpload::make('new_file')
+                            FileUpload::make('new_file')
                                 ->label('Nowy obraz')
                                 ->helperText('Wgraj nowy obraz lub użyj edytora do kadrowania')
                                 ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
@@ -92,7 +100,7 @@ class ViewMedia extends ViewRecord
                     $fileSize = 0;
                     
                     if ($disk->exists($filePath)) {
-                        /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
+                        /** @var FilesystemAdapter $disk */
                         $mimeType = method_exists($disk, 'mimeType') 
                             ? ($disk->mimeType($filePath) ?? 'image/jpeg')
                             : 'image/jpeg';
@@ -127,7 +135,7 @@ class ViewMedia extends ViewRecord
 
                     $this->refreshFormData(['file_path', 'file_name', 'mime_type', 'size', 'width', 'height']);
                 }),
-            Actions\EditAction::make(),
+            EditAction::make(),
         ];
     }
 }

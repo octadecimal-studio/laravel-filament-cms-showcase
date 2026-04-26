@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
+use App\Modules\Core\Models\Tenant;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 use Illuminate\Database\Eloquent\Model;
@@ -136,7 +137,7 @@ abstract class BasePolicy
         }
 
         // Sprawdź czy użytkownik ma system tenant (super admin)
-        if ($userTenantId === \App\Modules\Core\Models\Tenant::SYSTEM_TENANT_ID) {
+        if ($userTenantId === Tenant::SYSTEM_TENANT_ID) {
             // Super admin widzi wszystko
             return true;
         }

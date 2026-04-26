@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Modules\Content\Models\TwoWheels\GalleryResource\Pages;
 
+use Filament\Actions\Action;
+use Filament\Forms\Components\FileUpload;
+use Filament\Notifications\Notification;
 use App\Filament\Resources\Modules\Content\Models\TwoWheels\GalleryResource;
 use App\Modules\Content\Models\Media;
 use App\Modules\Core\Models\Tenant;
@@ -20,13 +23,13 @@ class ListGallery extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\Action::make('add_photos')
+            Action::make('add_photos')
                 ->label('Dodaj zdjęcia')
                 ->icon('heroicon-o-photo')
                 ->color('primary')
                 ->visible(fn (): bool => GalleryResource::canCreate())
-                ->form([
-                    Forms\Components\FileUpload::make('files')
+                ->schema([
+                    FileUpload::make('files')
                         ->label('Zdjęcia')
                         ->helperText('Wgraj wiele zdjęć naraz. Kadruj do 1:1. Bez opisów.')
                         ->multiple()
@@ -52,7 +55,7 @@ class ListGallery extends ListRecords
                         $this->createMediaFromUpload($path);
                         $n++;
                     }
-                    \Filament\Notifications\Notification::make()
+                    Notification::make()
                         ->title($n === 1 ? 'Dodano 1 zdjęcie' : "Dodano {$n} zdjęć")
                         ->success()
                         ->send();

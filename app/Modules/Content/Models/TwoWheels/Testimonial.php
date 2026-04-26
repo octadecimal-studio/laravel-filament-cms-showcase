@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Content\Models\TwoWheels;
 
+use App\Modules\Core\Scopes\TenantScope;
+use Illuminate\Support\Carbon;
 use App\Modules\Core\Traits\BelongsToTenant;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -22,9 +24,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string|null $motorcycle_id UUID motocykla (opcjonalne)
  * @property bool $published Czy opublikowane
  * @property int $order Kolejność
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
  * @property-read Motorcycle|null $motorcycle
  */
 final class Testimonial extends Model
@@ -78,6 +80,6 @@ final class Testimonial extends Model
     public function motorcycle(): BelongsTo
     {
         return $this->belongsTo(Motorcycle::class, 'motorcycle_id')
-            ->withoutGlobalScope(\App\Modules\Core\Scopes\TenantScope::class);
+            ->withoutGlobalScope(TenantScope::class);
     }
 }

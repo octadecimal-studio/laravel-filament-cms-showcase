@@ -4,6 +4,15 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Modules\Content\Models\TwoWheels;
 
+use App\Modules\Core\Scopes\TenantScope;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Actions\Action;
+use Filament\Forms\Components\FileUpload;
+use Filament\Notifications\Notification;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use App\Filament\Resources\Modules\Content\Models\TwoWheels\GalleryResource\Pages\ListGallery;
 use App\Filament\Resources\Modules\Content\Models\TwoWheels\GalleryResource\Pages;
 use App\Modules\Content\Models\Media;
 use Filament\Forms;
@@ -22,7 +31,7 @@ final class GalleryResource extends Resource
 {
     protected static ?string $model = Media::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-photo';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-photo';
 
     protected static ?string $navigationLabel = 'Galeria';
 
@@ -39,7 +48,7 @@ final class GalleryResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         $query = parent::getEloquentQuery()
-            ->withoutGlobalScopes([\App\Modules\Core\Scopes\TenantScope::class])
+            ->withoutGlobalScopes([TenantScope::class])
             ->where('collection', self::COLLECTION_GALLERY)
             ->where('mime_type', 'like', 'image/%');
 
@@ -55,36 +64,36 @@ final class GalleryResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\ImageColumn::make('file_path')
+                ImageColumn::make('file_path')
                     ->label('Zdjęcie')
                     ->disk('public')
                     ->height(80)
                     ->width(80)
                     ->square(),
-                Tables\Columns\TextColumn::make('file_name')
+                TextColumn::make('file_name')
                     ->label('Plik')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('size')
+                TextColumn::make('size')
                     ->label('Rozmiar')
                     ->formatStateUsing(fn (int $state): string => number_format($state / 1024, 1) . ' KB')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->label('Dodano')
                     ->dateTime('d.m.Y H:i')
                     ->sortable(),
             ])
             ->defaultSort('created_at', 'desc')
-            ->actions([
-                Tables\Actions\Action::make('crop')
+            ->recordActions([
+                Action::make('crop')
                     ->label('Kadruj')
                     ->icon('heroicon-o-pencil-square')
                     ->visible(fn (): bool => true)
                     ->fillForm(fn (Media $record): array => [
                         'new_image' => $record->file_path,
                     ])
-                    ->form([
-                        Forms\Components\FileUpload::make('new_image')
+                    ->schema([
+                        FileUpload::make('new_image')
                             ->label('Zdjęcie do kadrowania')
                             ->helperText('Wgraj nowe zdjęcie albo edytuj aktualne (otwórz w edytorze). Proporcje 1:1.')
                             ->required()
@@ -119,23 +128,23 @@ final class GalleryResource extends Resource
                             $disk->delete($oldPath);
                         }
 
-                        \Filament\Notifications\Notification::make()
+                        Notification::make()
                             ->title('Zdjęcie zaktualizowane')
                             ->success()
                             ->send();
                     })
                     ->modalSubmitActionLabel('Zapisz'),
-                Tables\Actions\DeleteAction::make(),
+                DeleteAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                DeleteBulkAction::make(),
             ]);
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListGallery::route('/'),
+            'index' => ListGallery::route('/'),
         ];
     }
 

@@ -112,11 +112,11 @@ class CreateAdminUser extends Command
         if ($isSuper) {
             $user->is_super_admin = true;
             // Przypisz do system tenant (Tenant 0)
-            $systemTenant = \App\Modules\Core\Models\Tenant::getSystemTenant();
+            $systemTenant = Tenant::getSystemTenant();
             if (!$systemTenant) {
                 // Jeśli system tenant nie istnieje, utwórz go
-                $systemTenant = \App\Modules\Core\Models\Tenant::create([
-                    'id' => \App\Modules\Core\Models\Tenant::SYSTEM_TENANT_ID,
+                $systemTenant = Tenant::create([
+                    'id' => Tenant::SYSTEM_TENANT_ID,
                     'name' => 'System (Super Admini)',
                     'slug' => 'system',
                     'plan' => 'enterprise',

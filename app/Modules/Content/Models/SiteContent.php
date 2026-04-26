@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace App\Modules\Content\Models;
 
+use Database\Factories\SiteContentFactory;
+use App\Modules\Core\Scopes\TenantScope;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 use App\Models\Site;
 use App\Modules\Content\Models\ContentBlock;
 use App\Modules\Core\Models\Tenant;
@@ -33,29 +38,29 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property array<string, mixed> $data Dane flexible content (JSON)
  * @property array<string, mixed>|null $meta Meta dane (SEO, OG tags)
  * @property string $status Status: draft, published, archived
- * @property \Illuminate\Support\Carbon|null $published_at Data publikacji
+ * @property Carbon|null $published_at Data publikacji
  * @property int $order Kolejność sortowania
  * @property string|null $parent_id UUID rodzica (hierarchia)
  * @property bool $is_current_version Czy aktualna wersja
  * @property int $version Numer wersji
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
  * @property-read Tenant $tenant
  * @property-read Site|null $site
  * @property-read ContentBlock|null $contentBlock
  * @property-read SiteContent|null $parent
- * @property-read \Illuminate\Database\Eloquent\Collection<int, SiteContent> $children
- * @property-read \Illuminate\Database\Eloquent\Collection<int, ContentPublished> $publications
+ * @property-read Collection<int, SiteContent> $children
+ * @property-read Collection<int, ContentPublished> $publications
  *
- * @method static \Illuminate\Database\Eloquent\Builder<static> where($column, $operator = null, $value = null, $boolean = 'and')
- * @method static \Illuminate\Database\Eloquent\Builder<static> query()
+ * @method static Builder<static> where($column, $operator = null, $value = null, $boolean = 'and')
+ * @method static Builder<static> query()
  */
 final class SiteContent extends Model
 {
     use BelongsToTenant;
 
-    /** @use HasFactory<\Database\Factories\SiteContentFactory> */
+    /** @use HasFactory<SiteContentFactory> */
     use HasFactory;
 
     use HasUuids;
@@ -64,9 +69,9 @@ final class SiteContent extends Model
     /**
      * Nazwa factory dla modelu.
      */
-    protected static function newFactory(): \Database\Factories\SiteContentFactory
+    protected static function newFactory(): SiteContentFactory
     {
-        return \Database\Factories\SiteContentFactory::new();
+        return SiteContentFactory::new();
     }
 
     /**
@@ -146,7 +151,7 @@ final class SiteContent extends Model
         // PHPStan: withoutGlobalScope returns Builder, not BelongsTo
         /** @phpstan-ignore-next-line return.type */
         return $this->belongsTo(SiteContent::class, 'parent_id')
-            ->withoutGlobalScope(\App\Modules\Core\Scopes\TenantScope::class);
+            ->withoutGlobalScope(TenantScope::class);
     }
 
     /**
@@ -161,7 +166,7 @@ final class SiteContent extends Model
         // PHPStan: withoutGlobalScope returns Builder, not HasMany
         /** @phpstan-ignore-next-line return.type */
         return $this->hasMany(SiteContent::class, 'parent_id')
-            ->withoutGlobalScope(\App\Modules\Core\Scopes\TenantScope::class);
+            ->withoutGlobalScope(TenantScope::class);
     }
 
     /**
@@ -177,10 +182,10 @@ final class SiteContent extends Model
     /**
      * Scope: Tylko opublikowane treści.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder<static>  $query
-     * @return \Illuminate\Database\Eloquent\Builder<static>
+     * @param Builder<static> $query
+     * @return Builder<static>
      */
-    public function scopePublished(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
+    public function scopePublished(Builder $query): Builder
     {
         // PHPStan: where() with now() returns Query\Builder, explicit cast needed
         /** @phpstan-ignore-next-line return.type */
@@ -193,10 +198,10 @@ final class SiteContent extends Model
     /**
      * Scope: Tylko bieżące wersje.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder<static>  $query
-     * @return \Illuminate\Database\Eloquent\Builder<static>
+     * @param Builder<static> $query
+     * @return Builder<static>
      */
-    public function scopeCurrentVersion(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
+    public function scopeCurrentVersion(Builder $query): Builder
     {
         return $query->where('is_current_version', true);
     }
@@ -204,10 +209,10 @@ final class SiteContent extends Model
     /**
      * Scope: Filtruj po typie.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder<static>  $query
-     * @return \Illuminate\Database\Eloquent\Builder<static>
+     * @param Builder<static> $query
+     * @return Builder<static>
      */
-    public function scopeOfType(\Illuminate\Database\Eloquent\Builder $query, string $type): \Illuminate\Database\Eloquent\Builder
+    public function scopeOfType(Builder $query, string $type): Builder
     {
         return $query->where('type', $type);
     }

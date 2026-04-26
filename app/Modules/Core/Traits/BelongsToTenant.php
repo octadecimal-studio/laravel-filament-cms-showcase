@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Core\Traits;
 
+use Illuminate\Database\Eloquent\Builder;
+use App\Models\User;
 use App\Modules\Core\Models\Tenant;
 use App\Modules\Core\Scopes\TenantScope;
 use Illuminate\Database\Eloquent\Model;
@@ -86,8 +88,8 @@ trait BelongsToTenant
     /**
      * Scope: Zapytanie dla konkretnego tenanta (bez global scope).
      *
-     * @param  \Illuminate\Database\Eloquent\Builder<static>  $query
-     * @return \Illuminate\Database\Eloquent\Builder<static>
+     * @param Builder<static> $query
+     * @return Builder<static>
      */
     public function scopeForTenant($query, Tenant|string $tenant)
     {
@@ -116,7 +118,7 @@ trait BelongsToTenant
         }
 
         // Fallback: zalogowany użytkownik
-        /** @var \App\Models\User|null $user */
+        /** @var User|null $user */
         $user = Auth::user();
         if ($user !== null && isset($user->tenant_id)) {
             return $user->tenant_id;

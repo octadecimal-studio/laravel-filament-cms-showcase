@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Content\Traits;
 
+use Illuminate\Database\Eloquent\Collection;
 use App\Modules\Content\Models\ContentVersion;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
@@ -14,7 +15,7 @@ use Illuminate\Support\Facades\Auth;
  *
  * Automatycznie tworzy snapshoty modelu przy każdej zmianie.
  *
- * @property-read \Illuminate\Database\Eloquent\Collection<int, ContentVersion> $versions
+ * @property-read Collection<int, ContentVersion> $versions
  * @property-read ContentVersion|null $currentVersion
  *
  * @mixin Model

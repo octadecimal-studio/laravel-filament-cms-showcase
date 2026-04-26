@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Modules\Content\Models;
 
+use Database\Factories\ContentBlockFactory;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Carbon;
 use App\Modules\Core\Traits\BelongsToTenant;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -29,18 +32,18 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property array<string, mixed>|null $preview Dane preview
  * @property bool $is_active Czy aktywny
  * @property int $usage_count Licznik użyć
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
  *
- * @method static \Illuminate\Database\Eloquent\Builder<static> where($column, $operator = null, $value = null, $boolean = 'and')
- * @method static \Illuminate\Database\Eloquent\Builder<static> query()
+ * @method static Builder<static> where($column, $operator = null, $value = null, $boolean = 'and')
+ * @method static Builder<static> query()
  */
 final class ContentBlock extends Model
 {
     use BelongsToTenant;
 
-    /** @use HasFactory<\Database\Factories\ContentBlockFactory> */
+    /** @use HasFactory<ContentBlockFactory> */
     use HasFactory;
 
     use HasUuids;
@@ -49,9 +52,9 @@ final class ContentBlock extends Model
     /**
      * Nazwa factory dla modelu.
      */
-    protected static function newFactory(): \Database\Factories\ContentBlockFactory
+    protected static function newFactory(): ContentBlockFactory
     {
-        return \Database\Factories\ContentBlockFactory::new();
+        return ContentBlockFactory::new();
     }
 
     /**
@@ -97,10 +100,10 @@ final class ContentBlock extends Model
     /**
      * Scope: Tylko aktywne bloki.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder<ContentBlock>  $query
-     * @return \Illuminate\Database\Eloquent\Builder<ContentBlock>
+     * @param Builder<ContentBlock> $query
+     * @return Builder<ContentBlock>
      */
-    public function scopeActive(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
+    public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_active', true);
     }
@@ -108,10 +111,10 @@ final class ContentBlock extends Model
     /**
      * Scope: Filtruj po kategorii.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder<ContentBlock>  $query
-     * @return \Illuminate\Database\Eloquent\Builder<ContentBlock>
+     * @param Builder<ContentBlock> $query
+     * @return Builder<ContentBlock>
      */
-    public function scopeOfCategory(\Illuminate\Database\Eloquent\Builder $query, string $category): \Illuminate\Database\Eloquent\Builder
+    public function scopeOfCategory(Builder $query, string $category): Builder
     {
         return $query->where('category', $category);
     }

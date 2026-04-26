@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Webhook;
 
+use Exception;
 use App\Http\Controllers\Controller;
 use App\Models\Site;
 use App\Modules\Content\Services\ContentCacheService;
@@ -151,7 +152,7 @@ final class RevalidationController extends Controller
             ]);
 
             return false;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Next.js revalidation exception', [
                 'site_id' => $site->id,
                 'url' => $revalidateUrl,

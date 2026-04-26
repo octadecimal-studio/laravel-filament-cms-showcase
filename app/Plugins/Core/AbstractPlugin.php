@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Plugins\Core;
 
+use RuntimeException;
+use ReflectionClass;
 use App\Models\Site;
 use App\Plugins\Core\Contracts\PluginInterface;
 use App\Plugins\Core\Models\PluginInstallation;
@@ -47,7 +49,7 @@ abstract class AbstractPlugin implements PluginInterface
     {
         // Sprawdź czy już zainstalowany
         if ($this->isInstalled($site)) {
-            throw new \RuntimeException(
+            throw new RuntimeException(
                 "Plugin '" . static::slug() . "' jest już zainstalowany na tej stronie."
             );
         }
@@ -178,7 +180,7 @@ abstract class AbstractPlugin implements PluginInterface
      */
     public function basePath(): string
     {
-        $reflection = new \ReflectionClass(static::class);
+        $reflection = new ReflectionClass(static::class);
         return dirname($reflection->getFileName());
     }
 

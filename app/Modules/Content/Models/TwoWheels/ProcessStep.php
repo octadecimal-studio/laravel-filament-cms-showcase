@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Content\Models\TwoWheels;
 
+use Illuminate\Support\Carbon;
 use App\Modules\Core\Traits\BelongsToTenant;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -20,10 +21,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string $description Opis
  * @property string $icon_name Nazwa ikony
  * @property bool $published Czy opublikowane
- * @property \Illuminate\Support\Carbon|null $published_at Data publikacji
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property Carbon|null $published_at Data publikacji
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
  */
 final class ProcessStep extends Model
 {

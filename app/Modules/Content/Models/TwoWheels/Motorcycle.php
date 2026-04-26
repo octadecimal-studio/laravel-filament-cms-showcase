@@ -4,6 +4,12 @@ declare(strict_types=1);
 
 namespace App\Modules\Content\Models\TwoWheels;
 
+use App\Modules\Core\Scopes\TenantScope;
+use App\Modules\Content\Models\Media;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 use App\Modules\Core\Traits\BelongsToTenant;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -34,14 +40,14 @@ use Illuminate\Support\Str;
  * @property bool $available Dostępny
  * @property bool $featured Wyróżniony
  * @property bool $published Czy opublikowane
- * @property \Illuminate\Support\Carbon|null $published_at Data publikacji
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property Carbon|null $published_at Data publikacji
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
  * @property-read MotorcycleBrand $brand
  * @property-read MotorcycleCategory $category
- * @property-read \App\Modules\Content\Models\Media $mainImage
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Modules\Content\Models\Media> $gallery
+ * @property-read Media $mainImage
+ * @property-read Collection<int, Media> $gallery
  */
 final class Motorcycle extends Model
 {
@@ -127,7 +133,7 @@ final class Motorcycle extends Model
     public function brand(): BelongsTo
     {
         return $this->belongsTo(MotorcycleBrand::class, 'brand_id')
-            ->withoutGlobalScope(\App\Modules\Core\Scopes\TenantScope::class);
+            ->withoutGlobalScope(TenantScope::class);
     }
 
     /**
@@ -138,33 +144,33 @@ final class Motorcycle extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(MotorcycleCategory::class, 'category_id')
-            ->withoutGlobalScope(\App\Modules\Core\Scopes\TenantScope::class);
+            ->withoutGlobalScope(TenantScope::class);
     }
 
     /**
      * Relacja: Główny obraz (opcjonalne).
      *
-     * @return BelongsTo<\App\Modules\Content\Models\Media, $this>
+     * @return BelongsTo<Media, $this>
      */
     public function mainImage(): BelongsTo
     {
-        return $this->belongsTo(\App\Modules\Content\Models\Media::class, 'main_image_id')
-            ->withoutGlobalScope(\App\Modules\Core\Scopes\TenantScope::class);
+        return $this->belongsTo(Media::class, 'main_image_id')
+            ->withoutGlobalScope(TenantScope::class);
     }
 
     /**
      * Relacja: Galeria (przez pivot table).
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany<\App\Modules\Content\Models\Media>
+     * @return BelongsToMany<Media>
      */
-    public function gallery(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function gallery(): BelongsToMany
     {
         return $this->belongsToMany(
-            \App\Modules\Content\Models\Media::class,
+            Media::class,
             'two_wheels_motorcycle_gallery',
             'motorcycle_id',
             'media_id'
-        )->withoutGlobalScope(\App\Modules\Core\Scopes\TenantScope::class)
+        )->withoutGlobalScope(TenantScope::class)
             ->withTimestamps()
             ->orderBy('two_wheels_motorcycle_gallery.order');
     }
@@ -172,10 +178,10 @@ final class Motorcycle extends Model
     /**
      * Scope: Tylko opublikowane.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder<static>  $query
-     * @return \Illuminate\Database\Eloquent\Builder<static>
+     * @param Builder<static> $query
+     * @return Builder<static>
      */
-    public function scopePublished(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
+    public function scopePublished(Builder $query): Builder
     {
         return $query->where('published', true)
             ->whereNotNull('published_at')
@@ -185,10 +191,10 @@ final class Motorcycle extends Model
     /**
      * Scope: Tylko dostępne.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder<static>  $query
-     * @return \Illuminate\Database\Eloquent\Builder<static>
+     * @param Builder<static> $query
+     * @return Builder<static>
      */
-    public function scopeAvailable(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
+    public function scopeAvailable(Builder $query): Builder
     {
         return $query->where('available', true);
     }
@@ -196,10 +202,10 @@ final class Motorcycle extends Model
     /**
      * Scope: Wyróżnione.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder<static>  $query
-     * @return \Illuminate\Database\Eloquent\Builder<static>
+     * @param Builder<static> $query
+     * @return Builder<static>
      */
-    public function scopeFeatured(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
+    public function scopeFeatured(Builder $query): Builder
     {
         return $query->where('featured', true);
     }

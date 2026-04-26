@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Plugins\Reservations\Filament\Resources\ReservationResource\Pages;
 
+use Filament\Actions\ViewAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\ForceDeleteAction;
+use Filament\Actions\RestoreAction;
 use App\Plugins\Reservations\Filament\Resources\ReservationResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
@@ -15,10 +19,10 @@ class EditReservation extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\ViewAction::make(),
-            Actions\DeleteAction::make(),
-            Actions\ForceDeleteAction::make(),
-            Actions\RestoreAction::make(),
+            ViewAction::make(),
+            DeleteAction::make(),
+            ForceDeleteAction::make(),
+            RestoreAction::make(),
         ];
     }
 

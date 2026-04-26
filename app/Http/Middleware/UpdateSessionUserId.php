@@ -2,6 +2,8 @@
 
 namespace App\Http\Middleware;
 
+use Exception;
+use Throwable;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -20,7 +22,7 @@ class UpdateSessionUserId
     /**
      * Handle an incoming request.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param Closure(Request):Response $next
      */
     public function handle(Request $request, Closure $next): Response
     {
@@ -57,7 +59,7 @@ class UpdateSessionUserId
             // (np. w query params, headers)
             $this->normalizeRequestData($request);
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // Jeśli normalizacja się nie powiodła, loguj ale kontynuuj
             Log::warning('UpdateSessionUserId: Failed to normalize request data', [
                 'error' => $e->getMessage(),
@@ -66,7 +68,7 @@ class UpdateSessionUserId
 
         try {
             $response = $next($request);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             // Jeśli błąd występuje w $next(), loguj i rzuć dalej
             if (str_contains($e->getMessage(), 'Array to string conversion')) {
                 Log::error('UpdateSessionUserId: Array to string conversion in $next()', [
@@ -125,7 +127,7 @@ class UpdateSessionUserId
                 ->where('id', $sessionId)
                 ->update(['user_id' => $userId]);
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // Loguj błąd, ale nie przerywaj odpowiedzi
             Log::warning('UpdateSessionUserId: Failed to update user_id in session', [
                 'error' => $e->getMessage(),

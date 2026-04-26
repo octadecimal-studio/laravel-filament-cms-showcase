@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
-import { GoogleTagManagerHead, GoogleTagManagerBody } from "@/components/GoogleTagManager";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -17,8 +16,6 @@ export default function RootLayout({
   return (
     <html lang="pl">
       <body>
-        <GoogleTagManagerBody />
-        <GoogleTagManagerHead />
         <GoogleAnalytics />
         {children}
       </body>

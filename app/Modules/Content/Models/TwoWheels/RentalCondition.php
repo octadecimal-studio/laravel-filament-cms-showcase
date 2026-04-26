@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Content\Models\TwoWheels;
 
+use Illuminate\Support\Carbon;
 use App\Modules\Core\Traits\BelongsToTenant;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -20,9 +21,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string|null $icon Nazwa ikony (heroicon)
  * @property int $sort_order Kolejność
  * @property bool $is_active Czy aktywny
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
  */
 final class RentalCondition extends Model
 {

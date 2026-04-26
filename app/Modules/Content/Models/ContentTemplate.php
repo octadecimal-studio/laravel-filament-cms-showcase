@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Modules\Content\Models;
 
+use Database\Factories\ContentTemplateFactory;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Carbon;
 use App\Modules\Core\Traits\BelongsToTenant;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -31,18 +34,18 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property bool $is_premium Czy premium
  * @property int $usage_count Licznik użyć
  * @property float|null $rating Ocena (0.00-5.00)
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
  *
- * @method static \Illuminate\Database\Eloquent\Builder<static> where($column, $operator = null, $value = null, $boolean = 'and')
- * @method static \Illuminate\Database\Eloquent\Builder<static> query()
+ * @method static Builder<static> where($column, $operator = null, $value = null, $boolean = 'and')
+ * @method static Builder<static> query()
  */
 final class ContentTemplate extends Model
 {
     use BelongsToTenant;
 
-    /** @use HasFactory<\Database\Factories\ContentTemplateFactory> */
+    /** @use HasFactory<ContentTemplateFactory> */
     use HasFactory;
 
     use HasUuids;
@@ -51,9 +54,9 @@ final class ContentTemplate extends Model
     /**
      * Nazwa factory dla modelu.
      */
-    protected static function newFactory(): \Database\Factories\ContentTemplateFactory
+    protected static function newFactory(): ContentTemplateFactory
     {
-        return \Database\Factories\ContentTemplateFactory::new();
+        return ContentTemplateFactory::new();
     }
 
     /**
@@ -104,10 +107,10 @@ final class ContentTemplate extends Model
     /**
      * Scope: Tylko aktywne szablony.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder<static>  $query
-     * @return \Illuminate\Database\Eloquent\Builder<static>
+     * @param Builder<static> $query
+     * @return Builder<static>
      */
-    public function scopeActive(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
+    public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_active', true);
     }
@@ -115,10 +118,10 @@ final class ContentTemplate extends Model
     /**
      * Scope: Tylko darmowe szablony.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder<static>  $query
-     * @return \Illuminate\Database\Eloquent\Builder<static>
+     * @param Builder<static> $query
+     * @return Builder<static>
      */
-    public function scopeFree(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
+    public function scopeFree(Builder $query): Builder
     {
         return $query->where('is_premium', false);
     }
@@ -126,10 +129,10 @@ final class ContentTemplate extends Model
     /**
      * Scope: Tylko premium szablony.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder<static>  $query
-     * @return \Illuminate\Database\Eloquent\Builder<static>
+     * @param Builder<static> $query
+     * @return Builder<static>
      */
-    public function scopePremium(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
+    public function scopePremium(Builder $query): Builder
     {
         return $query->where('is_premium', true);
     }
@@ -137,10 +140,10 @@ final class ContentTemplate extends Model
     /**
      * Scope: Filtruj po kategorii.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder<static>  $query
-     * @return \Illuminate\Database\Eloquent\Builder<static>
+     * @param Builder<static> $query
+     * @return Builder<static>
      */
-    public function scopeOfCategory(\Illuminate\Database\Eloquent\Builder $query, string $category): \Illuminate\Database\Eloquent\Builder
+    public function scopeOfCategory(Builder $query, string $category): Builder
     {
         return $query->where('category', $category);
     }

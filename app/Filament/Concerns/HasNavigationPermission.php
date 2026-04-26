@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Concerns;
 
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
 /**
@@ -42,8 +43,8 @@ trait HasNavigationPermission
      */
     public static function shouldRegisterNavigation(): bool
     {
-        /** @var \App\Models\User|null $user */
-        $user = \Illuminate\Support\Facades\Auth::user();
+        /** @var User|null $user */
+        $user = Auth::user();
 
         if (! $user) {
             return false;

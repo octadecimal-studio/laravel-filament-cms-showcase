@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Modules\Content\Models\TwoWheels;
 
+use App\Modules\Core\Scopes\TenantScope;
+use Illuminate\Support\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 use App\Modules\Core\Traits\BelongsToTenant;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -23,11 +26,11 @@ use Illuminate\Support\Str;
  * @property string|null $description Opis
  * @property string $color Kolor (hex)
  * @property bool $published Czy opublikowane
- * @property \Illuminate\Support\Carbon|null $published_at Data publikacji
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, Motorcycle> $motorcycles
+ * @property Carbon|null $published_at Data publikacji
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
+ * @property-read Collection<int, Motorcycle> $motorcycles
  * @property-read \App\Modules\Content\Models\TwoWheels\PricingTier|null $pricingTier
  */
 final class MotorcycleCategory extends Model
@@ -94,7 +97,7 @@ final class MotorcycleCategory extends Model
     public function motorcycles(): HasMany
     {
         return $this->hasMany(Motorcycle::class, 'category_id')
-            ->withoutGlobalScope(\App\Modules\Core\Scopes\TenantScope::class);
+            ->withoutGlobalScope(TenantScope::class);
     }
 
     /**
@@ -105,6 +108,6 @@ final class MotorcycleCategory extends Model
     public function pricingTier(): HasOne
     {
         return $this->hasOne(PricingTier::class, 'category_id')
-            ->withoutGlobalScope(\App\Modules\Core\Scopes\TenantScope::class);
+            ->withoutGlobalScope(TenantScope::class);
     }
 }

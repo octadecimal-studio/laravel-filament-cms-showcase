@@ -4,6 +4,13 @@ declare(strict_types=1);
 
 namespace App\Filament\Pages;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\Placeholder;
+use Filament\Schemas\Components\Actions;
+use Filament\Actions\Action;
 use App\Modules\Content\Models\TwoWheels\Motorcycle;
 use App\Modules\Content\Models\TwoWheels\SiteSetting;
 use App\Modules\Core\Models\Tenant;
@@ -21,9 +28,9 @@ class PricingSettings extends Page implements HasForms
 {
     use InteractsWithForms;
 
-    protected static ?string $navigationIcon = 'heroicon-o-currency-dollar';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-currency-dollar';
 
-    protected static string $view = 'filament.pages.pricing-settings';
+    protected string $view = 'filament.pages.pricing-settings';
 
     protected static ?string $navigationLabel = 'Ceny';
 
@@ -43,28 +50,28 @@ class PricingSettings extends Page implements HasForms
         ]);
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make('Nagłówek sekcji cennika')
+        return $schema
+            ->components([
+                Section::make('Nagłówek sekcji cennika')
                     ->schema([
-                        Forms\Components\TextInput::make('pricing_title')
+                        TextInput::make('pricing_title')
                             ->label('Tytuł')
                             ->required()
                             ->maxLength(255),
 
-                        Forms\Components\Textarea::make('pricing_subtitle')
+                        Textarea::make('pricing_subtitle')
                             ->label('Podtytuł')
                             ->rows(2)
                             ->columnSpanFull(),
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make('Cennik motocykli')
+                Section::make('Cennik motocykli')
                     ->description('Ceny są edytowane w zasobie Motocykle. Poniżej podgląd aktualnych cen.')
                     ->schema([
-                        Forms\Components\Placeholder::make('motorcycle_prices')
+                        Placeholder::make('motorcycle_prices')
                             ->label('')
                             ->content(function (): Htmlable {
                                 $motorcycles = Motorcycle::withoutGlobalScope(TenantScope::class)
@@ -101,11 +108,11 @@ class PricingSettings extends Page implements HasForms
                             ->columnSpanFull(),
                     ]),
 
-                Forms\Components\Section::make('Uwagi cennika')
+                Section::make('Uwagi cennika')
                     ->description('Zarządzaj uwagami cennika w dedykowanym zasobie.')
                     ->schema([
-                        Forms\Components\Actions::make([
-                            Forms\Components\Actions\Action::make('manage_pricing_notes')
+                        Actions::make([
+                            Action::make('manage_pricing_notes')
                                 ->label('Zarządzaj uwagami cennika')
                                 ->icon('heroicon-o-document-text')
                                 ->url('/admin/modules/content/models/two-wheels/pricing-notes')

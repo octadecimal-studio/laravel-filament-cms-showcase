@@ -4,6 +4,39 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Modules\Content\Models\TwoWheels;
 
+use App\Modules\Core\Scopes\TenantScope;
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Placeholder;
+use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Support\HtmlString;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Hidden;
+use Filament\Schemas\Components\Livewire;
+use Filament\Forms\Components\KeyValue;
+use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Actions\Action;
+use App\Modules\Core\Models\Tenant;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
+use Filament\Tables\Filters\TrashedFilter;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\RestoreAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\RestoreBulkAction;
+use App\Filament\Resources\Modules\Content\Models\TwoWheels\MotorcycleResource\Pages\ListMotorcycles;
+use App\Filament\Resources\Modules\Content\Models\TwoWheels\MotorcycleResource\Pages\CreateMotorcycle;
+use App\Filament\Resources\Modules\Content\Models\TwoWheels\MotorcycleResource\Pages\EditMotorcycle;
 use App\Filament\Resources\Modules\Content\Models\TwoWheels\MotorcycleResource\Pages;
 use App\Filament\Resources\Modules\Content\Models\TwoWheels\MotorcycleResource\RelationManagers;
 use App\Modules\Content\Models\TwoWheels\Motorcycle;
@@ -22,7 +55,7 @@ final class MotorcycleResource extends Resource
 {
     protected static ?string $model = Motorcycle::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-bolt';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-bolt';
 
     protected static ?string $navigationLabel = 'Motocykle';
 
@@ -40,7 +73,7 @@ final class MotorcycleResource extends Resource
         $query = parent::getEloquentQuery()
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
-                \App\Modules\Core\Scopes\TenantScope::class,
+                TenantScope::class,
             ]);
 
         // Filtruj po tenant_id dla nie-super adminów
@@ -52,61 +85,61 @@ final class MotorcycleResource extends Resource
         return $query;
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make('Podstawowe informacje')
+        return $schema
+            ->components([
+                Section::make('Podstawowe informacje')
                     ->schema([
-                        Forms\Components\TextInput::make('name')
+                        TextInput::make('name')
                             ->label('Nazwa')
                             ->required()
                             ->maxLength(255)
                             ->columnSpanFull(),
 
-                        Forms\Components\TextInput::make('slug')
+                        TextInput::make('slug')
                             ->label('Slug')
                             ->maxLength(255)
                             ->unique(ignoreRecord: true)
                             ->helperText('URL-friendly identyfikator (generowany automatycznie)'),
 
-                        Forms\Components\Select::make('brand_id')
+                        Select::make('brand_id')
                             ->label('Marka')
                             ->relationship('brand', 'name')
                             ->searchable()
                             ->preload()
                             ->required()
                             ->createOptionForm([
-                                Forms\Components\TextInput::make('name')
+                                TextInput::make('name')
                                     ->label('Nazwa marki')
                                     ->required(),
                             ]),
 
-                        Forms\Components\Select::make('category_id')
+                        Select::make('category_id')
                             ->label('Kategoria')
                             ->relationship('category', 'name')
                             ->searchable()
                             ->preload()
                             ->required()
                             ->createOptionForm([
-                                Forms\Components\TextInput::make('name')
+                                TextInput::make('name')
                                     ->label('Nazwa kategorii')
                                     ->required(),
                             ]),
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make('Główny obraz')
+                Section::make('Główny obraz')
                     ->schema([
                         // Podgląd aktualnego obrazu (tylko w edycji)
-                        Forms\Components\Placeholder::make('current_image_preview')
+                        Placeholder::make('current_image_preview')
                             ->label('Aktualny obraz')
-                            ->content(function (?Motorcycle $record): \Illuminate\Contracts\Support\Htmlable {
+                            ->content(function (?Motorcycle $record): Htmlable {
                                 if (!$record || !$record->mainImage) {
-                                    return new \Illuminate\Support\HtmlString('<span class="text-gray-500">Brak obrazu</span>');
+                                    return new HtmlString('<span class="text-gray-500">Brak obrazu</span>');
                                 }
                                 $url = asset('storage/' . $record->mainImage->file_path);
-                                return new \Illuminate\Support\HtmlString(
+                                return new HtmlString(
                                     '<img src="' . $url . '" alt="' . e($record->mainImage->file_name) . '" 
                                          class="max-h-48 rounded-lg shadow-md object-cover" />'
                                 );
@@ -115,7 +148,7 @@ final class MotorcycleResource extends Resource
                             ->columnSpanFull(),
 
                         // Upload nowego obrazu z edytorem
-                        Forms\Components\FileUpload::make('new_main_image')
+                        FileUpload::make('new_main_image')
                             ->label(fn (string $operation): string => $operation === 'create' ? 'Wgraj obraz' : 'Podmień obraz')
                             ->helperText('Wgraj obraz lub użyj edytora do kadrowania. Obsługiwane formaty: JPG, PNG, WebP.')
                             ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
@@ -140,18 +173,18 @@ final class MotorcycleResource extends Resource
                             ->columnSpanFull(),
 
                         // Ukryty select dla kompatybilności z istniejącymi danymi
-                        Forms\Components\Hidden::make('main_image_id'),
+                        Hidden::make('main_image_id'),
                     ]),
 
-                Forms\Components\Section::make('Galeria zdjęć')
+                Section::make('Galeria zdjęć')
                     ->schema([
-                        Forms\Components\Livewire::make('motorcycle-gallery-manager')
+                        Livewire::make('motorcycle-gallery-manager')
                             ->lazy()
                             ->visible(fn (string $operation): bool => $operation === 'edit')
                             ->columnSpanFull(),
 
                         // Upload galerii przy tworzeniu (Livewire komponent wymaga istniejącego rekordu)
-                        Forms\Components\FileUpload::make('new_gallery_images')
+                        FileUpload::make('new_gallery_images')
                             ->label('Wgraj zdjęcia do galerii')
                             ->helperText('Możesz wybrać wiele zdjęć naraz.')
                             ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
@@ -167,22 +200,22 @@ final class MotorcycleResource extends Resource
                     ])
                     ->collapsible(),
 
-                Forms\Components\Section::make('Specyfikacje')
+                Section::make('Specyfikacje')
                     ->schema([
-                        Forms\Components\TextInput::make('engine_capacity')
+                        TextInput::make('engine_capacity')
                             ->label('Pojemność silnika')
                             ->numeric()
                             ->suffix(' cc')
                             ->required(),
 
-                        Forms\Components\TextInput::make('year')
+                        TextInput::make('year')
                             ->label('Rok produkcji')
                             ->numeric()
                             ->minValue(1900)
                             ->maxValue(now()->year + 1)
                             ->required(),
 
-                        Forms\Components\KeyValue::make('specifications')
+                        KeyValue::make('specifications')
                             ->label('Specyfikacje')
                             ->keyLabel('Parametr')
                             ->valueLabel('Wartość')
@@ -191,27 +224,27 @@ final class MotorcycleResource extends Resource
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make('Cennik')
+                Section::make('Cennik')
                     ->schema([
-                        Forms\Components\TextInput::make('price_per_day')
+                        TextInput::make('price_per_day')
                             ->label('Cena za dzień')
                             ->numeric()
                             ->prefix('PLN')
                             ->required(),
 
-                        Forms\Components\TextInput::make('price_per_week')
+                        TextInput::make('price_per_week')
                             ->label('Cena za tydzień')
                             ->numeric()
                             ->prefix('PLN')
                             ->required(),
 
-                        Forms\Components\TextInput::make('price_per_month')
+                        TextInput::make('price_per_month')
                             ->label('Cena za miesiąc')
                             ->numeric()
                             ->prefix('PLN')
                             ->required(),
 
-                        Forms\Components\TextInput::make('deposit')
+                        TextInput::make('deposit')
                             ->label('Kaucja')
                             ->numeric()
                             ->prefix('PLN')
@@ -219,9 +252,9 @@ final class MotorcycleResource extends Resource
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make('Opis')
+                Section::make('Opis')
                     ->schema([
-                        Forms\Components\RichEditor::make('description')
+                        RichEditor::make('description')
                             ->label('Opis')
                             ->columnSpanFull()
                             ->toolbarButtons([
@@ -234,29 +267,29 @@ final class MotorcycleResource extends Resource
                             ]),
                     ]),
 
-                Forms\Components\Section::make('Status')
+                Section::make('Status')
                     ->schema([
-                        Forms\Components\Toggle::make('available')
+                        Toggle::make('available')
                             ->label('Dostępny')
                             ->default(true),
 
-                        Forms\Components\Toggle::make('featured')
+                        Toggle::make('featured')
                             ->label('Wyróżniony')
                             ->default(false),
 
-                        Forms\Components\Toggle::make('published')
+                        Toggle::make('published')
                             ->label('Opublikowany')
                             ->default(false)
                             ->live()
-                            ->afterStateUpdated(function (Forms\Set $set, Forms\Get $get, bool $state): void {
+                            ->afterStateUpdated(function (Set $set, Get $get, bool $state): void {
                                 if ($state && !$get('published_at')) {
                                     $set('published_at', now()->format('Y-m-d H:i:s'));
                                 }
                             }),
 
-                        Forms\Components\DateTimePicker::make('published_at')
+                        DateTimePicker::make('published_at')
                             ->label('Data publikacji')
-                            ->visible(fn (Forms\Get $get): bool => $get('published') === true),
+                            ->visible(fn (Get $get): bool => $get('published') === true),
                     ])
                     ->columns(2),
             ]);
@@ -266,7 +299,7 @@ final class MotorcycleResource extends Resource
     {
         return $table
             ->headerActions([
-                Tables\Actions\Action::make('view_api')
+                Action::make('view_api')
                     ->label('Zobacz API')
                     ->icon('heroicon-o-code-bracket')
                     ->url(function () {
@@ -275,101 +308,101 @@ final class MotorcycleResource extends Resource
                         if ($u?->isSuperAdmin()) {
                             return $base;
                         }
-                        return $base . '?tenant_id=' . ($u?->tenant_id ?? \App\Modules\Core\Models\Tenant::where('slug', 'demo-studio')->where('is_active', true)->value('id') ?? '');
+                        return $base . '?tenant_id=' . ($u?->tenant_id ?? Tenant::where('slug', 'demo-studio')->where('is_active', true)->value('id') ?? '');
                     })
                     ->openUrlInNewTab()
                     ->color('info'),
             ])
             ->columns([
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                     ->label('Nazwa')
                     ->searchable()
                     ->sortable()
                     ->weight('bold'),
 
-                Tables\Columns\TextColumn::make('brand.name')
+                TextColumn::make('brand.name')
                     ->label('Marka')
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('category.name')
+                TextColumn::make('category.name')
                     ->label('Kategoria')
                     ->badge()
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('engine_capacity')
+                TextColumn::make('engine_capacity')
                     ->label('Pojemność')
                     ->suffix(' cc')
                     ->sortable()
                     ->toggleable(),
 
-                Tables\Columns\TextColumn::make('year')
+                TextColumn::make('year')
                     ->label('Rok')
                     ->sortable()
                     ->toggleable(),
 
-                Tables\Columns\TextColumn::make('price_per_day')
+                TextColumn::make('price_per_day')
                     ->label('Cena/dzień')
                     ->money('PLN')
                     ->sortable(),
 
-                Tables\Columns\IconColumn::make('available')
+                IconColumn::make('available')
                     ->label('Dostępny')
                     ->boolean(),
 
-                Tables\Columns\IconColumn::make('featured')
+                IconColumn::make('featured')
                     ->label('Wyróżniony')
                     ->boolean()
                     ->toggleable(),
 
-                Tables\Columns\IconColumn::make('published')
+                IconColumn::make('published')
                     ->label('Opublikowany')
                     ->boolean()
                     ->toggleable(),
 
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->label('Utworzono')
                     ->dateTime('d.m.Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('brand_id')
+                SelectFilter::make('brand_id')
                     ->label('Marka')
                     ->relationship('brand', 'name')
                     ->searchable()
                     ->preload(),
 
-                Tables\Filters\SelectFilter::make('category_id')
+                SelectFilter::make('category_id')
                     ->label('Kategoria')
                     ->relationship('category', 'name')
                     ->searchable()
                     ->preload(),
 
-                Tables\Filters\TernaryFilter::make('available')
+                TernaryFilter::make('available')
                     ->label('Dostępny')
                     ->placeholder('Wszystkie')
                     ->trueLabel('Tak')
                     ->falseLabel('Nie'),
 
-                Tables\Filters\TernaryFilter::make('published')
+                TernaryFilter::make('published')
                     ->label('Opublikowany')
                     ->placeholder('Wszystkie')
                     ->trueLabel('Tak')
                     ->falseLabel('Nie'),
 
-                Tables\Filters\TrashedFilter::make(),
+                TrashedFilter::make(),
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
-                Tables\Actions\RestoreAction::make(),
+            ->recordActions([
+                EditAction::make(),
+                DeleteAction::make(),
+                RestoreAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
                 ]),
             ]);
     }
@@ -384,9 +417,9 @@ final class MotorcycleResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListMotorcycles::route('/'),
-            'create' => Pages\CreateMotorcycle::route('/create'),
-            'edit' => Pages\EditMotorcycle::route('/{record}/edit'),
+            'index' => ListMotorcycles::route('/'),
+            'create' => CreateMotorcycle::route('/create'),
+            'edit' => EditMotorcycle::route('/{record}/edit'),
         ];
     }
 }

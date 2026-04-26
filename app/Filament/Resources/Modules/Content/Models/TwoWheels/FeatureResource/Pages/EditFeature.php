@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Modules\Content\Models\TwoWheels\FeatureResource\Pages;
 
+use Filament\Actions\DeleteAction;
 use App\Filament\Resources\Modules\Content\Models\TwoWheels\FeatureResource;
 use App\Modules\Content\Models\Media;
 use App\Modules\Core\Models\Tenant;
@@ -19,7 +20,7 @@ class EditFeature extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            DeleteAction::make(),
         ];
     }
 

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Content\Models;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Carbon;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -20,18 +22,18 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $content_id UUID kontentu
  * @property string $environment Środowisko: staging, production
  * @property string $version_id UUID opublikowanej wersji
- * @property \Illuminate\Support\Carbon $published_at Data publikacji
+ * @property Carbon $published_at Data publikacji
  * @property string|null $published_by UUID użytkownika
  * @property array<string, mixed>|null $publish_notes Notatki do publikacji
  * @property bool $auto_published Czy auto-publish
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  * @property-read SiteContent $content
  * @property-read ContentVersion $version
  * @property-read User|null $publisher
  *
- * @method static \Illuminate\Database\Eloquent\Builder<static> where($column, $operator = null, $value = null, $boolean = 'and')
- * @method static \Illuminate\Database\Eloquent\Builder<static> query()
+ * @method static Builder<static> where($column, $operator = null, $value = null, $boolean = 'and')
+ * @method static Builder<static> query()
  */
 final class ContentPublished extends Model
 {
@@ -107,10 +109,10 @@ final class ContentPublished extends Model
     /**
      * Scope: Dla staging.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder<static>  $query
-     * @return \Illuminate\Database\Eloquent\Builder<static>
+     * @param Builder<static> $query
+     * @return Builder<static>
      */
-    public function scopeStaging(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
+    public function scopeStaging(Builder $query): Builder
     {
         return $query->where('environment', 'staging');
     }
@@ -118,10 +120,10 @@ final class ContentPublished extends Model
     /**
      * Scope: Dla production.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder<static>  $query
-     * @return \Illuminate\Database\Eloquent\Builder<static>
+     * @param Builder<static> $query
+     * @return Builder<static>
      */
-    public function scopeProduction(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
+    public function scopeProduction(Builder $query): Builder
     {
         return $query->where('environment', 'production');
     }
@@ -129,10 +131,10 @@ final class ContentPublished extends Model
     /**
      * Scope: Dla konkretnego środowiska.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder<static>  $query
-     * @return \Illuminate\Database\Eloquent\Builder<static>
+     * @param Builder<static> $query
+     * @return Builder<static>
      */
-    public function scopeForEnvironment(\Illuminate\Database\Eloquent\Builder $query, string $environment): \Illuminate\Database\Eloquent\Builder
+    public function scopeForEnvironment(Builder $query, string $environment): Builder
     {
         return $query->where('environment', $environment);
     }

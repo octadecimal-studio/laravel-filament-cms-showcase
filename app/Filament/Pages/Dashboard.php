@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Pages;
 
+use Throwable;
 use Datlechin\FilamentMenuBuilder\Resources\MenuResource;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
@@ -12,22 +13,22 @@ use Illuminate\Support\Facades\Artisan;
 
 class Dashboard extends Page
 {
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-text';
 
     protected static ?string $navigationLabel = 'Panel';
 
     protected static bool $shouldRegisterNavigation = false;
 
-    protected static string $view = 'filament.pages.dashboard';
+    protected string $view = 'filament.pages.dashboard';
 
     protected function getHeaderActions(): array
     {
         $actions = [];
         
         // Przycisk Menu Builder - tylko jeśli plugin jest zarejestrowany
-        if (class_exists(\Datlechin\FilamentMenuBuilder\Resources\MenuResource::class)) {
+        if (class_exists(MenuResource::class)) {
             try {
-                $menuResource = \Datlechin\FilamentMenuBuilder\Resources\MenuResource::class;
+                $menuResource = MenuResource::class;
                 if (method_exists($menuResource, 'getUrl')) {
                     $actions[] = Action::make('menu_builder')
                         ->label('Menu Builder')
@@ -35,7 +36,7 @@ class Dashboard extends Page
                         ->color('primary')
                         ->url($menuResource::getUrl('index'));
                 }
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 // Jeśli resource nie jest jeszcze zarejestrowany, pomiń przycisk
             }
         }
@@ -59,7 +60,7 @@ class Dashboard extends Page
                         ->body('Wszystkie cache zostały pomyślnie wyczyszczone.')
                         ->success()
                         ->send();
-                } catch (\Throwable $e) {
+                } catch (Throwable $e) {
                     Notification::make()
                         ->title('Błąd podczas czyszczenia cache')
                         ->body('Wystąpił błąd: ' . $e->getMessage())

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Modules\Content\Models;
 
+use Database\Factories\ContentVersionFactory;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Carbon;
 use App\Models\User;
 use App\Modules\Core\Traits\BelongsToTenant;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -30,19 +33,19 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * @property string|null $created_by UUID użytkownika
  * @property string|null $ip_address IP address
  * @property string|null $user_agent User agent
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  * @property-read Model $versionable
  * @property-read User|null $author
  *
- * @method static \Illuminate\Database\Eloquent\Builder<static> where($column, $operator = null, $value = null, $boolean = 'and')
- * @method static \Illuminate\Database\Eloquent\Builder<static> query()
+ * @method static Builder<static> where($column, $operator = null, $value = null, $boolean = 'and')
+ * @method static Builder<static> query()
  */
 final class ContentVersion extends Model
 {
     use BelongsToTenant;
 
-    /** @use HasFactory<\Database\Factories\ContentVersionFactory> */
+    /** @use HasFactory<ContentVersionFactory> */
     use HasFactory;
 
     use HasUuids;
@@ -50,9 +53,9 @@ final class ContentVersion extends Model
     /**
      * Nazwa factory dla modelu.
      */
-    protected static function newFactory(): \Database\Factories\ContentVersionFactory
+    protected static function newFactory(): ContentVersionFactory
     {
-        return \Database\Factories\ContentVersionFactory::new();
+        return ContentVersionFactory::new();
     }
 
     /**
@@ -116,10 +119,10 @@ final class ContentVersion extends Model
     /**
      * Scope: Tylko bieżące wersje.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder<static>  $query
-     * @return \Illuminate\Database\Eloquent\Builder<static>
+     * @param Builder<static> $query
+     * @return Builder<static>
      */
-    public function scopeCurrent(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
+    public function scopeCurrent(Builder $query): Builder
     {
         return $query->where('is_current', true);
     }
@@ -127,10 +130,10 @@ final class ContentVersion extends Model
     /**
      * Scope: Dla konkretnego modelu.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder<static>  $query
-     * @return \Illuminate\Database\Eloquent\Builder<static>
+     * @param Builder<static> $query
+     * @return Builder<static>
      */
-    public function scopeForModel(\Illuminate\Database\Eloquent\Builder $query, Model $model): \Illuminate\Database\Eloquent\Builder
+    public function scopeForModel(Builder $query, Model $model): Builder
     {
         return $query->where('versionable_id', $model->getKey())
             ->where('versionable_type', $model->getMorphClass());

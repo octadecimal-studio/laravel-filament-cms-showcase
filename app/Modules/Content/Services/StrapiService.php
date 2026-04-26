@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Content\Services;
 
+use Exception;
+use RuntimeException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -30,7 +32,7 @@ final class StrapiService
             $response = Http::timeout(5)->get("{$this->baseUrl}/_health");
 
             return $response->successful();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::warning('Strapi health check failed', ['error' => $e->getMessage()]);
 
             return false;
@@ -68,7 +70,7 @@ final class StrapiService
 
                 // Jeśli to 404, Content Type może nie istnieć
                 if ($response->status() === 404) {
-                    throw new \RuntimeException("Content Type '{$contentType}' nie istnieje w Strapi. Najpierw zaimportuj schemat.");
+                    throw new RuntimeException("Content Type '{$contentType}' nie istnieje w Strapi. Najpierw zaimportuj schemat.");
                 }
 
                 return null;
@@ -77,7 +79,7 @@ final class StrapiService
             $result = $response->json();
 
             return $result['data'] ?? null;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Strapi create entry exception', [
                 'content_type' => $contentType,
                 'error' => $e->getMessage(),
@@ -120,7 +122,7 @@ final class StrapiService
             $result = $response->json();
 
             return $result['data'] ?? [];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Strapi get entries exception', [
                 'content_type' => $contentType,
                 'error' => $e->getMessage(),
@@ -165,7 +167,7 @@ final class StrapiService
             $result = $response->json();
 
             return $result['data'] ?? null;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Strapi update entry exception', [
                 'content_type' => $contentType,
                 'id' => $id,
@@ -196,7 +198,7 @@ final class StrapiService
             $response = Http::withHeaders($headers)->post($url);
 
             return $response->successful();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Strapi publish entry exception', [
                 'content_type' => $contentType,
                 'id' => $id,

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Plugins\Reservations\Http\Controllers;
 
+use App\Modules\Core\Models\Tenant;
+use Exception;
 use App\Http\Controllers\Controller;
 use App\Mail\ReservationNotification;
 use App\Models\Site;
@@ -85,7 +87,7 @@ class ReservationController extends Controller
 
         // Pobieramy tenant - Site nie ma bezpośredniej relacji do Tenant,
         // więc używamy domyślnego tenanta (demo-studio) dla MVP
-        $tenant = \App\Modules\Core\Models\Tenant::where('slug', 'demo-studio')
+        $tenant = Tenant::where('slug', 'demo-studio')
             ->where('is_active', true)
             ->first();
 
@@ -138,7 +140,7 @@ class ReservationController extends Controller
                     reservation: $reservation,
                     motorcycleName: $motorcycle?->name,
                 ));
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 Log::error('Failed to send reservation notification: ' . $e->getMessage());
             }
         }

@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace App\Filament\Pages;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\Radio;
+use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Utilities\Get;
 use App\Modules\Content\Models\TwoWheels\SiteSetting;
 use App\Modules\Core\Models\Tenant;
 use App\Modules\Core\Scopes\TenantScope;
@@ -18,9 +23,9 @@ class ReservationFormSettings extends Page implements HasForms
 {
     use InteractsWithForms;
 
-    protected static ?string $navigationIcon = 'heroicon-o-document-check';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-check';
 
-    protected static string $view = 'filament.pages.reservation-form-settings';
+    protected string $view = 'filament.pages.reservation-form-settings';
 
     protected static ?string $navigationLabel = 'Formularz rezerwacji';
 
@@ -41,13 +46,13 @@ class ReservationFormSettings extends Page implements HasForms
         ]);
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make('Typ formularza')
+        return $schema
+            ->components([
+                Section::make('Typ formularza')
                     ->schema([
-                        Forms\Components\Radio::make('reservation_form_type')
+                        Radio::make('reservation_form_type')
                             ->label('Typ formularza rezerwacji')
                             ->options([
                                 'internal' => 'Wewnętrzny (formularz na stronie)',
@@ -57,18 +62,18 @@ class ReservationFormSettings extends Page implements HasForms
                             ->required()
                             ->live(),
 
-                        Forms\Components\TextInput::make('reservation_form_external_url')
+                        TextInput::make('reservation_form_external_url')
                             ->label('URL zewnętrznego formularza')
                             ->url()
                             ->maxLength(500)
                             ->placeholder('https://example.com/reservation-form')
-                            ->visible(fn (Forms\Get $get): bool => $get('reservation_form_type') === 'external'),
+                            ->visible(fn (Get $get): bool => $get('reservation_form_type') === 'external'),
                     ]),
 
-                Forms\Components\Section::make('Powiadomienia email')
+                Section::make('Powiadomienia email')
                     ->description('Adres email, na który będą wysyłane powiadomienia o nowych rezerwacjach.')
                     ->schema([
-                        Forms\Components\TextInput::make('reservation_notification_email')
+                        TextInput::make('reservation_notification_email')
                             ->label('Email do powiadomień')
                             ->email()
                             ->maxLength(255)

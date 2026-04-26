@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Widgets;
 
+use App\Plugins\Reservations\Filament\Resources\ReservationResource;
 use App\Filament\Resources\Modules\Content\Models\TwoWheels\FeatureResource;
 use App\Filament\Resources\Modules\Content\Models\TwoWheels\GalleryResource;
 use App\Filament\Resources\Modules\Content\Models\TwoWheels\MotorcycleResource;
@@ -17,7 +18,7 @@ use Filament\Widgets\Widget;
  */
 class ClientDashboardWidget extends Widget
 {
-    protected static string $view = 'filament.widgets.client-dashboard-widget';
+    protected string $view = 'filament.widgets.client-dashboard-widget';
 
     protected static ?int $sort = 0;
 
@@ -66,7 +67,7 @@ class ClientDashboardWidget extends Widget
 
         // Rezerwacje (plugin – inna ścieżka)
         if (TenantFeatureAccess::hasAccess($user->tenant_id, 'reservations', 'view')) {
-            $reservationResource = \App\Plugins\Reservations\Filament\Resources\ReservationResource::class;
+            $reservationResource = ReservationResource::class;
             $links[] = [
                 'label' => 'Rezerwacje',
                 'url' => $reservationResource::getUrl('index'),

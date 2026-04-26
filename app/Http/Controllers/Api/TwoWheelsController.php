@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\Site;
+use Exception;
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use App\Modules\Content\Models\Media;
 use App\Mail\ReservationNotification;
@@ -602,7 +605,7 @@ class TwoWheelsController extends Controller
         }
 
         // Find site for reservation
-        $site = \App\Models\Site::first();
+        $site = Site::first();
 
         $reservation = Reservation::create([
             'site_id' => $site?->id,
@@ -635,8 +638,8 @@ class TwoWheelsController extends Controller
                     reservation: $reservation,
                     motorcycleName: $motorcycle?->name,
                 ));
-            } catch (\Exception $e) {
-                \Illuminate\Support\Facades\Log::error('Failed to send reservation notification: ' . $e->getMessage());
+            } catch (Exception $e) {
+                Log::error('Failed to send reservation notification: ' . $e->getMessage());
             }
         }
 
@@ -696,7 +699,7 @@ class TwoWheelsController extends Controller
             $tenant = Tenant::where('is_active', true)->first();
 
             return $tenant?->id;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return null;
         }
     }

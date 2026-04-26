@@ -4,6 +4,26 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Modules\Content\Models\TwoWheels;
 
+use App\Modules\Core\Scopes\TenantScope;
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Toggle;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Filters\TernaryFilter;
+use Filament\Tables\Filters\TrashedFilter;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\RestoreAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\RestoreBulkAction;
+use App\Filament\Resources\Modules\Content\Models\TwoWheels\RentalConditionResource\Pages\ListRentalConditions;
+use App\Filament\Resources\Modules\Content\Models\TwoWheels\RentalConditionResource\Pages\CreateRentalCondition;
+use App\Filament\Resources\Modules\Content\Models\TwoWheels\RentalConditionResource\Pages\EditRentalCondition;
 use App\Filament\Resources\Modules\Content\Models\TwoWheels\RentalConditionResource\Pages;
 use App\Modules\Content\Models\TwoWheels\RentalCondition;
 use Filament\Forms;
@@ -21,7 +41,7 @@ final class RentalConditionResource extends Resource
 {
     protected static ?string $model = RentalCondition::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-clipboard-document-list';
 
     protected static ?string $navigationLabel = 'Warunki wypożyczenia';
 
@@ -36,7 +56,7 @@ final class RentalConditionResource extends Resource
         $query = parent::getEloquentQuery()
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
-                \App\Modules\Core\Scopes\TenantScope::class,
+                TenantScope::class,
             ]);
 
         $user = auth()->user();
@@ -46,19 +66,19 @@ final class RentalConditionResource extends Resource
         return $query;
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make('Podstawowe informacje')
+        return $schema
+            ->components([
+                Section::make('Podstawowe informacje')
                     ->schema([
-                        Forms\Components\TextInput::make('title')
+                        TextInput::make('title')
                             ->label('Tytuł')
                             ->required()
                             ->maxLength(255)
                             ->columnSpanFull(),
 
-                        Forms\Components\RichEditor::make('description')
+                        RichEditor::make('description')
                             ->label('Opis')
                             ->required()
                             ->toolbarButtons([
@@ -67,7 +87,7 @@ final class RentalConditionResource extends Resource
                             ])
                             ->columnSpanFull(),
 
-                        Forms\Components\Select::make('icon')
+                        Select::make('icon')
                             ->label('Ikona')
                             ->options([
                                 'heroicon-o-document-text' => 'Dokument',
@@ -84,13 +104,13 @@ final class RentalConditionResource extends Resource
                             ->searchable()
                             ->nullable(),
 
-                        Forms\Components\TextInput::make('sort_order')
+                        TextInput::make('sort_order')
                             ->label('Kolejność')
                             ->numeric()
                             ->default(0)
                             ->required(),
 
-                        Forms\Components\Toggle::make('is_active')
+                        Toggle::make('is_active')
                             ->label('Aktywny')
                             ->default(true),
                     ])
@@ -104,50 +124,50 @@ final class RentalConditionResource extends Resource
             ->reorderable('sort_order')
             ->defaultSort('sort_order')
             ->columns([
-                Tables\Columns\TextColumn::make('sort_order')
+                TextColumn::make('sort_order')
                     ->label('#')
                     ->sortable()
                     ->badge(),
 
-                Tables\Columns\TextColumn::make('title')
+                TextColumn::make('title')
                     ->label('Tytuł')
                     ->searchable()
                     ->sortable()
                     ->weight('bold'),
 
-                Tables\Columns\TextColumn::make('icon')
+                TextColumn::make('icon')
                     ->label('Ikona')
                     ->toggleable(),
 
-                Tables\Columns\IconColumn::make('is_active')
+                IconColumn::make('is_active')
                     ->label('Aktywny')
                     ->boolean()
                     ->toggleable(),
 
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->label('Utworzono')
                     ->dateTime('d.m.Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\TernaryFilter::make('is_active')
+                TernaryFilter::make('is_active')
                     ->label('Aktywny')
                     ->placeholder('Wszystkie')
                     ->trueLabel('Tak')
                     ->falseLabel('Nie'),
 
-                Tables\Filters\TrashedFilter::make(),
+                TrashedFilter::make(),
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
-                Tables\Actions\RestoreAction::make(),
+            ->recordActions([
+                EditAction::make(),
+                DeleteAction::make(),
+                RestoreAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
                 ]),
             ]);
     }
@@ -160,9 +180,9 @@ final class RentalConditionResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListRentalConditions::route('/'),
-            'create' => Pages\CreateRentalCondition::route('/create'),
-            'edit' => Pages\EditRentalCondition::route('/{record}/edit'),
+            'index' => ListRentalConditions::route('/'),
+            'create' => CreateRentalCondition::route('/create'),
+            'edit' => EditRentalCondition::route('/{record}/edit'),
         ];
     }
 }

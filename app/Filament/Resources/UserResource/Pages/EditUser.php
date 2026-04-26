@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\UserResource\Pages;
 
+use App\Modules\Core\Models\Tenant;
 use App\Filament\Resources\UserResource;
 use Filament\Resources\Pages\EditRecord;
 
@@ -41,7 +42,7 @@ class EditUser extends EditRecord
 
         // Jeśli super_admin, przypisz do system tenant (Tenant 0)
         if (isset($data['is_super_admin']) && $data['is_super_admin']) {
-            $systemTenant = \App\Modules\Core\Models\Tenant::getSystemTenant();
+            $systemTenant = Tenant::getSystemTenant();
             if ($systemTenant) {
                 $data['tenant_id'] = $systemTenant->id;
             }

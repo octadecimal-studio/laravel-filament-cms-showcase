@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Modules\Content\Models\SiteContentResource\Pages;
 
+use App\Modules\Content\Models\ContentBlock;
+use App\Modules\Content\Services\ContentBlockValidator;
+use Illuminate\Validation\ValidationException;
 use App\Filament\Resources\Modules\Content\Models\SiteContentResource;
 use Filament\Resources\Pages\CreateRecord;
 
@@ -28,13 +31,13 @@ class CreateSiteContent extends CreateRecord
 
         // Waliduj dane zgodnie z schema ContentBlock (jeśli wybrano)
         if (isset($data['content_block_id']) && isset($data['data'])) {
-            $contentBlock = \App\Modules\Content\Models\ContentBlock::find($data['content_block_id']);
+            $contentBlock = ContentBlock::find($data['content_block_id']);
             if ($contentBlock && $contentBlock->schema) {
                 try {
-                    $validator = app(\App\Modules\Content\Services\ContentBlockValidator::class);
+                    $validator = app(ContentBlockValidator::class);
                     $validated = $validator->validate($data, $contentBlock);
                     $data = array_merge($data, $validated);
-                } catch (\Illuminate\Validation\ValidationException $e) {
+                } catch (ValidationException $e) {
                     // Błędy walidacji zostaną wyświetlone przez Filament
                     throw $e;
                 }

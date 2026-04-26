@@ -4,6 +4,15 @@ declare(strict_types=1);
 
 namespace App\Modules\Content\Services;
 
+use Filament\Forms\Components\Placeholder;
+use Filament\Schemas\Components\Component;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\TagsInput;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\KeyValue;
 use App\Modules\Content\Models\ContentBlock;
 use Filament\Forms;
 use Illuminate\Support\Collection;
@@ -18,13 +27,13 @@ final class ContentBlockFormBuilder
      *
      * @param  ContentBlock|null  $contentBlock  ContentBlock (opcjonalnie)
      * @param  array<string, mixed>|null  $currentData  Aktualne dane (dla edycji)
-     * @return array<int, Forms\Components\Component>
+     * @return array<int, \Filament\Schemas\Components\Component>
      */
     public function buildForm(?ContentBlock $contentBlock, ?array $currentData = null): array
     {
         if (! $contentBlock || ! $contentBlock->schema) {
             return [
-                Forms\Components\Placeholder::make('no_block')
+                Placeholder::make('no_block')
                     ->label('')
                     ->content('Wybierz ContentBlock aby zobaczyć formularz')
                     ->columnSpanFull(),
@@ -54,14 +63,14 @@ final class ContentBlockFormBuilder
      * @param  array<string, mixed>  $fieldSchema  Schema pola
      * @param  array<string>  $required  Lista wymaganych pól
      * @param  array<string, mixed>|null  $currentData  Aktualne dane
-     * @return Forms\Components\Component|null
+     * @return \Filament\Schemas\Components\Component|null
      */
     private function buildField(
         string $fieldName,
         array $fieldSchema,
         array $required,
         ?array $currentData = null
-    ): ?Forms\Components\Component {
+    ): ?Component {
         $type = $fieldSchema['type'] ?? 'string';
         $title = $fieldSchema['title'] ?? $this->humanizeFieldName($fieldName);
         $description = $fieldSchema['description'] ?? null;
@@ -82,7 +91,7 @@ final class ContentBlockFormBuilder
     /**
      * Zbuduj pole tekstowe.
      *
-     * @return Forms\Components\TextInput|Forms\Components\Select
+     * @return TextInput|Select
      */
     private function buildStringField(
         string $name,
@@ -91,8 +100,8 @@ final class ContentBlockFormBuilder
         bool $required,
         mixed $default,
         array $schema
-    ): Forms\Components\Component {
-        $field = Forms\Components\TextInput::make("data.{$name}")
+    ): Component {
+        $field = TextInput::make("data.{$name}")
             ->label($label)
             ->default($default);
 
@@ -121,7 +130,7 @@ final class ContentBlockFormBuilder
 
         // Enum (select)
         if (isset($schema['enum'])) {
-            return Forms\Components\Select::make("data.{$name}")
+            return Select::make("data.{$name}")
                 ->label($label)
                 ->options(array_combine($schema['enum'], $schema['enum']))
                 ->default($default)
@@ -151,8 +160,8 @@ final class ContentBlockFormBuilder
         ?string $description,
         bool $required,
         mixed $default
-    ): Forms\Components\Textarea {
-        $field = Forms\Components\Textarea::make("data.{$name}")
+    ): Textarea {
+        $field = Textarea::make("data.{$name}")
             ->label($label)
             ->rows(3)
             ->default($default);
@@ -178,8 +187,8 @@ final class ContentBlockFormBuilder
         bool $required,
         mixed $default,
         array $schema
-    ): Forms\Components\TextInput {
-        $field = Forms\Components\TextInput::make("data.{$name}")
+    ): TextInput {
+        $field = TextInput::make("data.{$name}")
             ->label($label)
             ->numeric()
             ->default($default);
@@ -213,8 +222,8 @@ final class ContentBlockFormBuilder
         ?string $description,
         bool $required,
         mixed $default
-    ): Forms\Components\Toggle {
-        $field = Forms\Components\Toggle::make("data.{$name}")
+    ): Toggle {
+        $field = Toggle::make("data.{$name}")
             ->label($label)
             ->default($default ?? false);
 
@@ -235,12 +244,12 @@ final class ContentBlockFormBuilder
         bool $required,
         mixed $default,
         array $schema
-    ): Forms\Components\Component {
+    ): Component {
         $items = $schema['items'] ?? [];
 
         // Jeśli items to string (array of strings) - użyj TagsInput
         if (isset($items['type']) && $items['type'] === 'string') {
-            $field = Forms\Components\TagsInput::make("data.{$name}")
+            $field = TagsInput::make("data.{$name}")
                 ->label($label)
                 ->separator(',')
                 ->default($default ?? []);
@@ -253,11 +262,11 @@ final class ContentBlockFormBuilder
         }
 
         // W przeciwnym razie użyj Repeater
-        $field = Forms\Components\Repeater::make("data.{$name}")
+        $field = Repeater::make("data.{$name}")
             ->label($label)
             ->default($default ?? [])
             ->schema([
-                Forms\Components\KeyValue::make('item')
+                KeyValue::make('item')
                     ->keyLabel('Klucz')
                     ->valueLabel('Wartość'),
             ]);
@@ -283,8 +292,8 @@ final class ContentBlockFormBuilder
         bool $required,
         mixed $default,
         array $schema
-    ): Forms\Components\KeyValue {
-        $field = Forms\Components\KeyValue::make("data.{$name}")
+    ): KeyValue {
+        $field = KeyValue::make("data.{$name}")
             ->label($label)
             ->keyLabel('Klucz')
             ->valueLabel('Wartość')

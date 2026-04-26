@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\System;
 
+use Exception;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
@@ -60,7 +61,7 @@ final class HealthController extends Controller
                 'message' => 'Database connection OK',
                 'latency_ms' => round($latency, 2),
             ];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return [
                 'healthy' => false,
                 'message' => 'Database connection failed: ' . $e->getMessage(),
@@ -95,7 +96,7 @@ final class HealthController extends Controller
                 'message' => 'Cache OK',
                 'driver' => config('cache.default'),
             ];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return [
                 'healthy' => false,
                 'message' => 'Cache check failed: ' . $e->getMessage(),

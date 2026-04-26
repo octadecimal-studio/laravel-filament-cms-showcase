@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Public;
 
+use Illuminate\Database\Eloquent\Collection;
+use App\Modules\Content\Models\SiteContent;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\GetContentRequest;
 use App\Http\Resources\Api\V1\ContentResource;
@@ -75,7 +77,7 @@ final class ContentController extends Controller
      * Buduje strukturę odpowiedzi dla kontentu.
      *
      * @param Site $site
-     * @param \Illuminate\Database\Eloquent\Collection<int, \App\Modules\Content\Models\SiteContent> $contents
+     * @param Collection<int, SiteContent> $contents
      * @param string $env
      * @return array<string, mixed>
      */

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Plugins\Reservations\Models;
 
+use App\Modules\Core\Scopes\TenantScope;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\Site;
 use App\Modules\Content\Models\TwoWheels\Motorcycle;
 use App\Modules\Core\Traits\BelongsToTenant;
@@ -25,16 +28,16 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string $customer_name
  * @property string $customer_email
  * @property string $customer_phone
- * @property \Carbon\Carbon $pickup_date
- * @property \Carbon\Carbon $return_date
+ * @property Carbon $pickup_date
+ * @property Carbon $return_date
  * @property string $status
  * @property float|null $total_price
  * @property string|null $notes
  * @property bool $rodo_consent
- * @property \Carbon\Carbon|null $rodo_consent_at
- * @property \Carbon\Carbon $created_at
- * @property \Carbon\Carbon $updated_at
- * @property \Carbon\Carbon|null $deleted_at
+ * @property Carbon|null $rodo_consent_at
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property Carbon|null $deleted_at
  */
 class Reservation extends Model
 {
@@ -142,18 +145,17 @@ class Reservation extends Model
     public function motorcycle(): BelongsTo
     {
         return $this->belongsTo(Motorcycle::class, 'motorcycle_id')
-            ->withoutGlobalScope(\App\Modules\Core\Scopes\TenantScope::class);
+            ->withoutGlobalScope(TenantScope::class);
     }
 
     // -------------------------------------------------------------------------
     // Scopes
     // -------------------------------------------------------------------------
-
     /**
      * Scope: rezerwacje oczekujące.
      *
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @param Builder $query
+     * @return Builder
      */
     public function scopePending($query)
     {
@@ -163,8 +165,8 @@ class Reservation extends Model
     /**
      * Scope: rezerwacje potwierdzone.
      *
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @param Builder $query
+     * @return Builder
      */
     public function scopeConfirmed($query)
     {
@@ -174,8 +176,8 @@ class Reservation extends Model
     /**
      * Scope: nadchodzące rezerwacje (pickup_date >= today).
      *
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @param Builder $query
+     * @return Builder
      */
     public function scopeUpcoming($query)
     {
@@ -185,9 +187,9 @@ class Reservation extends Model
     /**
      * Scope: rezerwacje dla konkretnej strony.
      *
-     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param Builder $query
      * @param string $siteId
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @return Builder
      */
     public function scopeForSite($query, string $siteId)
     {

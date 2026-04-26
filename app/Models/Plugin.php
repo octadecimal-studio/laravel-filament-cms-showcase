@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Modules\Plugins\Services\PluginService;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -71,11 +74,11 @@ class Plugin extends Model
 
         // Sprawdź kompatybilność PRZED próbą załadowania klasy
         // NIE używamy class_exists() bo to może wywołać autoload i fatal error
-        $service = app(\App\Modules\Plugins\Services\PluginService::class);
+        $service = app(PluginService::class);
         $compatibility = $service->checkCompatibility($this->package, $this->class_name);
         
         if (!$compatibility['compatible']) {
-            \Illuminate\Support\Facades\Log::warning("Plugin {$this->package} nie jest kompatybilny: " . $compatibility['message']);
+            Log::warning("Plugin {$this->package} nie jest kompatybilny: " . $compatibility['message']);
             return null;
         }
 
@@ -83,7 +86,7 @@ class Plugin extends Model
         // Używamy class_exists($class, false) - false oznacza że NIE wywołuje autoloadera
         // To zapobiega fatal error jeśli klasa wymaga brakujących zależności
         if (!class_exists($this->class_name, false)) {
-            \Illuminate\Support\Facades\Log::warning("Klasa pluginu {$this->class_name} nie istnieje lub wymaga brakujących zależności");
+            Log::warning("Klasa pluginu {$this->class_name} nie istnieje lub wymaga brakujących zależności");
             return null;
         }
 
@@ -95,9 +98,9 @@ class Plugin extends Model
             
             // Jeśli nie ma make(), spróbuj new
             return new $this->class_name();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             // Używamy Throwable zamiast Exception aby złapać również Fatal Errors
-            \Illuminate\Support\Facades\Log::error("Błąd tworzenia instancji pluginu {$this->class_name}: " . $e->getMessage());
+            Log::error("Błąd tworzenia instancji pluginu {$this->class_name}: " . $e->getMessage());
             return null;
         }
     }

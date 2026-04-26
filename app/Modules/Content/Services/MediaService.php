@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Modules\Content\Services;
 
+use InvalidArgumentException;
+use RuntimeException;
+use Intervention\Image\Interfaces\ImageInterface;
+use Exception;
 use App\Modules\Content\Models\Media;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -51,14 +55,14 @@ final class MediaService
         $tenantId = $attributes['tenant_id'] ?? null;
 
         if (! $tenantId) {
-            throw new \InvalidArgumentException('tenant_id is required');
+            throw new InvalidArgumentException('tenant_id is required');
         }
 
         // Upload oryginalnego pliku
         $path = $file->store("media/{$collection}", $disk);
 
         if ($path === false) {
-            throw new \RuntimeException('Failed to store file');
+            throw new RuntimeException('Failed to store file');
         }
 
         $fullPath = Storage::disk($disk)->path($path);
@@ -112,7 +116,7 @@ final class MediaService
      *
      * @return array<string, array{path: string, width: int, height: int}>
      */
-    private function generateVariants(\Intervention\Image\Interfaces\ImageInterface $image, string $originalPath, string $disk, string $collection): array
+    private function generateVariants(ImageInterface $image, string $originalPath, string $disk, string $collection): array
     {
         $variants = [];
         $pathInfo = pathinfo($originalPath);
@@ -150,7 +154,7 @@ final class MediaService
      *
      * @return array<string, mixed>|null
      */
-    private function extractMetadata(\Intervention\Image\Interfaces\ImageInterface $image): ?array
+    private function extractMetadata(ImageInterface $image): ?array
     {
         try {
             $exif = $image->exif();
@@ -158,7 +162,7 @@ final class MediaService
             return [
                 'exif' => $exif ?: [],
             ];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return null;
         }
     }
@@ -220,7 +224,7 @@ final class MediaService
             ]);
 
             return true;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return false;
         }
     }

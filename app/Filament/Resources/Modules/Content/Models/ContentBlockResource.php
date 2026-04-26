@@ -4,6 +4,29 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Modules\Content\Models;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\KeyValue;
+use Filament\Forms\Components\Toggle;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
+use Filament\Tables\Filters\TrashedFilter;
+use Filament\Actions\ViewAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\RestoreAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\RestoreBulkAction;
+use Filament\Actions\ForceDeleteBulkAction;
+use App\Filament\Resources\Modules\Content\Models\ContentBlockResource\Pages\ListContentBlocks;
+use App\Filament\Resources\Modules\Content\Models\ContentBlockResource\Pages\CreateContentBlock;
+use App\Filament\Resources\Modules\Content\Models\ContentBlockResource\Pages\ViewContentBlock;
+use App\Filament\Resources\Modules\Content\Models\ContentBlockResource\Pages\EditContentBlock;
 use App\Filament\Concerns\HasGlobalBulkActions;
 use App\Filament\Concerns\RemembersTableSettings;
 use App\Filament\Resources\Modules\Content\Models\ContentBlockResource\Pages;
@@ -31,7 +54,7 @@ final class ContentBlockResource extends Resource
         return false;
     }
 
-    protected static ?string $navigationIcon = 'heroicon-o-squares-2x2';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-squares-2x2';
 
     protected static ?string $navigationLabel = 'Bloki treści';
 
@@ -39,55 +62,55 @@ final class ContentBlockResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Bloki treści';
 
-    protected static ?string $navigationGroup = 'Content';
+    protected static string | \UnitEnum | null $navigationGroup = 'Content';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make('Podstawowe informacje')
+        return $schema
+            ->components([
+                Section::make('Podstawowe informacje')
                     ->schema([
-                        Forms\Components\TextInput::make('name')
+                        TextInput::make('name')
                             ->label('Nazwa')
                             ->required()
                             ->maxLength(255)
                             ->columnSpanFull(),
 
-                        Forms\Components\TextInput::make('slug')
+                        TextInput::make('slug')
                             ->label('Slug')
                             ->required()
                             ->maxLength(255)
                             ->unique(ignoreRecord: true)
                             ->helperText('Unikalny identyfikator bloku'),
 
-                        Forms\Components\TextInput::make('category')
+                        TextInput::make('category')
                             ->label('Kategoria')
                             ->maxLength(255)
                             ->helperText('np. hero, features, cta'),
 
-                        Forms\Components\Textarea::make('description')
+                        Textarea::make('description')
                             ->label('Opis')
                             ->rows(3)
                             ->columnSpanFull(),
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make('Schema i dane')
+                Section::make('Schema i dane')
                     ->schema([
-                        Forms\Components\KeyValue::make('schema')
+                        KeyValue::make('schema')
                             ->label('JSON Schema')
                             ->keyLabel('Klucz')
                             ->valueLabel('Wartość')
                             ->columnSpanFull()
                             ->helperText('Definicja pól bloku (JSON Schema)'),
 
-                        Forms\Components\KeyValue::make('default_data')
+                        KeyValue::make('default_data')
                             ->label('Domyślne dane')
                             ->keyLabel('Klucz')
                             ->valueLabel('Wartość')
                             ->columnSpanFull(),
 
-                        Forms\Components\KeyValue::make('config')
+                        KeyValue::make('config')
                             ->label('Konfiguracja')
                             ->keyLabel('Klucz')
                             ->valueLabel('Wartość')
@@ -95,9 +118,9 @@ final class ContentBlockResource extends Resource
                     ])
                     ->collapsible(),
 
-                Forms\Components\Section::make('Status')
+                Section::make('Status')
                     ->schema([
-                        Forms\Components\Toggle::make('is_active')
+                        Toggle::make('is_active')
                             ->label('Aktywny')
                             ->default(true),
                     ])
@@ -115,40 +138,40 @@ final class ContentBlockResource extends Resource
         
         $table = $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                     ->label('Nazwa')
                     ->searchable()
                     ->sortable()
                     ->weight('bold'),
 
-                Tables\Columns\TextColumn::make('slug')
+                TextColumn::make('slug')
                     ->label('Slug')
                     ->searchable()
                     ->toggleable(),
 
-                Tables\Columns\TextColumn::make('category')
+                TextColumn::make('category')
                     ->label('Kategoria')
                     ->badge()
                     ->searchable()
                     ->toggleable(),
 
-                Tables\Columns\IconColumn::make('is_active')
+                IconColumn::make('is_active')
                     ->label('Aktywny')
                     ->boolean(),
 
-                Tables\Columns\TextColumn::make('usage_count')
+                TextColumn::make('usage_count')
                     ->label('Użycia')
                     ->sortable()
                     ->toggleable(),
 
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->label('Utworzono')
                     ->dateTime('d.m.Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('category')
+                SelectFilter::make('category')
                     ->label('Kategoria')
                     ->options(function (): array {
                         // Pobierz wszystkie unikalne kategorie z bazy danych
@@ -163,25 +186,25 @@ final class ContentBlockResource extends Resource
                     ->searchable()
                     ->native(false),
 
-                Tables\Filters\TernaryFilter::make('is_active')
+                TernaryFilter::make('is_active')
                     ->label('Aktywny')
                     ->placeholder('Wszystkie')
                     ->trueLabel('Tak')
                     ->falseLabel('Nie'),
 
-                Tables\Filters\TrashedFilter::make(),
+                TrashedFilter::make(),
             ])
-            ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
-                Tables\Actions\RestoreAction::make(),
+            ->recordActions([
+                ViewAction::make(),
+                EditAction::make(),
+                DeleteAction::make(),
+                RestoreAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
                 ]),
             ])
             ->defaultSort('created_at', 'desc');
@@ -202,10 +225,10 @@ final class ContentBlockResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListContentBlocks::route('/'),
-            'create' => Pages\CreateContentBlock::route('/create'),
-            'view' => Pages\ViewContentBlock::route('/{record}'),
-            'edit' => Pages\EditContentBlock::route('/{record}/edit'),
+            'index' => ListContentBlocks::route('/'),
+            'create' => CreateContentBlock::route('/create'),
+            'view' => ViewContentBlock::route('/{record}'),
+            'edit' => EditContentBlock::route('/{record}/edit'),
         ];
     }
 

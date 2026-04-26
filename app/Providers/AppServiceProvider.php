@@ -2,6 +2,21 @@
 
 namespace App\Providers;
 
+use App\Modules\Content\Models\ContentBlock;
+use App\Observers\ContentBlockObserver;
+use App\Modules\Content\Models\SiteContent;
+use App\Observers\SiteContentObserver;
+use App\Modules\Content\Models\TwoWheels\SiteSetting;
+use App\Modules\Content\Models\TwoWheels\Feature;
+use App\Modules\Content\Models\TwoWheels\Motorcycle;
+use App\Modules\Content\Models\TwoWheels\MotorcycleBrand;
+use App\Modules\Content\Models\TwoWheels\MotorcycleCategory;
+use App\Modules\Content\Models\TwoWheels\Testimonial;
+use App\Modules\Content\Models\TwoWheels\ProcessStep;
+use App\Modules\Content\Models\TwoWheels\RentalCondition;
+use App\Modules\Content\Models\TwoWheels\PricingNote;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Cache\RateLimiting\Limit;
 use App\Plugins\Reservations\Models\Reservation;
 use App\Policies\ReservationPolicy;
 use App\Session\DatabaseSessionHandler;
@@ -48,25 +63,25 @@ class AppServiceProvider extends ServiceProvider
         }
 
         // Register observers for content revalidation
-        if (class_exists(\App\Modules\Content\Models\ContentBlock::class)) {
-            \App\Modules\Content\Models\ContentBlock::observe(\App\Observers\ContentBlockObserver::class);
+        if (class_exists(ContentBlock::class)) {
+            ContentBlock::observe(ContentBlockObserver::class);
         }
 
-        if (class_exists(\App\Modules\Content\Models\SiteContent::class)) {
-            \App\Modules\Content\Models\SiteContent::observe(\App\Observers\SiteContentObserver::class);
+        if (class_exists(SiteContent::class)) {
+            SiteContent::observe(SiteContentObserver::class);
         }
 
         // Clear application cache when any MotoRent content model is saved or deleted
         $twoWheelsModels = [
-            \App\Modules\Content\Models\TwoWheels\SiteSetting::class,
-            \App\Modules\Content\Models\TwoWheels\Feature::class,
-            \App\Modules\Content\Models\TwoWheels\Motorcycle::class,
-            \App\Modules\Content\Models\TwoWheels\MotorcycleBrand::class,
-            \App\Modules\Content\Models\TwoWheels\MotorcycleCategory::class,
-            \App\Modules\Content\Models\TwoWheels\Testimonial::class,
-            \App\Modules\Content\Models\TwoWheels\ProcessStep::class,
-            \App\Modules\Content\Models\TwoWheels\RentalCondition::class,
-            \App\Modules\Content\Models\TwoWheels\PricingNote::class,
+            SiteSetting::class,
+            Feature::class,
+            Motorcycle::class,
+            MotorcycleBrand::class,
+            MotorcycleCategory::class,
+            Testimonial::class,
+            ProcessStep::class,
+            RentalCondition::class,
+            PricingNote::class,
         ];
 
         $clearCache = function () {
@@ -81,8 +96,8 @@ class AppServiceProvider extends ServiceProvider
         }
 
         // Configure rate limiting
-        \Illuminate\Support\Facades\RateLimiter::for('api', function ($request) {
-            return \Illuminate\Cache\RateLimiting\Limit::perMinute(300)->by($request->ip());
+        RateLimiter::for('api', function ($request) {
+            return Limit::perMinute(300)->by($request->ip());
         });
     }
 }

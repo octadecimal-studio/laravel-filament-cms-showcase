@@ -4,6 +4,30 @@ declare(strict_types=1);
 
 namespace App\Plugins\Reservations\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\BadgeColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\TrashedFilter;
+use Filament\Actions\Action;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\ForceDeleteBulkAction;
+use Filament\Actions\RestoreBulkAction;
+use App\Plugins\Reservations\Filament\Resources\ReservationResource\Pages\ListReservations;
+use App\Plugins\Reservations\Filament\Resources\ReservationResource\Pages\CreateReservation;
+use App\Plugins\Reservations\Filament\Resources\ReservationResource\Pages\EditReservation;
+use App\Plugins\Reservations\Filament\Resources\ReservationResource\Pages\ViewReservation;
 use App\Modules\Content\Models\TwoWheels\Motorcycle;
 use App\Modules\Core\Scopes\TenantScope;
 use App\Plugins\Reservations\Filament\Resources\ReservationResource\Pages;
@@ -35,7 +59,7 @@ class ReservationResource extends Resource
     /**
      * Ikona w nawigacji.
      */
-    protected static ?string $navigationIcon = 'heroicon-o-calendar-days';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-calendar-days';
 
     /**
      * Etykieta nawigacji.
@@ -60,24 +84,24 @@ class ReservationResource extends Resource
     /**
      * Definicja formularza.
      */
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make('Dane klienta')
+        return $schema
+            ->components([
+                Section::make('Dane klienta')
                     ->schema([
-                        Forms\Components\TextInput::make('customer_name')
+                        TextInput::make('customer_name')
                             ->label('Imię i nazwisko')
                             ->required()
                             ->maxLength(255),
 
-                        Forms\Components\TextInput::make('customer_email')
+                        TextInput::make('customer_email')
                             ->label('Email')
                             ->email()
                             ->required()
                             ->maxLength(255),
 
-                        Forms\Components\TextInput::make('customer_phone')
+                        TextInput::make('customer_phone')
                             ->label('Telefon')
                             ->tel()
                             ->required()
@@ -85,9 +109,9 @@ class ReservationResource extends Resource
                     ])
                     ->columns(3),
 
-                Forms\Components\Section::make('Szczegóły rezerwacji')
+                Section::make('Szczegóły rezerwacji')
                     ->schema([
-                        Forms\Components\Select::make('motorcycle_id')
+                        Select::make('motorcycle_id')
                             ->label('Motocykl')
                             ->options(function (): array {
                                 $q = Motorcycle::query()
@@ -102,24 +126,24 @@ class ReservationResource extends Resource
                             ->searchable()
                             ->nullable(),
 
-                        Forms\Components\DatePicker::make('pickup_date')
+                        DatePicker::make('pickup_date')
                             ->label('Data odbioru')
                             ->required()
                             ->native(false),
 
-                        Forms\Components\DatePicker::make('return_date')
+                        DatePicker::make('return_date')
                             ->label('Data zwrotu')
                             ->required()
                             ->native(false)
                             ->afterOrEqual('pickup_date'),
 
-                        Forms\Components\Select::make('status')
+                        Select::make('status')
                             ->label('Status')
                             ->options(Reservation::statuses())
                             ->required()
                             ->default('pending'),
 
-                        Forms\Components\TextInput::make('total_price')
+                        TextInput::make('total_price')
                             ->label('Cena całkowita')
                             ->numeric()
                             ->prefix('PLN')
@@ -127,19 +151,19 @@ class ReservationResource extends Resource
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make('Dodatkowe informacje')
+                Section::make('Dodatkowe informacje')
                     ->schema([
-                        Forms\Components\Textarea::make('notes')
+                        Textarea::make('notes')
                             ->label('Notatki')
                             ->rows(3)
                             ->columnSpanFull(),
 
-                        Forms\Components\Toggle::make('rodo_consent')
+                        Toggle::make('rodo_consent')
                             ->label('Zgoda RODO')
                             ->disabled()
                             ->dehydrated(false),
 
-                        Forms\Components\DateTimePicker::make('rodo_consent_at')
+                        DateTimePicker::make('rodo_consent_at')
                             ->label('Data zgody RODO')
                             ->disabled()
                             ->dehydrated(false),
@@ -154,33 +178,33 @@ class ReservationResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('pickup_date')
+                TextColumn::make('pickup_date')
                     ->label('Odbiór')
                     ->date('d.m.Y')
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('return_date')
+                TextColumn::make('return_date')
                     ->label('Zwrot')
                     ->date('d.m.Y')
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('customer_name')
+                TextColumn::make('customer_name')
                     ->label('Klient')
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('customer_phone')
+                TextColumn::make('customer_phone')
                     ->label('Telefon')
                     ->searchable()
                     ->toggleable(),
 
-                Tables\Columns\TextColumn::make('motorcycle.name')
+                TextColumn::make('motorcycle.name')
                     ->label('Motocykl')
                     ->formatStateUsing(fn (?string $state, Reservation $record): string => $record->motorcycle?->name ?? 'Brak')
                     ->placeholder('Brak')
                     ->toggleable(),
 
-                Tables\Columns\BadgeColumn::make('status')
+                BadgeColumn::make('status')
                     ->label('Status')
                     ->colors([
                         'warning' => 'pending',
@@ -190,28 +214,28 @@ class ReservationResource extends Resource
                     ])
                     ->formatStateUsing(fn (string $state): string => Reservation::statuses()[$state] ?? $state),
 
-                Tables\Columns\TextColumn::make('total_price')
+                TextColumn::make('total_price')
                     ->label('Cena')
                     ->money('PLN')
                     ->sortable()
                     ->toggleable(),
 
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->label('Utworzono')
                     ->dateTime('d.m.Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('status')
+                SelectFilter::make('status')
                     ->label('Status')
                     ->options(Reservation::statuses()),
 
-                Tables\Filters\Filter::make('pickup_date')
-                    ->form([
-                        Forms\Components\DatePicker::make('from')
+                Filter::make('pickup_date')
+                    ->schema([
+                        DatePicker::make('from')
                             ->label('Odbiór od'),
-                        Forms\Components\DatePicker::make('until')
+                        DatePicker::make('until')
                             ->label('Odbiór do'),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
@@ -226,10 +250,10 @@ class ReservationResource extends Resource
                             );
                     }),
 
-                Tables\Filters\TrashedFilter::make(),
+                TrashedFilter::make(),
             ])
-            ->actions([
-                Tables\Actions\Action::make('confirm')
+            ->recordActions([
+                Action::make('confirm')
                     ->label('Potwierdź')
                     ->icon('heroicon-o-check')
                     ->color('success')
@@ -237,7 +261,7 @@ class ReservationResource extends Resource
                     ->requiresConfirmation()
                     ->action(fn (Reservation $record) => $record->confirm()),
 
-                Tables\Actions\Action::make('cancel')
+                Action::make('cancel')
                     ->label('Anuluj')
                     ->icon('heroicon-o-x-mark')
                     ->color('danger')
@@ -245,14 +269,14 @@ class ReservationResource extends Resource
                     ->requiresConfirmation()
                     ->action(fn (Reservation $record) => $record->cancel()),
 
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\ViewAction::make(),
+                EditAction::make(),
+                ViewAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
                 ]),
             ])
             ->defaultSort('pickup_date', 'asc')
@@ -275,10 +299,10 @@ class ReservationResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListReservations::route('/'),
-            'create' => Pages\CreateReservation::route('/create'),
-            'edit' => Pages\EditReservation::route('/{record}/edit'),
-            'view' => Pages\ViewReservation::route('/{record}'),
+            'index' => ListReservations::route('/'),
+            'create' => CreateReservation::route('/create'),
+            'edit' => EditReservation::route('/{record}/edit'),
+            'view' => ViewReservation::route('/{record}'),
         ];
     }
 
@@ -290,7 +314,7 @@ class ReservationResource extends Resource
         $query = parent::getEloquentQuery()
             ->with('motorcycle')
             ->withoutGlobalScopes([
-                \App\Modules\Core\Scopes\TenantScope::class,
+                TenantScope::class,
             ]);
 
         $user = auth()->user();
@@ -309,7 +333,7 @@ class ReservationResource extends Resource
     {
         $user = auth()->user();
         
-        $query = static::getModel()::withoutGlobalScope(\App\Modules\Core\Scopes\TenantScope::class)
+        $query = static::getModel()::withoutGlobalScope(TenantScope::class)
             ->pending();
         
         // Klient widzi tylko swoje rezerwacje

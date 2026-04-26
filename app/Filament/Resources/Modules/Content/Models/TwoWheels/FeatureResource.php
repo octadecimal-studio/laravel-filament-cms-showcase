@@ -4,6 +4,33 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Modules\Content\Models\TwoWheels;
 
+use App\Modules\Core\Scopes\TenantScope;
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Actions\Action;
+use App\Modules\Core\Models\Tenant;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Filters\TernaryFilter;
+use Filament\Tables\Filters\TrashedFilter;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\RestoreAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\RestoreBulkAction;
+use App\Filament\Resources\Modules\Content\Models\TwoWheels\FeatureResource\Pages\ListFeatures;
+use App\Filament\Resources\Modules\Content\Models\TwoWheels\FeatureResource\Pages\CreateFeature;
+use App\Filament\Resources\Modules\Content\Models\TwoWheels\FeatureResource\Pages\EditFeature;
 use App\Filament\Resources\Modules\Content\Models\TwoWheels\FeatureResource\Pages;
 use App\Filament\Resources\Modules\Content\Models\TwoWheels\FeatureResource\RelationManagers;
 use App\Modules\Content\Models\TwoWheels\Feature;
@@ -24,7 +51,7 @@ final class FeatureResource extends Resource
 {
     protected static ?string $model = Feature::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-sparkles';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-sparkles';
 
     protected static ?string $navigationLabel = 'Zalety';
 
@@ -42,7 +69,7 @@ final class FeatureResource extends Resource
         $query = parent::getEloquentQuery()
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
-                \App\Modules\Core\Scopes\TenantScope::class,
+                TenantScope::class,
             ]);
 
         $user = auth()->user();
@@ -52,25 +79,25 @@ final class FeatureResource extends Resource
         return $query;
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make('Podstawowe informacje')
+        return $schema
+            ->components([
+                Section::make('Podstawowe informacje')
                     ->schema([
-                        Forms\Components\TextInput::make('order')
+                        TextInput::make('order')
                             ->label('Kolejność')
                             ->numeric()
                             ->default(0)
                             ->required(),
 
-                        Forms\Components\TextInput::make('title')
+                        TextInput::make('title')
                             ->label('Tytuł')
                             ->required()
                             ->maxLength(255)
                             ->columnSpanFull(),
 
-                        Forms\Components\Textarea::make('description')
+                        Textarea::make('description')
                             ->label('Opis')
                             ->rows(3)
                             ->required()
@@ -78,9 +105,9 @@ final class FeatureResource extends Resource
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make('Ikona')
+                Section::make('Ikona')
                     ->schema([
-                        Forms\Components\Placeholder::make('current_icon_preview')
+                        Placeholder::make('current_icon_preview')
                             ->label('Aktualna ikona')
                             ->content(function (?Feature $record): Htmlable {
                                 if (! $record || ! $record->icon) {
@@ -95,7 +122,7 @@ final class FeatureResource extends Resource
                             ->visible(fn (string $operation): bool => $operation === 'edit')
                             ->columnSpanFull(),
 
-                        Forms\Components\FileUpload::make('new_icon')
+                        FileUpload::make('new_icon')
                             ->label(fn (string $operation): string => $operation === 'create' ? 'Wgraj ikonę' : 'Podmień ikonę')
                             ->helperText('Wgraj ikonę lub użyj edytora do kadrowania. Obsługiwane: JPG, PNG, WebP.')
                             ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
@@ -119,18 +146,18 @@ final class FeatureResource extends Resource
                             ->downloadable()
                             ->columnSpanFull(),
 
-                        Forms\Components\Hidden::make('icon_id'),
+                        Hidden::make('icon_id'),
                     ]),
 
-                Forms\Components\Section::make('Status')
+                Section::make('Status')
                     ->schema([
-                        Forms\Components\Toggle::make('published')
+                        Toggle::make('published')
                             ->label('Opublikowany')
                             ->default(false),
 
-                        Forms\Components\DateTimePicker::make('published_at')
+                        DateTimePicker::make('published_at')
                             ->label('Data publikacji')
-                            ->visible(fn (Forms\Get $get): bool => $get('published') === true),
+                            ->visible(fn (Get $get): bool => $get('published') === true),
                     ])
                     ->columns(2),
             ]);
@@ -140,7 +167,7 @@ final class FeatureResource extends Resource
     {
         return $table
             ->headerActions([
-                Tables\Actions\Action::make('view_api')
+                Action::make('view_api')
                     ->label('Zobacz API')
                     ->icon('heroicon-o-code-bracket')
                     ->url(function () {
@@ -149,40 +176,40 @@ final class FeatureResource extends Resource
                         if ($u?->isSuperAdmin()) {
                             return $base;
                         }
-                        return $base . '?tenant_id=' . ($u?->tenant_id ?? \App\Modules\Core\Models\Tenant::where('slug', 'demo-studio')->where('is_active', true)->value('id') ?? '');
+                        return $base . '?tenant_id=' . ($u?->tenant_id ?? Tenant::where('slug', 'demo-studio')->where('is_active', true)->value('id') ?? '');
                     })
                     ->openUrlInNewTab()
                     ->color('info'),
             ])
             ->columns([
-                Tables\Columns\TextColumn::make('order')
+                TextColumn::make('order')
                     ->label('Kolejność')
                     ->sortable()
                     ->badge(),
 
-                Tables\Columns\TextColumn::make('title')
+                TextColumn::make('title')
                     ->label('Tytuł')
                     ->searchable()
                     ->sortable()
                     ->weight('bold'),
 
-                Tables\Columns\TextColumn::make('description')
+                TextColumn::make('description')
                     ->label('Opis')
                     ->limit(50)
                     ->toggleable(),
 
-                Tables\Columns\ImageColumn::make('icon.file_path')
+                ImageColumn::make('icon.file_path')
                     ->label('Ikona')
                     ->height(30)
                     ->width(30)
                     ->toggleable(),
 
-                Tables\Columns\IconColumn::make('published')
+                IconColumn::make('published')
                     ->label('Opublikowany')
                     ->boolean()
                     ->toggleable(),
 
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->label('Utworzono')
                     ->dateTime('d.m.Y H:i')
                     ->sortable()
@@ -190,23 +217,23 @@ final class FeatureResource extends Resource
             ])
             ->defaultSort('order')
             ->filters([
-                Tables\Filters\TernaryFilter::make('published')
+                TernaryFilter::make('published')
                     ->label('Opublikowany')
                     ->placeholder('Wszystkie')
                     ->trueLabel('Tak')
                     ->falseLabel('Nie'),
 
-                Tables\Filters\TrashedFilter::make(),
+                TrashedFilter::make(),
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
-                Tables\Actions\RestoreAction::make(),
+            ->recordActions([
+                EditAction::make(),
+                DeleteAction::make(),
+                RestoreAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
                 ]),
             ]);
     }
@@ -221,9 +248,9 @@ final class FeatureResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListFeatures::route('/'),
-            'create' => Pages\CreateFeature::route('/create'),
-            'edit' => Pages\EditFeature::route('/{record}/edit'),
+            'index' => ListFeatures::route('/'),
+            'create' => CreateFeature::route('/create'),
+            'edit' => EditFeature::route('/{record}/edit'),
         ];
     }
 }

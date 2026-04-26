@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Content\Services;
 
+use RuntimeException;
 use App\Models\Site;
 use App\Models\User;
 use App\Modules\Content\Models\ContentPublished;
@@ -118,7 +119,7 @@ final class ContentService
      * @param array<string, mixed>|null $notes Notatki do publikacji
      * @return ContentPublished
      *
-     * @throws \RuntimeException Gdy brak wersji do publikacji
+     * @throws RuntimeException Gdy brak wersji do publikacji
      */
     public function publishContent(
         SiteContent $content,
@@ -130,7 +131,7 @@ final class ContentService
         $currentVersion = $this->versioningService->getCurrentVersion($content);
 
         if ($currentVersion === null) {
-            throw new \RuntimeException("Brak wersji do publikacji dla content ID: {$content->id}");
+            throw new RuntimeException("Brak wersji do publikacji dla content ID: {$content->id}");
         }
 
         return DB::transaction(function () use ($content, $env, $currentVersion, $user, $notes) {
@@ -194,7 +195,7 @@ final class ContentService
      * @param User|null $user Użytkownik
      * @return ContentPublished
      *
-     * @throws \RuntimeException Gdy wersja nie istnieje
+     * @throws RuntimeException Gdy wersja nie istnieje
      */
     public function revertToVersion(
         SiteContent $content,
@@ -205,7 +206,7 @@ final class ContentService
         $version = ContentVersion::find($versionId);
 
         if ($version === null) {
-            throw new \RuntimeException("Wersja nie istnieje: {$versionId}");
+            throw new RuntimeException("Wersja nie istnieje: {$versionId}");
         }
 
         return DB::transaction(function () use ($content, $env, $version, $user) {
