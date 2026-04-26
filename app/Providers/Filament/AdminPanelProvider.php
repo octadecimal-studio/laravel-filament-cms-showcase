@@ -30,6 +30,7 @@ use Filament\View\PanelsRenderHook;
 use Illuminate\Support\HtmlString;
 use Filament\Widgets;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
+use Octadecimal\Rental\RentalPlugin;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Routing\Middleware\SubstituteBindings;
@@ -456,6 +457,9 @@ class AdminPanelProvider extends PanelProvider
 
             // Filament Shield - zarządzanie rolami i uprawnieniami
             ->plugin(FilamentShieldPlugin::make())
+
+            // Octadecimal Rental - system rezerwacji (KML-0042 / A2)
+            ->plugin(RentalPlugin::make())
 
             // Niestandardowe pozycje menu
             ->navigationItems(array_merge(
