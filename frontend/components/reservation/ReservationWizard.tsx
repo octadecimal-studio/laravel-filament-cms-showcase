@@ -8,12 +8,7 @@ import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import Image from 'next/image';
 import Link from 'next/link';
-import {
-  createRental,
-  initPayment,
-  RentalApiError,
-  type CreateRentalResponse,
-} from '@/lib/rental-api';
+import { createRental, initPayment, RentalApiError } from '@/lib/rental-api';
 import AvailabilityCalendar from './AvailabilityCalendar';
 import type { Motorcycle } from '@/lib/api';
 
@@ -55,12 +50,10 @@ const personalSchema = z.object({
 type PersonalForm = z.infer<typeof personalSchema>;
 
 export default function ReservationWizard({ motorcycle }: Props) {
-  const [step, setStep] = useState<1 | 2 | 3 | 'success'>(1);
+  const [step, setStep] = useState<1 | 2 | 3>(1);
   const [range, setRange] = useState<Range | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [createdRental, setCreatedRental] =
-    useState<CreateRentalResponse | null>(null);
 
   const {
     register,
@@ -99,30 +92,26 @@ export default function ReservationWizard({ motorcycle }: Props) {
         gdpr_consent: true,
       });
 
-      setCreatedRental(rental);
-
-      // G3: jesli wymaga platnosci -> P24 redirect
+      // G3: jesli wymaga platnosci -> P24 redirect (P24 zwroci na /rezerwacja/sukces lub /rezerwacja/blad)
       if (rental.requires_payment) {
         try {
           const payment = await initPayment(rental.id);
           window.location.assign(payment.redirect_url);
           return;
         } catch (err) {
-          const msg =
-            err instanceof RentalApiError
-              ? `${err.message} (HTTP ${err.status})`
-              : err instanceof Error
-                ? err.message
-                : 'Blad inicjalizacji platnosci';
-          setSubmitError(
-            `Rezerwacja zostala utworzona (${rental.id.slice(0, 8)}…) ale platnosc sie nie powiodla: ${msg}. Skontaktujemy sie z Toba.`,
+          const code =
+            err instanceof RentalApiError ? String(err.status) : 'unknown';
+          window.location.assign(
+            `/rezerwacja/blad?rental=${encodeURIComponent(rental.id)}&reason=failed&code=${code}`,
           );
-          setStep('success');
           return;
         }
       }
 
-      setStep('success');
+      // Brak platnosci wymaganej -> bezposrednio na strone sukcesu
+      window.location.assign(
+        `/rezerwacja/sukces?rental=${encodeURIComponent(rental.id)}`,
+      );
     } catch (err) {
       if (err instanceof RentalApiError) {
         if (err.status === 409) {
@@ -149,55 +138,6 @@ export default function ReservationWizard({ motorcycle }: Props) {
     }
   };
 
-  // === SUKCES (rezerwacja bez platnosci) ===
-  if (step === 'success' && createdRental) {
-    return (
-      <div className="bg-white rounded-xl shadow-lg p-6 lg:p-12">
-        <div className="max-w-2xl mx-auto text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
-            <svg
-              className="w-8 h-8 text-green-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
-          </div>
-          <h2 className="font-heading text-3xl font-bold mb-2">
-            Rezerwacja zlozona!
-          </h2>
-          <p className="text-gray-medium mb-6">
-            Numer rezerwacji:{' '}
-            <span className="font-mono font-semibold">
-              {createdRental.id.slice(0, 8).toUpperCase()}
-            </span>
-          </p>
-          {submitError && (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-yellow-800 mb-6 text-sm">
-              {submitError}
-            </div>
-          )}
-          <p className="text-gray-600 mb-8">
-            Wyslalismy potwierdzenie na adres email. Skontaktujemy sie z Toba w
-            celu finalizacji rezerwacji.
-          </p>
-          <Link
-            href="/"
-            className="inline-block bg-accent-red text-white px-8 py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors"
-          >
-            Powrot na strone glowna
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div id="wizard-rezerwacji" className="bg-white rounded-xl shadow-lg p-6 lg:p-10">
       {/* Stepper */}
@@ -208,12 +148,12 @@ export default function ReservationWizard({ motorcycle }: Props) {
               className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm transition-colors ${
                 step === n
                   ? 'bg-accent-red text-white'
-                  : (typeof step === 'number' && step > n)
+                  : step > n
                     ? 'bg-green-500 text-white'
                     : 'bg-gray-200 text-gray-500'
               }`}
             >
-              {typeof step === 'number' && step > n ? '✓' : n}
+              {step > n ? '✓' : n}
             </div>
             <span
               className={`text-sm hidden sm:inline ${
