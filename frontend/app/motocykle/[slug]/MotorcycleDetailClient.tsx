@@ -8,6 +8,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { getAssetPath, MONDAY_RESERVATION_FORM_URL } from '@/lib/paths';
 import type { Motorcycle, MotorcycleImage, SiteData, NavigationData, FooterData, ContactData } from '@/lib/api';
+import AvailabilityCalendar from '@/components/reservation/AvailabilityCalendar';
 
 const TENANT_ID = process.env.NEXT_PUBLIC_TENANT_ID || '';
 const FETCH_OPTS: RequestInit = { cache: 'no-store', headers: { Accept: 'application/json' } };
@@ -66,6 +67,12 @@ export default function MotorcycleDetailClient({
   const [motorcycle, setMotorcycle] = useState(initialMotorcycle);
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [selectedRange, setSelectedRange] = useState<{
+    from: Date;
+    to: Date;
+    days: number;
+    total: number;
+  } | null>(null);
 
   // Fetch fresh motorcycle data on mount
   useEffect(() => {
@@ -284,21 +291,60 @@ export default function MotorcycleDetailClient({
 
           {/* Sekcja rezerwacji */}
           <div id="rezerwacja" className="bg-white rounded-xl shadow-lg p-6 lg:p-12 mb-8">
-            <div className="max-w-2xl mx-auto text-center">
-              <h2 className="font-heading text-3xl font-bold mb-2">
+            <div className="max-w-3xl mx-auto">
+              <h2 className="font-heading text-3xl font-bold mb-2 text-center">
                 Zarezerwuj {motorcycle.brand.name} {motorcycle.name}
               </h2>
-              <p className="text-gray-medium mb-8">
-                Kliknij poniżej, aby wypełnić formularz rezerwacji
+              <p className="text-gray-medium mb-8 text-center">
+                Wybierz termin wynajmu — kalendarz pokazuje dostępne dni.
               </p>
-              <a
-                href={MONDAY_RESERVATION_FORM_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block bg-accent-red text-white px-10 py-4 rounded-lg font-semibold text-lg hover:bg-red-700 transition-colors"
-              >
-                Rezerwuj teraz
-              </a>
+
+              {motorcycle.available ? (
+                <>
+                  <AvailabilityCalendar
+                    rentableSlug={motorcycle.slug}
+                    pricePerDay={motorcycle.price_per_day}
+                    onRangeChange={(range, days, total) => {
+                      if (range) {
+                        setSelectedRange({ from: range.from, to: range.to, days, total });
+                      } else {
+                        setSelectedRange(null);
+                      }
+                    }}
+                  />
+
+                  <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
+                    <button
+                      type="button"
+                      disabled={!selectedRange}
+                      className={`px-10 py-4 rounded-lg font-semibold text-lg transition-colors ${
+                        selectedRange
+                          ? 'bg-accent-red text-white hover:bg-red-700'
+                          : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      }`}
+                      onClick={() => {
+                        // G2: tu otworzy sie wizard z preselected motocyklem i datami
+                        const el = document.getElementById('wizard-rezerwacji');
+                        el?.scrollIntoView({ behavior: 'smooth' });
+                      }}
+                    >
+                      {selectedRange ? 'Przejdz do rezerwacji' : 'Wybierz termin'}
+                    </button>
+                    <a
+                      href={MONDAY_RESERVATION_FORM_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-10 py-4 rounded-lg font-semibold text-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors text-center"
+                    >
+                      Formularz tradycyjny
+                    </a>
+                  </div>
+                </>
+              ) : (
+                <div className="bg-gray-100 rounded-lg p-6 text-center text-gray-600">
+                  Ten motocykl jest aktualnie niedostepny do rezerwacji online.
+                </div>
+              )}
             </div>
           </div>
         </div>
