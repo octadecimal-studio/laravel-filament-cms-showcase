@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { getAssetPath } from '@/lib/paths';
+import { getAssetPath, normalizeHashHref } from '@/lib/paths';
 import type { HeroData } from '@/lib/api';
 
 interface HeroProps {
@@ -40,16 +40,17 @@ export default function Hero({ hero }: HeroProps) {
           </p>
         )}
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-          {hero.buttons.map((button) => {
+          {hero.buttons.map((button, index) => {
             const isExternal = button.href.startsWith('http');
+            const href = isExternal ? button.href : normalizeHashHref(button.href);
             const className =
               button.variant === 'primary'
                 ? 'bg-accent-red text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-red-700 transition-colors'
                 : 'bg-transparent border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-primary-black transition-colors';
             return isExternal ? (
               <a
-                key={button.href}
-                href={button.href}
+                key={`${button.label}-${index}`}
+                href={href}
                 target="_blank"
                 rel="noopener noreferrer"
                 className={className}
@@ -58,8 +59,8 @@ export default function Hero({ hero }: HeroProps) {
               </a>
             ) : (
               <Link
-                key={button.href}
-                href={button.href}
+                key={`${button.label}-${index}`}
+                href={href}
                 className={className}
               >
                 {button.label}

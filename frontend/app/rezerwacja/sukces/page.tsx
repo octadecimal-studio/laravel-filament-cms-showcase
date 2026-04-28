@@ -8,8 +8,8 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export const metadata: Metadata = {
-  title: 'Dziekujemy za rezerwacje | MotoRent',
-  description: 'Twoja rezerwacja zostala przyjeta.',
+  title: 'Dziękujemy za rezerwację | MotoRent',
+  description: 'Twoja rezerwacja została przyjęta.',
   robots: { index: false, follow: false },
 };
 
@@ -62,11 +62,11 @@ export default async function ReservationSuccessPage({ searchParams }: Props) {
             </div>
 
             <h1 className="font-heading text-3xl md:text-4xl font-bold mb-4">
-              Dziekujemy za rezerwacje!
+              Dziękujemy za rezerwację!
             </h1>
 
             <p className="text-gray-medium mb-6">
-              Twoja platnosc zostala przyjeta. W ciagu kilku minut otrzymasz email
+              Twoja płatność została przyjęta. W ciągu kilku minut otrzymasz email
               z potwierdzeniem rezerwacji.
             </p>
 
@@ -82,10 +82,10 @@ export default async function ReservationSuccessPage({ searchParams }: Props) {
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8 text-sm text-blue-800 text-left">
               <p className="font-semibold mb-2">Co dalej?</p>
               <ul className="space-y-1 list-disc list-inside">
-                <li>Skontaktujemy sie z Toba w celu ustalenia szczegolow odbioru.</li>
-                <li>Sprawdz email (rowniez folder spam) — wyslemy potwierdzenie.</li>
+                <li>Skontaktujemy się z Tobą w celu ustalenia szczegółów odbioru.</li>
+                <li>Sprawdź email (również folder spam) — wyślemy potwierdzenie.</li>
                 <li>
-                  W razie pytan zadzwon do nas:{' '}
+                  W razie pytań zadzwoń do nas:{' '}
                   <a
                     href={`tel:${content.contact.phone}`}
                     className="text-accent-red font-semibold hover:underline"
@@ -101,7 +101,7 @@ export default async function ReservationSuccessPage({ searchParams }: Props) {
                 href="/"
                 className="bg-accent-red text-white px-8 py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors"
               >
-                Powrot na strone glowna
+                Powrót na stronę główną
               </Link>
               <Link
                 href="/#motocykle"

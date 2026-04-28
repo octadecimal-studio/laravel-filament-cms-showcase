@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { FiArrowLeft, FiX } from 'react-icons/fi';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { getAssetPath, MONDAY_RESERVATION_FORM_URL } from '@/lib/paths';
+import { getAssetPath } from '@/lib/paths';
 import type { Motorcycle, MotorcycleImage, SiteData, NavigationData, FooterData, ContactData } from '@/lib/api';
 import ReservationWizard from '@/components/reservation/ReservationWizard';
 
@@ -289,18 +289,16 @@ export default function MotorcycleDetailClient({
               <div className="bg-white rounded-xl shadow-lg p-6 lg:p-12">
                 <div className="max-w-2xl mx-auto text-center">
                   <h2 className="font-heading text-3xl font-bold mb-4">
-                    Motocykl niedostepny
+                    Motocykl niedostępny
                   </h2>
                   <p className="text-gray-medium mb-6">
-                    Ten motocykl jest aktualnie niedostepny do rezerwacji online.
+                    Ten motocykl jest aktualnie niedostępny do rezerwacji online.
                   </p>
                   <a
-                    href={MONDAY_RESERVATION_FORM_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    href={`tel:${contact.phone}`}
                     className="inline-block bg-accent-red text-white px-8 py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors"
                   >
-                    Skontaktuj sie z nami
+                    Skontaktuj się z nami
                   </a>
                 </div>
               </div>

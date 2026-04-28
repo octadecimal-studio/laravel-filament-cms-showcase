@@ -8,8 +8,8 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export const metadata: Metadata = {
-  title: 'Platnosc nieudana | MotoRent',
-  description: 'Wystapil problem z platnoscia.',
+  title: 'Płatność nieudana | MotoRent',
+  description: 'Wystąpił problem z płatnością.',
   robots: { index: false, follow: false },
 };
 
@@ -22,10 +22,10 @@ type Props = {
 };
 
 const REASON_MESSAGES: Record<string, string> = {
-  cancelled: 'Platnosc zostala anulowana.',
-  declined: 'Bank odrzucil platnosc.',
-  timeout: 'Sesja platnosci wygasla.',
-  failed: 'Platnosc sie nie powiodla.',
+  cancelled: 'Płatność została anulowana.',
+  declined: 'Bank odrzucił płatność.',
+  timeout: 'Sesja płatności wygasła.',
+  failed: 'Płatność się nie powiodła.',
 };
 
 /**
@@ -46,7 +46,7 @@ export default async function ReservationFailurePage({ searchParams }: Props) {
   const rentalRef = params.rental ? params.rental.slice(0, 8).toUpperCase() : null;
   const reason = params.reason && REASON_MESSAGES[params.reason]
     ? REASON_MESSAGES[params.reason]
-    : 'Wystapil problem z platnoscia.';
+    : 'Wystąpił problem z płatnością.';
 
   const content = await getAllContent();
 
@@ -74,7 +74,7 @@ export default async function ReservationFailurePage({ searchParams }: Props) {
             </div>
 
             <h1 className="font-heading text-3xl md:text-4xl font-bold mb-4">
-              Platnosc nieudana
+              Płatność nieudana
             </h1>
 
             <p className="text-gray-medium mb-6">{reason}</p>
@@ -87,25 +87,25 @@ export default async function ReservationFailurePage({ searchParams }: Props) {
                 </div>
                 {params.code && (
                   <div className="text-xs text-gray-400 mt-2">
-                    Kod bledu: {params.code}
+                    Kod błędu: {params.code}
                   </div>
                 )}
               </div>
             )}
 
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-8 text-sm text-yellow-800 text-left">
-              <p className="font-semibold mb-2">Co mozesz zrobic?</p>
+              <p className="font-semibold mb-2">Co możesz zrobić?</p>
               <ul className="space-y-1 list-disc list-inside">
-                <li>Sproboj ponownie zlozyc rezerwacje z innym sposobem platnosci.</li>
+                <li>Spróbuj ponownie złożyć rezerwację z innym sposobem płatności.</li>
                 <li>
-                  Zadzwon do nas:{' '}
+                  Zadzwoń do nas:{' '}
                   <a
                     href={`tel:${content.contact.phone}`}
                     className="text-accent-red font-semibold hover:underline"
                   >
                     {content.contact.phone}
                   </a>{' '}
-                  — pomozemy dokonczyc rezerwacje.
+                  — pomożemy dokończyć rezerwację.
                 </li>
                 <li>
                   Napisz na email:{' '}
@@ -124,13 +124,13 @@ export default async function ReservationFailurePage({ searchParams }: Props) {
                 href="/#motocykle"
                 className="bg-accent-red text-white px-8 py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors"
               >
-                Sproboj ponownie
+                Spróbuj ponownie
               </Link>
               <Link
                 href="/"
                 className="bg-gray-100 text-gray-700 px-8 py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
               >
-                Powrot na strone glowna
+                Powrót na stronę główną
               </Link>
             </div>
           </div>

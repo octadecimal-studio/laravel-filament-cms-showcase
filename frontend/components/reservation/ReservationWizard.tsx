@@ -32,13 +32,13 @@ type Props = {
  * @see KML-0063 (G3)
  */
 const personalSchema = z.object({
-  name: z.string().min(2, 'Imie i nazwisko musi miec min. 2 znaki').max(255),
+  name: z.string().min(2, 'Imię i nazwisko musi mieć min. 2 znaki').max(255),
   email: z.string().email('Niepoprawny adres email').max(255),
   phone: z
     .string()
-    .min(6, 'Numer telefonu musi miec min. 6 znakow')
-    .max(30, 'Numer telefonu jest za dlugi'),
-  message: z.string().max(1000, 'Wiadomosc jest za dluga').optional(),
+    .min(6, 'Numer telefonu musi mieć min. 6 znaków')
+    .max(30, 'Numer telefonu jest za długi'),
+  message: z.string().max(1000, 'Wiadomość jest za długa').optional(),
   gdpr_consent: z
     .boolean()
     .refine((v) => v === true, { message: 'Zgoda RODO jest wymagana' }),
@@ -116,7 +116,7 @@ export default function ReservationWizard({ motorcycle }: Props) {
       if (err instanceof RentalApiError) {
         if (err.status === 409) {
           setSubmitError(
-            'Wybrany termin nie jest juz dostepny. Wroc do kroku 2 i wybierz inne dni.',
+            'Wybrany termin nie jest już dostępny. Wróć do kroku 2 i wybierz inne dni.',
           );
         } else if (err.status === 422) {
           const payload = err.payload as { errors?: Record<string, string[]> };
@@ -124,14 +124,14 @@ export default function ReservationWizard({ motorcycle }: Props) {
             payload?.errors && Object.values(payload.errors)[0]?.[0];
           setSubmitError(firstError || err.message);
         } else if (err.status === 404) {
-          setSubmitError('Motocykl nie zostal znaleziony.');
+          setSubmitError('Motocykl nie został znaleziony.');
         } else {
           setSubmitError(`${err.message} (HTTP ${err.status})`);
         }
       } else if (err instanceof Error) {
         setSubmitError(err.message);
       } else {
-        setSubmitError('Blad zapisu rezerwacji');
+        setSubmitError('Błąd zapisu rezerwacji');
       }
     } finally {
       setSubmitting(false);
@@ -202,8 +202,8 @@ export default function ReservationWizard({ motorcycle }: Props) {
                 {motorcycle.specs?.power && <> · Moc: {motorcycle.specs.power}</>}
               </p>
               <div className="text-2xl font-bold text-accent-red">
-                {motorcycle.price_per_day} zl
-                <span className="text-sm font-normal text-gray-500"> / dzien</span>
+                {motorcycle.price_per_day} zł
+                <span className="text-sm font-normal text-gray-500"> / dzień</span>
               </div>
             </div>
           </div>
@@ -274,7 +274,7 @@ export default function ReservationWizard({ motorcycle }: Props) {
               <div className="text-right">
                 <div className="text-xs text-gray-500">Razem</div>
                 <div className="text-2xl font-bold text-accent-red">
-                  {range.total.toLocaleString('pl-PL')} zl
+                  {range.total.toLocaleString('pl-PL')} zł
                 </div>
               </div>
             </div>
@@ -283,7 +283,7 @@ export default function ReservationWizard({ motorcycle }: Props) {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Imie i nazwisko *
+                Imię i nazwisko *
               </label>
               <input
                 type="text"
@@ -329,7 +329,7 @@ export default function ReservationWizard({ motorcycle }: Props) {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Wiadomosc (opcjonalnie)
+                Wiadomość (opcjonalnie)
               </label>
               <textarea
                 {...register('message')}
@@ -349,14 +349,14 @@ export default function ReservationWizard({ motorcycle }: Props) {
                   className="mt-1 w-4 h-4 text-accent-red rounded focus:ring-accent-red"
                 />
                 <span className="text-sm text-gray-700">
-                  Wyrazam zgode na przetwarzanie moich danych osobowych w celu
+                  Wyrażam zgodę na przetwarzanie moich danych osobowych w celu
                   realizacji rezerwacji zgodnie z{' '}
                   <Link
                     href="/polityka-prywatnosci"
                     className="text-accent-red hover:underline"
                     target="_blank"
                   >
-                    polityka prywatnosci
+                    Polityką Prywatności
                   </Link>
                   . *
                 </span>
@@ -372,7 +372,7 @@ export default function ReservationWizard({ motorcycle }: Props) {
                   className="mt-1 w-4 h-4 text-accent-red rounded focus:ring-accent-red"
                 />
                 <span className="text-sm text-gray-700">
-                  Akceptuje{' '}
+                  Akceptuję{' '}
                   <Link
                     href="/regulamin"
                     className="text-accent-red hover:underline"
@@ -409,7 +409,7 @@ export default function ReservationWizard({ motorcycle }: Props) {
               disabled={submitting}
               className="bg-accent-red text-white px-8 py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {submitting ? 'Wysylanie…' : 'Zlozone rezerwacje i przejdz do platnosci'}
+              {submitting ? 'Wysyłanie…' : 'Złóż rezerwację i przejdź do płatności'}
             </button>
           </div>
         </form>

@@ -19,7 +19,7 @@ type Props = {
 };
 
 /**
- * Kalendarz dostepnosci motocykla z wyborem zakresu dat.
+ * Kalendarz dostępności motocykla z wyborem zakresu dat.
  *
  * Zachowanie:
  *  - przy mount fetchuje GET /api/rentals/availability/{slug} dla today..+180 dni
@@ -64,7 +64,7 @@ export default function AvailabilityCalendar({
       })
       .catch((err) => {
         if (!cancelled) {
-          setError(err instanceof Error ? err.message : 'Blad pobierania dostepnosci');
+          setError(err instanceof Error ? err.message : 'Błąd pobierania dostępności');
           setLoading(false);
         }
       });
@@ -113,7 +113,7 @@ export default function AvailabilityCalendar({
   if (loading) {
     return (
       <div className="bg-white rounded-lg p-6 shadow-sm">
-        <div className="animate-pulse text-gray-500">Ladowanie dostepnosci…</div>
+        <div className="animate-pulse text-gray-500">Ładowanie dostępności…</div>
       </div>
     );
   }
@@ -121,7 +121,7 @@ export default function AvailabilityCalendar({
   if (error) {
     return (
       <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
-        Nie udalo sie pobrac dostepnosci: {error}
+        Nie udało się pobrać dostępności: {error}
       </div>
     );
   }
@@ -149,7 +149,7 @@ export default function AvailabilityCalendar({
       <div className="mt-4 flex items-center gap-4 text-sm text-gray-600 flex-wrap">
         <div className="flex items-center gap-2">
           <span className="inline-block w-4 h-4 rounded bg-gray-200" />
-          <span>Zajete</span>
+          <span>Zajęte</span>
         </div>
         <div className="flex items-center gap-2">
           <span className="inline-block w-4 h-4 rounded bg-accent-red" />
@@ -159,7 +159,7 @@ export default function AvailabilityCalendar({
 
       {rangeOverlapsBlocked && (
         <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-yellow-800 text-sm">
-          Wybrany zakres zawiera niedostepne dni. Wybierz inny termin.
+          Wybrany zakres zawiera niedostępne dni. Wybierz inny termin.
         </div>
       )}
 
@@ -171,13 +171,13 @@ export default function AvailabilityCalendar({
               {format(range.to, 'd MMM yyyy', { locale: pl })}
             </div>
             <div className="text-xs text-gray-500">
-              {days} {days === 1 ? 'dzien' : days < 5 ? 'dni' : 'dni'}
+              {days} {days === 1 ? 'dzień' : 'dni'}
             </div>
           </div>
           <div className="text-right">
             <div className="text-xs text-gray-500">Razem</div>
             <div className="text-2xl font-bold text-accent-red">
-              {totalAmount.toLocaleString('pl-PL')} zl
+              {totalAmount.toLocaleString('pl-PL')} zł
             </div>
           </div>
         </div>
@@ -185,18 +185,22 @@ export default function AvailabilityCalendar({
 
       <style jsx global>{`
         .rdp-rental {
-          --rdp-accent-color: #dc2626;
-          --rdp-accent-background-color: #fef2f2;
+          --rdp-accent-color: #16a34a;
+          --rdp-accent-background-color: #dcfce7;
           font-size: 14px;
         }
         .rdp-day-blocked {
           text-decoration: line-through;
-          color: #9ca3af;
-          background-color: #f3f4f6;
+          color: #991b1b !important;
+          background-color: #fee2e2 !important;
         }
         .rdp-day-selected {
           background-color: var(--rdp-accent-color) !important;
           color: white !important;
+        }
+        .rdp-day-selected.rdp-range_start,
+        .rdp-day-selected.rdp-range_end {
+          background-color: #15803d !important;
         }
       `}</style>
     </div>

@@ -487,10 +487,12 @@ export async function getNavigationData(): Promise<NavigationData> {
     if (resSetting.formType === 'external' && resSetting.externalUrl) {
       nav.cta.href = resSetting.externalUrl;
     } else {
-      nav.cta.href = '#rezerwacja';
+      // Wizard rezerwacji jest na podstronach motocykli (#rezerwacja).
+      // Z poziomu strony glownej kierujemy do listy flot.
+      nav.cta.href = '#motocykle';
     }
   } catch {
-    nav.cta.href = '#rezerwacja';
+    nav.cta.href = '#motocykle';
   }
 
   return nav;
