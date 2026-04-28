@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { FiX, FiCalendar, FiPhone } from 'react-icons/fi';
 import type { FooterData, ContactData, ReservationSettings } from '@/lib/api';
-import { MONDAY_RESERVATION_FORM_URL } from '@/lib/paths';
 
 interface FloatingActionsProps {
   footer: FooterData;
@@ -13,7 +12,9 @@ interface FloatingActionsProps {
 
 export default function FloatingActions({ footer, contact, reservationSettings }: FloatingActionsProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const externalUrl = reservationSettings?.externalUrl || MONDAY_RESERVATION_FORM_URL;
+  // FAB kieruje do listy motocykli — wybor motocykla + termin nastepuje na podstronie szczegolowej
+  const reservationHref = reservationSettings?.externalUrl || '/#motocykle';
+  const isExternal = reservationHref.startsWith('http');
   const social = footer.socialMedia;
 
   return (
@@ -23,9 +24,8 @@ export default function FloatingActions({ footer, contact, reservationSettings }
         <div className="flex flex-col gap-2 mb-2 animate-in fade-in slide-in-from-bottom-2">
           {/* Reservation */}
           <a
-            href={externalUrl}
-            target="_blank"
-            rel="noopener noreferrer"
+            href={reservationHref}
+            {...(isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
             className="flex items-center gap-3 bg-white shadow-lg rounded-full pl-4 pr-5 py-3 hover:shadow-xl transition-shadow group"
           >
             <span className="w-10 h-10 bg-accent-red rounded-full flex items-center justify-center text-white shrink-0">
