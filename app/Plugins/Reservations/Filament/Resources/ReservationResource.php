@@ -82,6 +82,18 @@ class ReservationResource extends Resource
     protected static ?int $navigationSort = 85;
 
     /**
+     * Ukrycie z sidebara — stary system rezerwacji zastapiony przez
+     * pakiet octadecimalhq/reservation-system (RentalResource /admin/rentals).
+     * Kod pozostaje w repo do czasu pelnej migracji historycznych danych.
+     *
+     * @see KML-0067 fix-2
+     */
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
+
+    /**
      * Definicja formularza.
      */
     public static function form(Schema $schema): Schema
