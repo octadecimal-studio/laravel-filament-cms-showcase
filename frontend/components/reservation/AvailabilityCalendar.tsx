@@ -148,15 +148,15 @@ export default function AvailabilityCalendar({
   );
 
   /**
-   * KML-0051 (mirror backend Rental::computeBillingDays): floor((endAt - startAt) / 24h), min 1.
-   * Pelna doba = 24h. 26h -> 1 doba. 23h -> minimum 1 doba.
+   * KML-0052 (mirror backend Rental::computeBillingDays): ceil((endAt - startAt) / 24h), min 1.
+   * Kazde przekroczenie 24h liczy kolejna dobe. 24h+1min -> 2 doby. 23h -> 1 doba.
    */
   const days = useMemo(() => {
     if (!startAt || !endAt) return 0;
     const startMs = new Date(startAt.replace(' ', 'T')).getTime();
     const endMs = new Date(endAt.replace(' ', 'T')).getTime();
     if (endMs <= startMs) return 0;
-    const fullDays = Math.floor((endMs - startMs) / (24 * 3600 * 1000));
+    const fullDays = Math.ceil((endMs - startMs) / (24 * 3600 * 1000));
     return Math.max(1, fullDays);
   }, [startAt, endAt]);
 
