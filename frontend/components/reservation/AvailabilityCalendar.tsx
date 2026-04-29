@@ -298,10 +298,20 @@ export default function AvailabilityCalendar({
           --rdp-accent-background-color: #dcfce7;
           font-size: 14px;
         }
-        .rdp-day-blocked {
-          text-decoration: line-through;
+        /* KML-0062: zablokowane dni — wyrazna wizualna blokada.
+           Override .rdp-disabled (opacity:0.5) + tlo + line-through na buttonie
+           (text-decoration nie dziedziczy sie z TD do potomkow). */
+        .rdp-rental .rdp-day-blocked {
+          background-color: #fecaca !important;
+          opacity: 1 !important;
+        }
+        .rdp-rental .rdp-day-blocked .rdp-day_button {
           color: #991b1b !important;
-          background-color: #fee2e2 !important;
+          text-decoration: line-through !important;
+          text-decoration-thickness: 2px !important;
+          background-color: transparent !important;
+          cursor: not-allowed;
+          font-weight: 600;
         }
         /* KML-0056: prostokat na calosci zakresu — brak gradientow,
            brak border-radius na skrajnych dniach. Wszystkie dni range
