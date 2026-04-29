@@ -227,6 +227,8 @@ export default function ReservationWizard({ motorcycle }: Props) {
           <AvailabilityCalendar
             rentableSlug={motorcycle.slug}
             pricePerDay={motorcycle.price_per_day}
+            pricePerWeek={motorcycle.price_per_week}
+            pricePerMonth={motorcycle.price_per_month}
             onRangeChange={(r, days, total) => {
               if (r) setRange({ from: r.from, to: r.to, days, total });
               else setRange(null);

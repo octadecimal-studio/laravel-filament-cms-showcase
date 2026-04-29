@@ -6,12 +6,17 @@ import { addDays, differenceInCalendarDays, eachDayOfInterval, format, parseISO 
 import { pl } from 'date-fns/locale';
 import 'react-day-picker/style.css';
 import { fetchAvailability, type Occupied } from '@/lib/rental-api';
+import { calculateTieredPrice, formatBreakdown } from '@/lib/pricing';
 
 type Props = {
   /** Slug lub UUID zasobu (Motorcycle.slug) */
   rentableSlug: string;
   /** Cena za 1 dobe w PLN (z Motorcycle.price_per_day) */
   pricePerDay: number;
+  /** Cena za pelny tydzien (z Motorcycle.price_per_week). Jesli > 0, uzywana w algorytmie tiered. */
+  pricePerWeek?: number;
+  /** Cena za pelny miesiac (z Motorcycle.price_per_month). Jesli > 0, uzywana w algorytmie tiered. */
+  pricePerMonth?: number;
   /** Callback wywolywany przy zmianie zakresu (zarowno wybor jak i wyczyszczenie) */
   onRangeChange: (range: { from: Date; to: Date } | null, totalDays: number, totalAmount: number) => void;
   /** Liczba miesiecy widocznych jednoczesnie (default 1, sm+: 2) */
@@ -37,6 +42,8 @@ type Props = {
 export default function AvailabilityCalendar({
   rentableSlug,
   pricePerDay,
+  pricePerWeek,
+  pricePerMonth,
   onRangeChange,
   numberOfMonths = 2,
 }: Props) {
@@ -96,7 +103,13 @@ export default function AvailabilityCalendar({
     return differenceInCalendarDays(range.to, range.from) + 1;
   }, [range]);
 
-  const totalAmount = days * pricePerDay;
+  // Tiered pricing (KML-0051): mirror backend strategii TieredPerRentablePricingStrategy.
+  // Algorytm: miesiac -> tydzien -> dzien (greedy decomposition).
+  const breakdown = useMemo(
+    () => calculateTieredPrice(days, pricePerDay, pricePerWeek, pricePerMonth),
+    [days, pricePerDay, pricePerWeek, pricePerMonth],
+  );
+  const totalAmount = breakdown.total;
 
   // Notify parent
   useEffect(() => {
@@ -164,22 +177,29 @@ export default function AvailabilityCalendar({
       )}
 
       {range?.from && range?.to && !rangeOverlapsBlocked && days > 0 && (
-        <div className="mt-4 bg-gray-50 rounded-lg p-4 flex justify-between items-center">
-          <div>
-            <div className="text-sm text-gray-600">
-              {format(range.from, 'd MMM', { locale: pl })} —{' '}
-              {format(range.to, 'd MMM yyyy', { locale: pl })}
+        <div className="mt-4 bg-gray-50 rounded-lg p-4">
+          <div className="flex justify-between items-center">
+            <div>
+              <div className="text-sm text-gray-600">
+                {format(range.from, 'd MMM', { locale: pl })} —{' '}
+                {format(range.to, 'd MMM yyyy', { locale: pl })}
+              </div>
+              <div className="text-xs text-gray-500">
+                {days} {days === 1 ? 'dzień' : 'dni'}
+              </div>
             </div>
-            <div className="text-xs text-gray-500">
-              {days} {days === 1 ? 'dzień' : 'dni'}
+            <div className="text-right">
+              <div className="text-xs text-gray-500">Razem</div>
+              <div className="text-2xl font-bold text-accent-red">
+                {totalAmount.toLocaleString('pl-PL')} zł
+              </div>
             </div>
           </div>
-          <div className="text-right">
-            <div className="text-xs text-gray-500">Razem</div>
-            <div className="text-2xl font-bold text-accent-red">
-              {totalAmount.toLocaleString('pl-PL')} zł
+          {(breakdown.months > 0 || breakdown.weeks > 0) && (
+            <div className="mt-3 pt-3 border-t border-gray-200 text-xs text-gray-600">
+              {formatBreakdown(breakdown)}
             </div>
-          </div>
+          )}
         </div>
       )}
 
