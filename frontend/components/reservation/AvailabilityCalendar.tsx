@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { DayPicker, type DateRange } from 'react-day-picker';
-import { addDays, differenceInCalendarDays, eachDayOfInterval, format, parseISO } from 'date-fns';
+import { addDays, eachDayOfInterval, format, parseISO } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import 'react-day-picker/style.css';
 import { fetchAvailability, type Occupied } from '@/lib/rental-api';
@@ -85,11 +85,12 @@ export default function AvailabilityCalendar({
   const [error, setError] = useState<string | null>(null);
   const [range, setRange] = useState<DateRange | undefined>();
   /**
-   * KML-0047 (final): jedna godzina dla odbioru i zwrotu (kwadratowo).
-   * start_at = day_from + pickupTime, end_at = day_to + pickupTime.
-   * Brak zaokraglen — liczba dob = liczba kalendarzowych dni miedzy from a to.
+   * KML-0051: osobne godziny odbioru i zwrotu (przywrocone po regresji KML-0047).
+   * start_at = day_from + pickupTime, end_at = day_to + returnTime.
+   * Liczba dob = floor((endAt - startAt) / 24h), minimum 1 (kwadratowo, brak roundingu w gore).
    */
   const [pickupTime, setPickupTime] = useState<string>(defaultHour);
+  const [returnTime, setReturnTime] = useState<string>(defaultHour);
 
   // Fetch availability po mount
   useEffect(() => {
@@ -136,26 +137,28 @@ export default function AvailabilityCalendar({
     );
   }, [range, blockedDays]);
 
-  // Datetime stringi (Y-m-d H:i:s) — ta sama godzina dla startu i konca (KML-0047 final, kwadratowo).
+  // Datetime stringi (Y-m-d H:i:s) — KML-0051: osobne godziny odbioru i zwrotu.
   const startAt = useMemo(
     () => (range?.from ? combineDateTime(range.from, pickupTime) : null),
     [range?.from, pickupTime],
   );
   const endAt = useMemo(
-    () => (range?.to ? combineDateTime(range.to, pickupTime) : null),
-    [range?.to, pickupTime],
+    () => (range?.to ? combineDateTime(range.to, returnTime) : null),
+    [range?.to, returnTime],
   );
 
   /**
-   * KML-0047 (final): liczba dob = liczba kalendarzowych dni miedzy from a to.
-   * Bez zaokraglen — start_at i end_at maja zawsze ta sama godzine, wiec
-   * roznica jest dokladnie integer * 24h. Same-day rezerwacja = 0 dni
-   * (callback nie wysyla parentowi -> przycisk "Dalej" zostaje disabled).
+   * KML-0051 (mirror backend Rental::computeBillingDays): floor((endAt - startAt) / 24h), min 1.
+   * Pelna doba = 24h. 26h -> 1 doba. 23h -> minimum 1 doba.
    */
   const days = useMemo(() => {
-    if (!range?.from || !range?.to) return 0;
-    return differenceInCalendarDays(range.to, range.from);
-  }, [range?.from, range?.to]);
+    if (!startAt || !endAt) return 0;
+    const startMs = new Date(startAt.replace(' ', 'T')).getTime();
+    const endMs = new Date(endAt.replace(' ', 'T')).getTime();
+    if (endMs <= startMs) return 0;
+    const fullDays = Math.floor((endMs - startMs) / (24 * 3600 * 1000));
+    return Math.max(1, fullDays);
+  }, [startAt, endAt]);
 
   // Tiered pricing (KML-0051): mirror backend strategii TieredPerRentablePricingStrategy.
   // Algorytm: miesiac -> tydzien -> dzien (greedy decomposition).
@@ -217,22 +220,31 @@ export default function AvailabilityCalendar({
         className="rdp-rental"
       />
 
-      {/* KML-0047 (final): jedna godzina odbioru = godzina zwrotu (kwadratowo) */}
-      <div className="mt-4">
-        <label className="flex flex-col text-sm max-w-xs">
-          <span className="text-gray-600 mb-1">Godzina odbioru i zwrotu</span>
+      {/* KML-0051: osobne godziny odbioru i zwrotu */}
+      <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-md">
+        <label className="flex flex-col text-sm">
+          <span className="text-gray-600 mb-1">Godzina odbioru</span>
           <select
             value={pickupTime}
             onChange={(e) => setPickupTime(e.target.value)}
             className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-red focus:border-transparent outline-none bg-white"
           >
             {hours.map((h) => (
-              <option key={h} value={h}>{h}</option>
+              <option key={`pickup-${h}`} value={h}>{h}</option>
             ))}
           </select>
-          <span className="text-xs text-gray-500 mt-1">
-            Odbior i zwrot motocykla o tej samej godzinie.
-          </span>
+        </label>
+        <label className="flex flex-col text-sm">
+          <span className="text-gray-600 mb-1">Godzina zwrotu</span>
+          <select
+            value={returnTime}
+            onChange={(e) => setReturnTime(e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-red focus:border-transparent outline-none bg-white"
+          >
+            {hours.map((h) => (
+              <option key={`return-${h}`} value={h}>{h}</option>
+            ))}
+          </select>
         </label>
       </div>
 
@@ -259,7 +271,7 @@ export default function AvailabilityCalendar({
             <div>
               <div className="text-sm text-gray-600">
                 {format(range.from, 'd MMM', { locale: pl })} {pickupTime} —{' '}
-                {format(range.to, 'd MMM yyyy', { locale: pl })} {pickupTime}
+                {format(range.to, 'd MMM yyyy', { locale: pl })} {returnTime}
               </div>
               <div className="text-xs text-gray-500">
                 {days} {days === 1 ? 'doba' : days < 5 ? 'doby' : 'dób'}
