@@ -26,7 +26,9 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
+use App\Pricing\PerRentablePLNStrategy;
 use Octadecimal\Rental\Contracts\PaymentProvider;
+use Octadecimal\Rental\Contracts\PricingStrategyInterface;
 use Octadecimal\Rental\Models\PaymentSettings;
 use Octadecimal\Rental\Services\NullPaymentProvider;
 use Octadecimal\Rental\Services\Przelewy24Service;
@@ -58,6 +60,11 @@ class AppServiceProvider extends ServiceProvider
 
             return Przelewy24Service::fromSettings($settings);
         });
+
+        // Override PricingStrategy — pakiet PerRentablePricingStrategy traktuje
+        // price_per_day jako grosze, a w DB jest w PLN (decimal). Bez konwersji
+        // P24 dostaje 3000 zamiast 300000 -> wyswietla 30 PLN zamiast 3000 PLN.
+        $this->app->singleton(PricingStrategyInterface::class, PerRentablePLNStrategy::class);
     }
 
     /**
