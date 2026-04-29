@@ -26,6 +26,10 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
+use Octadecimal\Rental\Contracts\PaymentProvider;
+use Octadecimal\Rental\Models\PaymentSettings;
+use Octadecimal\Rental\Services\NullPaymentProvider;
+use Octadecimal\Rental\Services\Przelewy24Service;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -34,7 +38,26 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Override PaymentProvider — czytaj credentials z DB (payment_settings),
+        // a nie z config('rental.przelewy24'). Pozwala klientowi zarzadzac
+        // creds przez panel Filament (PaymentSettingsPage) bez deploya.
+        $this->app->singleton(PaymentProvider::class, function () {
+            try {
+                $settings = PaymentSettings::query()
+                    ->forProvider('przelewy24')
+                    ->enabled()
+                    ->first();
+            } catch (\Throwable $e) {
+                // Brak tabeli (np. podczas migracji) lub blad DB
+                return new NullPaymentProvider();
+            }
+
+            if (! $settings || ! $settings->isConfigured()) {
+                return new NullPaymentProvider();
+            }
+
+            return Przelewy24Service::fromSettings($settings);
+        });
     }
 
     /**
