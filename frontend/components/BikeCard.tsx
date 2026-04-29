@@ -81,19 +81,19 @@ export default function BikeCard({ bike }: BikeCardProps) {
           <div className="flex gap-2">
             <Link
               href={`/motocykle/${bike.slug}`}
-              className="bg-gray-800 text-white px-4 py-2 rounded-lg font-semibold hover:bg-gray-900 transition-colors"
+              className="bg-gray-800 text-white px-4 py-2 rounded-lg font-semibold text-sm whitespace-nowrap hover:bg-gray-900 transition-colors"
             >
               Szczegóły
             </Link>
             <Link
               href={bike.available ? `/motocykle/${bike.slug}#rezerwacja` : '#'}
-              className={`inline-block px-6 py-2 rounded-lg font-semibold transition-colors text-center ${
+              className={`inline-block px-4 py-2 rounded-lg font-semibold text-sm whitespace-nowrap transition-colors text-center ${
                 bike.available
                   ? 'bg-accent-red text-white hover:bg-red-700 cursor-pointer'
                   : 'bg-gray-300 text-gray-500 cursor-not-allowed pointer-events-none'
               }`}
             >
-              {bike.booking_mode === 'phone' ? 'Zarezerwuj' : 'Zarezerwuj on-line'}
+              {bike.booking_mode === 'phone' ? 'Rezerwuj' : 'Rezerwuj on-line'}
             </Link>
           </div>
         </div>

@@ -474,12 +474,6 @@ export async function getSiteData(): Promise<SiteData> {
 
 export async function getNavigationData(): Promise<NavigationData> {
   const nav: NavigationData = { ...mockContent.content.navigation, links: [...mockContent.content.navigation.links], cta: { ...mockContent.content.navigation.cta } };
-  // Replace LOGIN_ADMIN placeholder with actual admin URL
-  nav.links = nav.links.map(link =>
-    link.href === 'LOGIN_ADMIN'
-      ? { ...link, href: `${API_DOMAIN}/admin` }
-      : link
-  );
 
   // Update CTA with reservation settings — always show "Rezerwuj" instead of login
   nav.cta.label = 'Rezerwuj';

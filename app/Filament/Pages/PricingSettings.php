@@ -79,31 +79,11 @@ class PricingSettings extends Page implements HasForms
                                     ->orderBy('name')
                                     ->get(['name', 'price_per_day', 'price_per_week', 'price_per_month', 'deposit']);
 
-                                if ($motorcycles->isEmpty()) {
-                                    return new HtmlString('<p class="text-gray-500">Brak opublikowanych motocykli.</p>');
-                                }
-
-                                $html = '<div class="overflow-x-auto"><table class="w-full text-sm">';
-                                $html .= '<thead><tr class="border-b">';
-                                $html .= '<th class="text-left p-2">Motocykl</th>';
-                                $html .= '<th class="text-right p-2">Dzień</th>';
-                                $html .= '<th class="text-right p-2">Tydzień</th>';
-                                $html .= '<th class="text-right p-2">Miesiąc</th>';
-                                $html .= '<th class="text-right p-2">Kaucja</th>';
-                                $html .= '</tr></thead><tbody>';
-
-                                foreach ($motorcycles as $moto) {
-                                    $html .= '<tr class="border-b">';
-                                    $html .= '<td class="p-2 font-medium">' . e($moto->name) . '</td>';
-                                    $html .= '<td class="p-2 text-right">' . number_format((float) $moto->price_per_day, 2, ',', ' ') . ' zł</td>';
-                                    $html .= '<td class="p-2 text-right">' . number_format((float) $moto->price_per_week, 2, ',', ' ') . ' zł</td>';
-                                    $html .= '<td class="p-2 text-right">' . number_format((float) $moto->price_per_month, 2, ',', ' ') . ' zł</td>';
-                                    $html .= '<td class="p-2 text-right">' . number_format((float) $moto->deposit, 2, ',', ' ') . ' zł</td>';
-                                    $html .= '</tr>';
-                                }
-
-                                $html .= '</tbody></table></div>';
-                                return new HtmlString($html);
+                                // KML-0049: render via Blade partial — Tailwind purge poprawnie obejmuje klasy w plikach .blade.php,
+                                // co rozwiazuje problem rozsypanego layoutu na TST (klasy w stringach PHP nie byly indeksowane).
+                                return new HtmlString(
+                                    view('filament.pages._pricing-table', ['motorcycles' => $motorcycles])->render()
+                                );
                             })
                             ->columnSpanFull(),
                     ]),

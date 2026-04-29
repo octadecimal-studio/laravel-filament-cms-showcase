@@ -263,20 +263,20 @@ export default function MotorcycleDetailClient({
                     href={motorcycle.available ? '#rezerwacja' : undefined}
                     aria-label={
                       motorcycle.available
-                        ? motorcycle.booking_mode === 'phone' ? 'Zarezerwuj' : 'Zarezerwuj on-line'
+                        ? motorcycle.booking_mode === 'phone' ? 'Rezerwuj' : 'Rezerwuj on-line'
                         : 'Motocykl niedostępny do rezerwacji'
                     }
-                    className={`px-8 py-4 rounded-lg font-semibold text-lg transition-colors text-center ${
+                    className={`px-8 py-4 rounded-lg font-semibold text-base whitespace-nowrap transition-colors text-center ${
                       motorcycle.available
                         ? 'bg-accent-red text-white hover:bg-red-700 cursor-pointer'
                         : 'bg-gray-300 text-gray-500 cursor-not-allowed pointer-events-none'
                     }`}
                   >
-                    {motorcycle.booking_mode === 'phone' ? 'Zarezerwuj' : 'Zarezerwuj on-line'}
+                    {motorcycle.booking_mode === 'phone' ? 'Rezerwuj' : 'Rezerwuj on-line'}
                   </a>
                   <Link
                     href="/#motocykle"
-                    className="bg-gray-800 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-900 transition-colors text-center"
+                    className="bg-gray-800 text-white px-8 py-4 rounded-lg font-semibold text-base whitespace-nowrap hover:bg-gray-900 transition-colors text-center"
                   >
                     Zobacz inne modele
                   </Link>
