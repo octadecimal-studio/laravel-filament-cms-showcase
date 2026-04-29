@@ -17,5 +17,9 @@ export function normalizeHashHref(href: string): string {
   if (typeof href !== 'string') return href;
   if (href === '#regulamin') return '/regulamin';
   if (href === '#polityka-prywatnosci') return '/polityka-prywatnosci';
+  // KML-0059/0060: ContactForm z id="rezerwacja" jest celowo ukryty na home.
+  // Header CTA i Hero buttony z #rezerwacja kierujemy do sekcji Fleet (#motocykle),
+  // gdzie uzytkownik wybiera motocykl i przechodzi do rezerwacji on-line.
+  if (href === '#rezerwacja') return '/#motocykle';
   return href.startsWith('#') ? `/${href}` : href;
 }

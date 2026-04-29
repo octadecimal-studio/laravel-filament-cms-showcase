@@ -303,13 +303,30 @@ export default function AvailabilityCalendar({
           color: #991b1b !important;
           background-color: #fee2e2 !important;
         }
+        /* KML-0056: prostokat na calosci zakresu — brak gradientow,
+           brak border-radius na skrajnych dniach. Wszystkie dni range
+           majoa identyczny solid bg. */
+        .rdp-rental .rdp-range_start,
+        .rdp-rental .rdp-range_middle,
+        .rdp-rental .rdp-range_end {
+          background: var(--rdp-accent-color) !important;
+          background-image: none !important;
+          border-radius: 0 !important;
+        }
+        .rdp-rental .rdp-range_start .rdp-day_button,
+        .rdp-rental .rdp-range_middle .rdp-day_button,
+        .rdp-rental .rdp-range_end .rdp-day_button {
+          background: transparent !important;
+          background-color: transparent !important;
+          background-image: none !important;
+          border: none !important;
+          border-radius: 0 !important;
+          color: white !important;
+        }
         .rdp-day-selected {
           background-color: var(--rdp-accent-color) !important;
           color: white !important;
-        }
-        .rdp-day-selected.rdp-range_start,
-        .rdp-day-selected.rdp-range_end {
-          background-color: #15803d !important;
+          border-radius: 0 !important;
         }
       `}</style>
     </div>
