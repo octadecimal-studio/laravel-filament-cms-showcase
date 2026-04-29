@@ -99,6 +99,17 @@ class PricingSettings extends Page implements HasForms
                                 ->color('info'),
                         ]),
                     ]),
+
+                // KML-0049 (UX follow-up): Save action zgodny z Filament native
+                // — zamiast customowego sticky div w blade. Renderuje sie w schemie
+                // formy, w naturalnym flow, align-left, jak EditRecord.
+                Actions::make([
+                    Action::make('save')
+                        ->label('Zapisz zmiany')
+                        ->submit('save')
+                        ->color('primary')
+                        ->keyBindings(['mod+s']),
+                ]),
             ])
             ->statePath('data');
     }

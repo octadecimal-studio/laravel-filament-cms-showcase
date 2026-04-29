@@ -6,6 +6,8 @@ namespace App\Filament\Pages;
 
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Actions;
+use Filament\Actions\Action;
 use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
@@ -145,6 +147,15 @@ class LocationSettings extends Page implements HasForms
                             ->required()
                             ->columnSpanFull(),
                     ]),
+
+                // KML-0049 (UX follow-up): Save action zgodny z Filament native.
+                Actions::make([
+                    Action::make('save')
+                        ->label('Zapisz zmiany')
+                        ->submit('save')
+                        ->color('primary')
+                        ->keyBindings(['mod+s']),
+                ]),
             ])
             ->statePath('data');
     }

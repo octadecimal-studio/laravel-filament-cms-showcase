@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Pages;
 
 use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Actions;
 use Filament\Actions\Action;
 use App\Models\User;
 use App\Models\UserCustomNavigationItem;
@@ -181,6 +182,15 @@ class EditProfile extends Page implements HasForms
                             ->reorderable()
                             ->addActionLabel('Dodaj link'),
                     ]),
+
+                // KML-0049 (UX follow-up): Save action zgodny z Filament native.
+                Actions::make([
+                    Action::make('save')
+                        ->label('Zapisz zmiany')
+                        ->submit('save')
+                        ->color('primary')
+                        ->keyBindings(['mod+s']),
+                ]),
             ])
             ->statePath('data');
     }
@@ -231,23 +241,4 @@ class EditProfile extends Page implements HasForms
         $this->redirect(static::getUrl(), navigate: true);
     }
 
-    protected function getFormActions(): array
-    {
-        return [
-            Action::make('save')
-                ->label('Zapisz zmiany')
-                ->submit('save')
-                ->color('primary'),
-        ];
-    }
-
-    public function getCachedFormActions(): array
-    {
-        return $this->getFormActions();
-    }
-
-    public function hasFullWidthFormActions(): bool
-    {
-        return false;
-    }
 }

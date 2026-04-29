@@ -6,6 +6,8 @@ namespace App\Filament\Pages;
 
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Actions;
+use Filament\Actions\Action;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Utilities\Get;
@@ -80,6 +82,15 @@ class ReservationFormSettings extends Page implements HasForms
                             ->placeholder('rezerwacje@example-rental.test')
                             ->helperText('Zostaw puste, aby wyłączyć powiadomienia email.'),
                     ]),
+
+                // KML-0049 (UX follow-up): Save action zgodny z Filament native.
+                Actions::make([
+                    Action::make('save')
+                        ->label('Zapisz zmiany')
+                        ->submit('save')
+                        ->color('primary')
+                        ->keyBindings(['mod+s']),
+                ]),
             ])
             ->statePath('data');
     }
