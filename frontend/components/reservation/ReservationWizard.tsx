@@ -86,7 +86,8 @@ export default function ReservationWizard({ motorcycle }: Props) {
         email: data.email,
         phone: data.phone,
         message: data.message || undefined,
-        total_amount: range.total,
+        // total_amount w groszach (P24 wymaga jednostek mniejszych)
+        total_amount: Math.round(range.total * 100),
         currency: 'PLN',
         locale: 'pl',
         gdpr_consent: true,
