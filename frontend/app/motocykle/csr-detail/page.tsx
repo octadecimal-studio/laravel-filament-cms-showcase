@@ -45,6 +45,7 @@ function mapApiMotorcycle(m: any): Motorcycle {
     featured: m.featured || false, year: m.year,
     engine_capacity: m.engine_capacity, description: m.description,
     specifications: m.specifications,
+    booking_mode: m.booking_mode === 'phone' ? 'phone' : 'online',
   };
 }
 
