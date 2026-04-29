@@ -16,8 +16,10 @@ use App\Plugins\Reservations\Http\Requests\StoreReservationRequest;
 use App\Plugins\Reservations\Models\Reservation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Octadecimal\Rental\Models\Rental;
 
 /**
  * Controller API dla rezerwacji.
@@ -122,6 +124,59 @@ class ReservationController extends Controller
             'customer_email' => $reservation->customer_email,
             'pickup_date' => $reservation->pickup_date?->toDateString(),
         ]);
+
+        // KML-0053: dodatkowo tworzymy wpis w "rentals" (vendor pkg
+        // octadecimalhq/reservation-system) — admin widzi rezerwacje
+        // z formularza telefonicznego razem z rezerwacjami online
+        // w /admin/rentals oraz na widgecie kalendarza.
+        try {
+            $motorcycleId = $validated['motorcycle_id'] ?? null;
+            $motorcycle = $motorcycleId
+                ? Motorcycle::withoutGlobalScope(TenantScope::class)->find($motorcycleId)
+                : null;
+
+            $pickupDate = $reservation->pickup_date?->toDateString();
+            $returnDate = $reservation->return_date?->toDateString();
+
+            if ($motorcycle && $pickupDate && $returnDate) {
+                $startAt = Carbon::parse($pickupDate.' 10:00:00');
+                $endAt = Carbon::parse($returnDate.' 10:00:00');
+
+                Rental::create([
+                    'rentable_type' => Motorcycle::class,
+                    'rentable_id' => $motorcycle->getKey(),
+                    'name' => $reservation->customer_name,
+                    'email' => $reservation->customer_email,
+                    'phone' => $reservation->customer_phone,
+                    'start_date' => $pickupDate,
+                    'end_date' => $returnDate,
+                    'start_at' => $startAt,
+                    'end_at' => $endAt,
+                    'qty' => 1,
+                    'total_amount' => 0, // wycena ustalana telefonicznie przez biuro
+                    'paid_amount' => 0,
+                    'currency' => 'PLN',
+                    'status' => 'pending',
+                    'gdpr_consent' => (bool) $reservation->rodo_consent,
+                    'meta' => [
+                        'source' => 'phone_form',
+                        'reservation_id' => (string) $reservation->id,
+                        'notes' => $reservation->notes,
+                    ],
+                ]);
+            } else {
+                Log::warning('KML-0053: nie utworzono Rental — brak motocykla lub dat', [
+                    'reservation_id' => $reservation->id,
+                    'has_motorcycle' => (bool) $motorcycle,
+                    'pickup_date' => $pickupDate,
+                    'return_date' => $returnDate,
+                ]);
+            }
+        } catch (Exception $e) {
+            Log::error('KML-0053: blad tworzenia Rental ze starego formularza: '.$e->getMessage(), [
+                'reservation_id' => $reservation->id,
+            ]);
+        }
 
         // Wysyłka powiadomienia email do admina
         $setting = SiteSetting::withoutGlobalScope(TenantScope::class)
