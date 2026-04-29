@@ -87,6 +87,7 @@ final class Motorcycle extends Model
         'featured',
         'published',
         'published_at',
+        'booking_mode',
     ];
 
     /**

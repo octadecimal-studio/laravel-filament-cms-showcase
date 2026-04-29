@@ -232,6 +232,7 @@ class TwoWheelsController extends Controller
                 'description' => $moto->description,
                 'specifications' => $moto->specifications,
                 'featured' => $moto->featured,
+                'booking_mode' => $moto->booking_mode ?? 'online',
             ]),
         ]);
     }
@@ -291,6 +292,7 @@ class TwoWheelsController extends Controller
                 'description' => $motorcycle->description,
                 'specifications' => $motorcycle->specifications,
                 'available' => $motorcycle->available,
+                'booking_mode' => $motorcycle->booking_mode ?? 'online',
             ],
         ]);
     }

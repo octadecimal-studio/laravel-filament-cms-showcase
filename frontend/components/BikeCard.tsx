@@ -93,7 +93,7 @@ export default function BikeCard({ bike }: BikeCardProps) {
                   : 'bg-gray-300 text-gray-500 cursor-not-allowed pointer-events-none'
               }`}
             >
-              Rezerwuj
+              {bike.booking_mode === 'phone' ? 'Zarezerwuj' : 'Zarezerwuj on-line'}
             </Link>
           </div>
         </div>

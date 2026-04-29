@@ -9,6 +9,7 @@ import Footer from '@/components/Footer';
 import { getAssetPath } from '@/lib/paths';
 import type { Motorcycle, MotorcycleImage, SiteData, NavigationData, FooterData, ContactData } from '@/lib/api';
 import ReservationWizard from '@/components/reservation/ReservationWizard';
+import MotorcycleReservationForm from '@/components/sections/MotorcycleReservationForm';
 
 const TENANT_ID = process.env.NEXT_PUBLIC_TENANT_ID || '';
 const FETCH_OPTS: RequestInit = { cache: 'no-store', headers: { Accept: 'application/json' } };
@@ -46,6 +47,7 @@ function mapApiMotorcycle(m: any): Motorcycle {
     featured: m.featured || false, year: m.year,
     engine_capacity: m.engine_capacity, description: m.description,
     specifications: m.specifications,
+    booking_mode: m.booking_mode === 'phone' ? 'phone' : 'online',
   };
 }
 
@@ -259,14 +261,18 @@ export default function MotorcycleDetailClient({
                 <div className="flex flex-col sm:flex-row gap-4">
                   <a
                     href={motorcycle.available ? '#rezerwacja' : undefined}
-                    aria-label={motorcycle.available ? 'Zarezerwuj teraz' : 'Motocykl niedostępny do rezerwacji'}
+                    aria-label={
+                      motorcycle.available
+                        ? motorcycle.booking_mode === 'phone' ? 'Zarezerwuj' : 'Zarezerwuj on-line'
+                        : 'Motocykl niedostępny do rezerwacji'
+                    }
                     className={`px-8 py-4 rounded-lg font-semibold text-lg transition-colors text-center ${
                       motorcycle.available
                         ? 'bg-accent-red text-white hover:bg-red-700 cursor-pointer'
                         : 'bg-gray-300 text-gray-500 cursor-not-allowed pointer-events-none'
                     }`}
                   >
-                    Zarezerwuj teraz
+                    {motorcycle.booking_mode === 'phone' ? 'Zarezerwuj' : 'Zarezerwuj on-line'}
                   </a>
                   <Link
                     href="/#motocykle"
@@ -281,10 +287,12 @@ export default function MotorcycleDetailClient({
 
           {/* Pełna galeria — ukryta, wystarczą miniaturki w karcie motocykla */}
 
-          {/* Sekcja rezerwacji — wizard 3-krokowy (G2/KML-0062) */}
+          {/* Sekcja rezerwacji — wizard 3-krokowy (G2/KML-0062) lub formularz mailowy (KML-0047 ext) */}
           <div id="rezerwacja" className="mb-8">
             {motorcycle.available ? (
-              <ReservationWizard motorcycle={motorcycle} />
+              motorcycle.booking_mode === 'phone'
+                ? <MotorcycleReservationForm motorcycle={motorcycle} />
+                : <ReservationWizard motorcycle={motorcycle} />
             ) : (
               <div className="bg-white rounded-xl shadow-lg p-6 lg:p-12">
                 <div className="max-w-2xl mx-auto text-center">

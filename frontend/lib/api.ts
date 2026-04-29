@@ -360,6 +360,8 @@ export interface Motorcycle {
     engine?: string;
     weight?: string;
   };
+  /** Tryb rezerwacji: online (P24) lub phone (formularz mailowy). KML-0047 ext. */
+  booking_mode?: 'online' | 'phone';
 }
 
 export interface MotorcyclesMeta {
@@ -1031,6 +1033,7 @@ function mapApiMotorcycle(apiMoto: any): Motorcycle {
     engine_capacity: apiMoto.engine_capacity,
     description: apiMoto.description,
     specifications: apiMoto.specifications,
+    booking_mode: apiMoto.booking_mode === 'phone' ? 'phone' : 'online',
   };
 }
 

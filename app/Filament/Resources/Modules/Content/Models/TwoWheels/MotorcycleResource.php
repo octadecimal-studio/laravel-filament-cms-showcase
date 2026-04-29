@@ -290,6 +290,17 @@ final class MotorcycleResource extends Resource
                         DateTimePicker::make('published_at')
                             ->label('Data publikacji')
                             ->visible(fn (Get $get): bool => $get('published') === true),
+
+                        Select::make('booking_mode')
+                            ->label('Tryb rezerwacji')
+                            ->options([
+                                'online' => 'On-line — Przelewy24',
+                                'phone' => 'Telefoniczna — formularz e-mail',
+                            ])
+                            ->default('online')
+                            ->required()
+                            ->native(false)
+                            ->helperText('Telefoniczna = na froncie pokaże się formularz mailowy zamiast checkout'),
                     ])
                     ->columns(2),
             ]);
