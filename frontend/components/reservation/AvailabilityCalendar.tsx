@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { DayPicker, type DateRange } from 'react-day-picker';
-import { addDays, differenceInCalendarDays, eachDayOfInterval, format, parseISO } from 'date-fns';
+import { addDays, eachDayOfInterval, format, parseISO } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import 'react-day-picker/style.css';
 import { fetchAvailability, type Occupied } from '@/lib/rental-api';
@@ -17,11 +17,37 @@ type Props = {
   pricePerWeek?: number;
   /** Cena za pelny miesiac (z Motorcycle.price_per_month). Jesli > 0, uzywana w algorytmie tiered. */
   pricePerMonth?: number;
-  /** Callback wywolywany przy zmianie zakresu (zarowno wybor jak i wyczyszczenie) */
-  onRangeChange: (range: { from: Date; to: Date } | null, totalDays: number, totalAmount: number) => void;
+  /** Lista godzin (HH:MM) z LocationSettings.pickup_hours (KML-0047). */
+  pickupHours?: string[];
+  /**
+   * Callback wywolywany przy zmianie zakresu (zarowno wybor jak i wyczyszczenie).
+   * KML-0047: dodatkowo ISO-string `start_at` / `end_at` (Y-m-d H:i:s) gdy zakres + godziny wybrane.
+   */
+  onRangeChange: (
+    range: { from: Date; to: Date; start_at: string; end_at: string } | null,
+    totalDays: number,
+    totalAmount: number,
+  ) => void;
   /** Liczba miesiecy widocznych jednoczesnie (default 1, sm+: 2) */
   numberOfMonths?: number;
 };
+
+const DEFAULT_PICKUP_HOURS = ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'];
+
+/**
+ * Skleja datę (Date) z godziną HH:MM do stringa "Y-m-d H:i:s" (lokalna strefa).
+ */
+function combineDateTime(date: Date, time: string): string {
+  const [h, m] = time.split(':').map((v) => parseInt(v, 10));
+  const d = new Date(date);
+  d.setHours(h, m, 0, 0);
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mi = String(d.getMinutes()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd} ${hh}:${mi}:00`;
+}
 
 /**
  * Kalendarz dostępności motocykla z wyborem zakresu dat.
@@ -44,13 +70,22 @@ export default function AvailabilityCalendar({
   pricePerDay,
   pricePerWeek,
   pricePerMonth,
+  pickupHours,
   onRangeChange,
   numberOfMonths = 2,
 }: Props) {
+  const hours = useMemo(
+    () => (pickupHours && pickupHours.length > 0 ? pickupHours : DEFAULT_PICKUP_HOURS),
+    [pickupHours],
+  );
+  const defaultHour = hours[0] ?? '10:00';
+
   const [occupied, setOccupied] = useState<Occupied[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [range, setRange] = useState<DateRange | undefined>();
+  const [startTime, setStartTime] = useState<string>(defaultHour);
+  const [endTime, setEndTime] = useState<string>(defaultHour);
 
   // Fetch availability po mount
   useEffect(() => {
@@ -97,11 +132,31 @@ export default function AvailabilityCalendar({
     );
   }, [range, blockedDays]);
 
-  // Wyliczenie ceny
+  // Datetime stringi (Y-m-d H:i:s) — uzywane w callback do parent + wyliczenia dob.
+  const startAt = useMemo(
+    () => (range?.from ? combineDateTime(range.from, startTime) : null),
+    [range?.from, startTime],
+  );
+  const endAt = useMemo(
+    () => (range?.to ? combineDateTime(range.to, endTime) : null),
+    [range?.to, endTime],
+  );
+
+  /**
+   * KML-0047: liczba dob = ceil(diffHours / 24), min 1.
+   * Mirror backendu (Rental::computeBillingDays + Pricing::Strategy::diffInHours/24).
+   *
+   * Edge cases:
+   *  - rownosc dat (from===to) i rownosc godzin -> 1 doba (minimum biznesowe)
+   *  - rownosc dat (from===to) i godzina koncowa < startowej -> 1 doba (UI nie blokuje, walidacja po stronie hooka <Range>)
+   */
   const days = useMemo(() => {
-    if (!range?.from || !range?.to) return 0;
-    return differenceInCalendarDays(range.to, range.from) + 1;
-  }, [range]);
+    if (!startAt || !endAt || !range?.from || !range?.to) return 0;
+    const diffMs = new Date(endAt).getTime() - new Date(startAt).getTime();
+    if (diffMs <= 0) return 1;
+    const diffHours = diffMs / (1000 * 60 * 60);
+    return Math.max(1, Math.ceil(diffHours / 24));
+  }, [startAt, endAt, range?.from, range?.to]);
 
   // Tiered pricing (KML-0051): mirror backend strategii TieredPerRentablePricingStrategy.
   // Algorytm: miesiac -> tydzien -> dzien (greedy decomposition).
@@ -113,12 +168,16 @@ export default function AvailabilityCalendar({
 
   // Notify parent
   useEffect(() => {
-    if (range?.from && range?.to && !rangeOverlapsBlocked) {
-      onRangeChange({ from: range.from, to: range.to }, days, totalAmount);
+    if (range?.from && range?.to && !rangeOverlapsBlocked && startAt && endAt) {
+      onRangeChange(
+        { from: range.from, to: range.to, start_at: startAt, end_at: endAt },
+        days,
+        totalAmount,
+      );
     } else {
       onRangeChange(null, 0, 0);
     }
-  }, [range, days, totalAmount, rangeOverlapsBlocked, onRangeChange]);
+  }, [range, startAt, endAt, days, totalAmount, rangeOverlapsBlocked, onRangeChange]);
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -159,6 +218,34 @@ export default function AvailabilityCalendar({
         className="rdp-rental"
       />
 
+      {/* KML-0047: wybor godzin odbioru / zwrotu */}
+      <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <label className="flex flex-col text-sm">
+          <span className="text-gray-600 mb-1">Godzina odbioru</span>
+          <select
+            value={startTime}
+            onChange={(e) => setStartTime(e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-red focus:border-transparent outline-none bg-white"
+          >
+            {hours.map((h) => (
+              <option key={h} value={h}>{h}</option>
+            ))}
+          </select>
+        </label>
+        <label className="flex flex-col text-sm">
+          <span className="text-gray-600 mb-1">Godzina zwrotu</span>
+          <select
+            value={endTime}
+            onChange={(e) => setEndTime(e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-red focus:border-transparent outline-none bg-white"
+          >
+            {hours.map((h) => (
+              <option key={h} value={h}>{h}</option>
+            ))}
+          </select>
+        </label>
+      </div>
+
       <div className="mt-4 flex items-center gap-4 text-sm text-gray-600 flex-wrap">
         <div className="flex items-center gap-2">
           <span className="inline-block w-4 h-4 rounded bg-gray-200" />
@@ -181,11 +268,11 @@ export default function AvailabilityCalendar({
           <div className="flex justify-between items-center">
             <div>
               <div className="text-sm text-gray-600">
-                {format(range.from, 'd MMM', { locale: pl })} —{' '}
-                {format(range.to, 'd MMM yyyy', { locale: pl })}
+                {format(range.from, 'd MMM', { locale: pl })} {startTime} —{' '}
+                {format(range.to, 'd MMM yyyy', { locale: pl })} {endTime}
               </div>
               <div className="text-xs text-gray-500">
-                {days} {days === 1 ? 'dzień' : 'dni'}
+                {days} {days === 1 ? 'doba' : days < 5 ? 'doby' : 'dób'}
               </div>
             </div>
             <div className="text-right">

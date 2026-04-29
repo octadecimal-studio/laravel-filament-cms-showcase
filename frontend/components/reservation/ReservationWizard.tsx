@@ -12,10 +12,21 @@ import { createRental, initPayment, RentalApiError } from '@/lib/rental-api';
 import AvailabilityCalendar from './AvailabilityCalendar';
 import type { Motorcycle } from '@/lib/api';
 
-type Range = { from: Date; to: Date; days: number; total: number };
+type Range = {
+  from: Date;
+  to: Date;
+  /** KML-0047: ISO-string Y-m-d H:i:s (lokalna strefa). */
+  start_at: string;
+  /** KML-0047: ISO-string Y-m-d H:i:s (lokalna strefa). */
+  end_at: string;
+  days: number;
+  total: number;
+};
 
 type Props = {
   motorcycle: Motorcycle;
+  /** KML-0047: dostepne godziny odbioru/zwrotu (z LocationSettings.pickup_hours). */
+  pickupHours?: string[];
 };
 
 /**
@@ -49,7 +60,7 @@ const personalSchema = z.object({
 
 type PersonalForm = z.infer<typeof personalSchema>;
 
-export default function ReservationWizard({ motorcycle }: Props) {
+export default function ReservationWizard({ motorcycle, pickupHours }: Props) {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [range, setRange] = useState<Range | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -80,8 +91,12 @@ export default function ReservationWizard({ motorcycle }: Props) {
     try {
       const rental = await createRental({
         rentable: motorcycle.slug,
+        // KML-0046 legacy (wstecznie kompatybilne)
         start_date: format(range.from, 'yyyy-MM-dd'),
         end_date: format(range.to, 'yyyy-MM-dd'),
+        // KML-0047: backend preferuje start_at/end_at jesli obecne
+        start_at: range.start_at,
+        end_at: range.end_at,
         name: data.name,
         email: data.email,
         phone: data.phone,
@@ -229,8 +244,9 @@ export default function ReservationWizard({ motorcycle }: Props) {
             pricePerDay={motorcycle.price_per_day}
             pricePerWeek={motorcycle.price_per_week}
             pricePerMonth={motorcycle.price_per_month}
+            pickupHours={pickupHours}
             onRangeChange={(r, days, total) => {
-              if (r) setRange({ from: r.from, to: r.to, days, total });
+              if (r) setRange({ from: r.from, to: r.to, start_at: r.start_at, end_at: r.end_at, days, total });
               else setRange(null);
             }}
           />
@@ -269,10 +285,12 @@ export default function ReservationWizard({ motorcycle }: Props) {
               <div>
                 <div className="text-xs text-gray-500">Termin</div>
                 <div className="font-semibold">
-                  {format(range.from, 'd MMM', { locale: pl })} —{' '}
-                  {format(range.to, 'd MMM yyyy', { locale: pl })}
+                  {format(range.from, 'd MMM', { locale: pl })} {range.start_at.slice(11, 16)} —{' '}
+                  {format(range.to, 'd MMM yyyy', { locale: pl })} {range.end_at.slice(11, 16)}
                 </div>
-                <div className="text-xs text-gray-500">{range.days} dni</div>
+                <div className="text-xs text-gray-500">
+                  {range.days} {range.days === 1 ? 'doba' : range.days < 5 ? 'doby' : 'dób'}
+                </div>
               </div>
               <div className="text-right">
                 <div className="text-xs text-gray-500">Razem</div>

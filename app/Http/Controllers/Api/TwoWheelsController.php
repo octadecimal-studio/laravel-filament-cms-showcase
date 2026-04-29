@@ -88,6 +88,7 @@ class TwoWheelsController extends Controller
                 'pricing_subtitle' => $setting->pricing_subtitle,
                 'company_data' => $setting->company_data,
                 'social_media' => $setting->social_media,
+                'pickup_hours' => $setting->pickup_hours ?? ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'],
             ],
         ]);
     }
@@ -576,6 +577,8 @@ class TwoWheelsController extends Controller
      */
     public function submitReservation(Request $request): JsonResponse
     {
+        // KML-0047: dopuszczamy datetime (Y-m-d H:i lub ISO) i fallback na date.
+        // Walidacja akceptuje oba formaty - Carbon parsuje natywnie.
         $validator = Validator::make($request->all(), [
             'customer_name' => 'required|string|max:255',
             'customer_email' => 'required|email|max:255',

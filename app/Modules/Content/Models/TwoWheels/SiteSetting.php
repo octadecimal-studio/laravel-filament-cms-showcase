@@ -74,6 +74,7 @@ final class SiteSetting extends Model
         'reservation_notification_email',
         'company_data',
         'social_media',
+        'pickup_hours',
     ];
 
     /**
@@ -86,6 +87,7 @@ final class SiteSetting extends Model
         return [
             'company_data' => 'array',
             'social_media' => 'array',
+            'pickup_hours' => 'array',
         ];
     }
 

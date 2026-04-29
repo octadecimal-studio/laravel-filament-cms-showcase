@@ -292,7 +292,7 @@ export default function MotorcycleDetailClient({
             {motorcycle.available ? (
               motorcycle.booking_mode === 'phone'
                 ? <MotorcycleReservationForm motorcycle={motorcycle} />
-                : <ReservationWizard motorcycle={motorcycle} />
+                : <ReservationWizard motorcycle={motorcycle} pickupHours={site.pickupHours} />
             ) : (
               <div className="bg-white rounded-xl shadow-lg p-6 lg:p-12">
                 <div className="max-w-2xl mx-auto text-center">

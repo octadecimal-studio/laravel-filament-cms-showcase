@@ -6,6 +6,7 @@ namespace App\Filament\Pages;
 
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use App\Modules\Content\Models\TwoWheels\SiteSetting;
@@ -47,6 +48,7 @@ class LocationSettings extends Page implements HasForms
             'contact_phone' => $setting?->contact_phone,
             'contact_email' => $setting?->contact_email,
             'opening_hours' => $setting?->opening_hours,
+            'pickup_hours' => $setting?->pickup_hours ?? ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'],
             'company_name' => $companyData['company_name'] ?? null,
             'nip' => $companyData['nip'] ?? null,
             'krs' => $companyData['krs'] ?? null,
@@ -124,6 +126,16 @@ class LocationSettings extends Page implements HasForms
                             ->columnSpanFull(),
                     ]),
 
+                Section::make('Godziny odbioru i zwrotu motocykla (KML-0047)')
+                    ->description('Lista godzin (HH:MM), z których klient wybiera porę odbioru i zwrotu motocykla. Każda godzina po dobie startu rozpoczyna kolejną dobę.')
+                    ->schema([
+                        TagsInput::make('pickup_hours')
+                            ->label('Dostępne godziny odbioru/zwrotu')
+                            ->placeholder('np. 10:00')
+                            ->helperText('Format HH:MM (np. 09:00, 10:30). Naciśnij Enter po każdej wartości.')
+                            ->columnSpanFull(),
+                    ]),
+
                 Section::make('Mapa')
                     ->schema([
                         TextInput::make('map_coordinates')
@@ -160,6 +172,7 @@ class LocationSettings extends Page implements HasForms
             'contact_phone' => $data['contact_phone'],
             'contact_email' => $data['contact_email'],
             'opening_hours' => $data['opening_hours'],
+            'pickup_hours' => $data['pickup_hours'] ?? null,
             'company_data' => array_merge($setting->company_data ?? [], [
                 'company_name' => $data['company_name'] ?? null,
                 'nip' => $data['nip'] ?? null,

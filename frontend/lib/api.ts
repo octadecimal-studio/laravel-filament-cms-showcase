@@ -47,8 +47,14 @@ export interface ReservationPayload {
   customer_name: string;
   customer_email: string;
   customer_phone: string;
+  /** KML-0046 (legacy): data odbioru w formacie Y-m-d. */
   pickup_date: string;
+  /** KML-0046 (legacy): data zwrotu w formacie Y-m-d. */
   return_date: string;
+  /** KML-0047: pelny datetime odbioru (Y-m-d H:i:s lub ISO). Backend preferuje to pole gdy obecne. */
+  start_at?: string;
+  /** KML-0047: pelny datetime zwrotu. */
+  end_at?: string;
   notes?: string;
   rodo_consent: boolean;
 }
@@ -104,6 +110,8 @@ export interface SiteData {
     linkedin?: string;
     youtube?: string;
   };
+  /** KML-0047: lista godzin (HH:MM) odbioru/zwrotu dostepnych w wizard rezerwacji. */
+  pickupHours?: string[];
 }
 
 export interface ReservationSettings {
@@ -460,6 +468,9 @@ export async function getSiteData(): Promise<SiteData> {
       locationDescription: setting.location_description || null,
       companyData: setting.company_data || undefined,
       socialMedia: setting.social_media || undefined,
+      pickupHours: Array.isArray(setting.pickup_hours) && setting.pickup_hours.length > 0
+        ? setting.pickup_hours
+        : ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'],
     };
   } catch (error) {
     console.error('Error fetching site setting from API:', error);

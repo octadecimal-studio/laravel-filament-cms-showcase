@@ -39,8 +39,14 @@ export type AvailabilityResponse = {
 
 export type CreateRentalPayload = {
   rentable: string;
+  /** Y-m-d (legacy KML-0046). Wymagane dla wstecznej kompatybilnosci. */
   start_date: string;
+  /** Y-m-d (legacy KML-0046). */
   end_date: string;
+  /** KML-0047: Y-m-d H:i:s lub ISO. Backend preferuje to pole gdy obecne. */
+  start_at?: string;
+  /** KML-0047: Y-m-d H:i:s lub ISO. */
+  end_at?: string;
   name: string;
   email: string;
   phone: string;
