@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { DayPicker, type DateRange } from 'react-day-picker';
-import { addDays, eachDayOfInterval, format, parseISO } from 'date-fns';
+import { addDays, differenceInCalendarDays, eachDayOfInterval, format, parseISO } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import 'react-day-picker/style.css';
 import { fetchAvailability, type Occupied } from '@/lib/rental-api';
@@ -84,8 +84,12 @@ export default function AvailabilityCalendar({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [range, setRange] = useState<DateRange | undefined>();
-  const [startTime, setStartTime] = useState<string>(defaultHour);
-  const [endTime, setEndTime] = useState<string>(defaultHour);
+  /**
+   * KML-0047 (final): jedna godzina dla odbioru i zwrotu (kwadratowo).
+   * start_at = day_from + pickupTime, end_at = day_to + pickupTime.
+   * Brak zaokraglen — liczba dob = liczba kalendarzowych dni miedzy from a to.
+   */
+  const [pickupTime, setPickupTime] = useState<string>(defaultHour);
 
   // Fetch availability po mount
   useEffect(() => {
@@ -132,31 +136,26 @@ export default function AvailabilityCalendar({
     );
   }, [range, blockedDays]);
 
-  // Datetime stringi (Y-m-d H:i:s) — uzywane w callback do parent + wyliczenia dob.
+  // Datetime stringi (Y-m-d H:i:s) — ta sama godzina dla startu i konca (KML-0047 final, kwadratowo).
   const startAt = useMemo(
-    () => (range?.from ? combineDateTime(range.from, startTime) : null),
-    [range?.from, startTime],
+    () => (range?.from ? combineDateTime(range.from, pickupTime) : null),
+    [range?.from, pickupTime],
   );
   const endAt = useMemo(
-    () => (range?.to ? combineDateTime(range.to, endTime) : null),
-    [range?.to, endTime],
+    () => (range?.to ? combineDateTime(range.to, pickupTime) : null),
+    [range?.to, pickupTime],
   );
 
   /**
-   * KML-0047: liczba dob = ceil(diffHours / 24), min 1.
-   * Mirror backendu (Rental::computeBillingDays + Pricing::Strategy::diffInHours/24).
-   *
-   * Edge cases:
-   *  - rownosc dat (from===to) i rownosc godzin -> 1 doba (minimum biznesowe)
-   *  - rownosc dat (from===to) i godzina koncowa < startowej -> 1 doba (UI nie blokuje, walidacja po stronie hooka <Range>)
+   * KML-0047 (final): liczba dob = liczba kalendarzowych dni miedzy from a to.
+   * Bez zaokraglen — start_at i end_at maja zawsze ta sama godzine, wiec
+   * roznica jest dokladnie integer * 24h. Same-day rezerwacja = 0 dni
+   * (callback nie wysyla parentowi -> przycisk "Dalej" zostaje disabled).
    */
   const days = useMemo(() => {
-    if (!startAt || !endAt || !range?.from || !range?.to) return 0;
-    const diffMs = new Date(endAt).getTime() - new Date(startAt).getTime();
-    if (diffMs <= 0) return 1;
-    const diffHours = diffMs / (1000 * 60 * 60);
-    return Math.max(1, Math.ceil(diffHours / 24));
-  }, [startAt, endAt, range?.from, range?.to]);
+    if (!range?.from || !range?.to) return 0;
+    return differenceInCalendarDays(range.to, range.from);
+  }, [range?.from, range?.to]);
 
   // Tiered pricing (KML-0051): mirror backend strategii TieredPerRentablePricingStrategy.
   // Algorytm: miesiac -> tydzien -> dzien (greedy decomposition).
@@ -166,9 +165,9 @@ export default function AvailabilityCalendar({
   );
   const totalAmount = breakdown.total;
 
-  // Notify parent
+  // Notify parent — minimum 1 doba (same-day = 0 -> blokujemy)
   useEffect(() => {
-    if (range?.from && range?.to && !rangeOverlapsBlocked && startAt && endAt) {
+    if (range?.from && range?.to && !rangeOverlapsBlocked && startAt && endAt && days >= 1) {
       onRangeChange(
         { from: range.from, to: range.to, start_at: startAt, end_at: endAt },
         days,
@@ -218,31 +217,22 @@ export default function AvailabilityCalendar({
         className="rdp-rental"
       />
 
-      {/* KML-0047: wybor godzin odbioru / zwrotu */}
-      <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <label className="flex flex-col text-sm">
-          <span className="text-gray-600 mb-1">Godzina odbioru</span>
+      {/* KML-0047 (final): jedna godzina odbioru = godzina zwrotu (kwadratowo) */}
+      <div className="mt-4">
+        <label className="flex flex-col text-sm max-w-xs">
+          <span className="text-gray-600 mb-1">Godzina odbioru i zwrotu</span>
           <select
-            value={startTime}
-            onChange={(e) => setStartTime(e.target.value)}
+            value={pickupTime}
+            onChange={(e) => setPickupTime(e.target.value)}
             className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-red focus:border-transparent outline-none bg-white"
           >
             {hours.map((h) => (
               <option key={h} value={h}>{h}</option>
             ))}
           </select>
-        </label>
-        <label className="flex flex-col text-sm">
-          <span className="text-gray-600 mb-1">Godzina zwrotu</span>
-          <select
-            value={endTime}
-            onChange={(e) => setEndTime(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-red focus:border-transparent outline-none bg-white"
-          >
-            {hours.map((h) => (
-              <option key={h} value={h}>{h}</option>
-            ))}
-          </select>
+          <span className="text-xs text-gray-500 mt-1">
+            Odbior i zwrot motocykla o tej samej godzinie.
+          </span>
         </label>
       </div>
 
@@ -268,8 +258,8 @@ export default function AvailabilityCalendar({
           <div className="flex justify-between items-center">
             <div>
               <div className="text-sm text-gray-600">
-                {format(range.from, 'd MMM', { locale: pl })} {startTime} —{' '}
-                {format(range.to, 'd MMM yyyy', { locale: pl })} {endTime}
+                {format(range.from, 'd MMM', { locale: pl })} {pickupTime} —{' '}
+                {format(range.to, 'd MMM yyyy', { locale: pl })} {pickupTime}
               </div>
               <div className="text-xs text-gray-500">
                 {days} {days === 1 ? 'doba' : days < 5 ? 'doby' : 'dób'}

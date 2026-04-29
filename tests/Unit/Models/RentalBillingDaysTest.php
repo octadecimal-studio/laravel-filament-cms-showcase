@@ -8,22 +8,22 @@ use Octadecimal\Rental\Models\Rental;
 use Tests\TestCase;
 
 /**
- * KML-0047: liczba dob rozliczeniowych (algorytm hour-aware).
+ * KML-0047 (final): liczba dob rozliczeniowych — kwadratowo, bez zaokraglen.
  *
- * Test sprawdza algorytm computeBillingDays() na poziomie modelu (bez DB —
- * uzywa setRawAttributes + cast na Carbon).
+ * Frontend wymusza ta sama godzine odbioru i zwrotu, wiec roznica jest zawsze
+ * wielokrotnoscia 24h. Filament admin moze ustawic rozne godziny -> wtedy floor.
  *
- * Tabela kanoniczna z business spec L0:
+ * Tabela kanoniczna (final L0):
  *
- *   Odbior              Zwrot               Diff h   Doby
- *   2026-05-01 10:00    2026-05-02 10:00    24       1
- *   2026-05-01 10:00    2026-05-02 10:01    24.02    2
- *   2026-05-01 10:00    2026-05-02 09:59    23.98    1
+ *   Odbior              Zwrot               Diff h   Doby   Komentarz
+ *   2026-05-01 10:00    2026-05-02 10:00    24       1      pelna doba
+ *   2026-05-01 10:00    2026-05-02 10:01    24.02    1      floor (frontend nie pozwala)
+ *   2026-05-01 10:00    2026-05-02 09:59    23.98    1      min 1 (floor=0)
  *   2026-05-01 10:00    2026-05-08 10:00    168      7
- *   2026-05-01 10:00    2026-05-08 11:00    169      8
+ *   2026-05-01 10:00    2026-05-08 11:00    169      7      floor (frontend nie pozwala)
  *   2026-05-01 10:00    2026-06-01 10:00    744      31
- *   2026-05-01 10:00    2026-05-01 10:00    0        1
- *   2026-05-01 10:00    2026-05-01 10:30    0.5      1
+ *   2026-05-01 10:00    2026-05-01 10:00    0        1      min 1
+ *   2026-05-01 10:00    2026-05-01 10:30    0.5      1      min 1
  */
 class RentalBillingDaysTest extends TestCase
 {
@@ -42,10 +42,11 @@ class RentalBillingDaysTest extends TestCase
         $this->assertSame(1, $rental->computeBillingDays());
     }
 
-    public function test_one_minute_past_24h_rounds_up_to_two_days(): void
+    public function test_one_minute_past_24h_floors_to_one_day(): void
     {
+        // KML-0047 final: kwadratowo, brak zaokraglen w gore
         $rental = $this->makeRental('2026-05-01 10:00:00', '2026-05-02 10:01:00');
-        $this->assertSame(2, $rental->computeBillingDays());
+        $this->assertSame(1, $rental->computeBillingDays());
     }
 
     public function test_just_under_24h_is_one_day(): void
@@ -60,10 +61,11 @@ class RentalBillingDaysTest extends TestCase
         $this->assertSame(7, $rental->computeBillingDays());
     }
 
-    public function test_one_week_plus_one_hour_rounds_up_to_eight(): void
+    public function test_one_week_plus_one_hour_floors_to_seven(): void
     {
+        // KML-0047 final: kwadratowo, brak zaokraglen w gore
         $rental = $this->makeRental('2026-05-01 10:00:00', '2026-05-08 11:00:00');
-        $this->assertSame(8, $rental->computeBillingDays());
+        $this->assertSame(7, $rental->computeBillingDays());
     }
 
     public function test_one_month_31_days(): void
@@ -78,8 +80,9 @@ class RentalBillingDaysTest extends TestCase
         $this->assertSame(1, $rental->computeBillingDays());
     }
 
-    public function test_half_hour_rounds_up_to_one_day(): void
+    public function test_half_hour_minimum_one_day(): void
     {
+        // KML-0047 final: floor(0.5h/24)=0 -> min 1
         $rental = $this->makeRental('2026-05-01 10:00:00', '2026-05-01 10:30:00');
         $this->assertSame(1, $rental->computeBillingDays());
     }
