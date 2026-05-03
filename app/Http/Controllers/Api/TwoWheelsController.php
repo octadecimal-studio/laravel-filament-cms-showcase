@@ -232,6 +232,7 @@ class TwoWheelsController extends Controller
                 'deposit' => (float) $moto->deposit,
                 'description' => $moto->description,
                 'specifications' => $moto->specifications,
+                'available' => (bool) $moto->available,
                 'featured' => $moto->featured,
                 'booking_mode' => $moto->booking_mode ?? 'online',
             ]),
