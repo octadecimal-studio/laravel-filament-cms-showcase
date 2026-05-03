@@ -250,11 +250,11 @@ export default function AvailabilityCalendar({
 
       <div className="mt-4 flex items-center gap-4 text-sm text-gray-600 flex-wrap">
         <div className="flex items-center gap-2">
-          <span className="inline-block w-4 h-4 rounded bg-gray-200" />
+          <span className="inline-block w-4 h-4 rounded bg-red-200" />
           <span>Zajęte</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="inline-block w-4 h-4 rounded bg-accent-red" />
+          <span className="inline-block w-4 h-4 rounded bg-green-600" />
           <span>Wybrany zakres</span>
         </div>
       </div>
