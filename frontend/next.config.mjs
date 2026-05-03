@@ -12,6 +12,16 @@ const nextConfig = {
       },
       {
         protocol: 'https',
+        hostname: 'cms.example-rental.test',
+        pathname: '/storage/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'tst.example-rental.test',
+        pathname: '/storage/**',
+      },
+      {
+        protocol: 'https',
         hostname: 'api.example.test',
         pathname: '/storage/**',
       },
