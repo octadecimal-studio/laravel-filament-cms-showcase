@@ -3,10 +3,8 @@
 use App\Http\Controllers\MailboxController;
 use Illuminate\Support\Facades\Route;
 
-// TST root: redirect to public staging frontend (Vercel)
-// Klient testuje rezerwacje na froncie -> backend TST API
 Route::get('/', function () {
-    return redirect()->away('https://frontend-git-staging-piotradamczyk8s-projects.vercel.app', 302);
+    return view('welcome');
 });
 
 Route::get('/api-docs', function () {
@@ -16,10 +14,9 @@ Route::get('/api-docs', function () {
 // Mailbox redirect - autoryzacja sprawdzana w kontrolerze
 Route::get('/admin/mailbox', [MailboxController::class, 'redirect'])->name('mailbox.redirect');
 
-// P24 return URL: backend -> frontend Vercel
-// P24 wysyla na app.url (backend) /rezerwacja/status?id=... -> przekieruj na frontend
+// P24 return URL → redirect do frontendu (sukces rezerwacji)
 Route::get('/rezerwacja/status', function (\Illuminate\Http\Request $r) {
-    $frontend = env('FRONTEND_URL', 'https://motorent-demo-tst.vercel.app');
+    $frontend = env('FRONTEND_URL', 'https://example-rental.test');
     $id = $r->query('id', '');
     return redirect()->away($frontend . '/rezerwacja/sukces?rental=' . urlencode($id), 302);
 });
