@@ -6,6 +6,8 @@ use App\Modules\Content\Models\ContentBlock;
 use App\Observers\ContentBlockObserver;
 use App\Modules\Content\Models\SiteContent;
 use App\Observers\SiteContentObserver;
+use App\Observers\RentalObserver;
+use Octadecimal\Rental\Models\Rental;
 use App\Modules\Content\Models\TwoWheels\SiteSetting;
 use App\Modules\Content\Models\TwoWheels\Feature;
 use App\Modules\Content\Models\TwoWheels\Motorcycle;
@@ -99,6 +101,11 @@ class AppServiceProvider extends ServiceProvider
 
         if (class_exists(SiteContent::class)) {
             SiteContent::observe(SiteContentObserver::class);
+        }
+
+        // Notify admin and customer on new rental booking
+        if (class_exists(Rental::class)) {
+            Rental::observe(RentalObserver::class);
         }
 
         // Clear application cache when any MotoRent content model is saved or deleted
