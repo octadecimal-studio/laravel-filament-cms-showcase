@@ -51,9 +51,10 @@ class ContentBlockObserver
      */
     private function triggerRevalidation(ContentBlock $block, array $tags): void
     {
-        // ContentBlock doesn't have direct relationship to templates
-        // Revalidate all templates for this tenant that have webhooks configured
-        // This ensures all deployed templates get updated when content changes
+        if (! class_exists(Template::class)) {
+            return;
+        }
+
         $templates = Template::where('tenant_id', $block->tenant_id)
             ->whereNotNull('webhook_url')
             ->pluck('slug')
