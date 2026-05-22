@@ -26,6 +26,7 @@ use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use App\Pricing\PerRentablePLNStrategy;
@@ -74,6 +75,22 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Gdy P24 w trybie sandbox → przekieruj wszystkie maile na adres testowy.
+        // Przełącznik w panelu Filament: Płatności → "Tryb testowy (sandbox)".
+        try {
+            $paymentSettings = PaymentSettings::query()
+                ->forProvider('przelewy24')
+                ->first();
+
+            if ($paymentSettings?->sandbox) {
+                Mail::alwaysTo(
+                    config('app.tst_recipient', 'piotr.k.adamczyk@gmail.com')
+                );
+            }
+        } catch (\Throwable) {
+            // Brak tabeli (np. migration) — nie blokuj startu aplikacji.
+        }
+
         // === POLICY MAPPINGS ===
         Gate::policy(Reservation::class, ReservationPolicy::class);
 
