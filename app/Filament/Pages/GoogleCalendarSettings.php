@@ -120,7 +120,7 @@ class GoogleCalendarSettings extends Page implements HasForms
                                 ->url(route('google-calendar.redirect'))
                                 ->icon('heroicon-o-arrow-path')
                                 ->color('gray')
-                                ->visible($hasToken),
+                                ->visible($hasToken && ! $isConnected),
 
                             Action::make('disconnect')
                                 ->label('Rozłącz')
