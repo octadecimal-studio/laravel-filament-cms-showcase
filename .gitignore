@@ -1,6 +1,8 @@
 *.log
 .DS_Store
 .env
+p24-credentials.md
+web.php.new
 .env.backup
 .env.production
 .phpactor.json
