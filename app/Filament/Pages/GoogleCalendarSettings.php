@@ -106,7 +106,7 @@ class GoogleCalendarSettings extends Page implements HasForms
                                 ->modalDescription('Przesłane zostaną wszystkie aktywne rezerwacje (pending, confirmed, paid), które nie mają jeszcze wpisu w kalendarzu. Anulowane i wygasłe zostaną pominięte.')
                                 ->modalSubmitActionLabel('Synchronizuj')
                                 ->action('syncAllRentals')
-                                ->visible($isConnected),
+                                ->visible($hasToken),
 
                             Action::make('connect')
                                 ->label('Połącz z Google Calendar')
@@ -119,7 +119,7 @@ class GoogleCalendarSettings extends Page implements HasForms
                                 ->label('Połącz ponownie')
                                 ->url(route('google-calendar.redirect'))
                                 ->icon('heroicon-o-arrow-path')
-                                ->color('warning')
+                                ->color('gray')
                                 ->visible($hasToken),
 
                             Action::make('disconnect')
@@ -155,10 +155,21 @@ class GoogleCalendarSettings extends Page implements HasForms
 
     public function syncAllRentals(): void
     {
-        $result = app(GoogleCalendarService::class)->syncAllRentals();
+        $service = app(GoogleCalendarService::class);
+
+        if (! $service->isConnected()) {
+            Notification::make()
+                ->title('Wybierz i zapisz kalendarz docelowy przed synchronizacją')
+                ->warning()
+                ->send();
+
+            return;
+        }
+
+        $result = $service->syncAllRentals();
 
         Notification::make()
-            ->title("Synchronizacja zakończona")
+            ->title('Synchronizacja zakończona')
             ->body("Dodano: {$result['synced']} | Pominięto (już w kalendarzu): {$result['skipped']} | Błędy: {$result['failed']}")
             ->success()
             ->send();
