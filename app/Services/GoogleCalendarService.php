@@ -15,7 +15,12 @@ use Octadecimal\Rental\Models\Rental;
 
 class GoogleCalendarService
 {
-    private const SCOPES = [Calendar::CALENDAR_EVENTS];
+    private const SCOPES = [Calendar::CALENDAR_EVENTS, Calendar::CALENDAR_READONLY];
+
+    public function hasToken(): bool
+    {
+        return GoogleCalendarSetting::instance()->hasToken();
+    }
 
     public function isConnected(): bool
     {
@@ -25,6 +30,37 @@ class GoogleCalendarService
     public function hasCredentials(): bool
     {
         return GoogleCalendarSetting::instance()->hasCredentials();
+    }
+
+    public function syncAllRentals(): array
+    {
+        $synced = 0;
+        $skipped = 0;
+        $failed = 0;
+
+        $rentals = Rental::whereNotIn('status', ['cancelled', 'expired'])
+            ->orderBy('start_date')
+            ->get();
+
+        foreach ($rentals as $rental) {
+            if (! empty($rental->meta['google_calendar_event_id'])) {
+                $skipped++;
+                continue;
+            }
+
+            try {
+                $eventId = $this->createEvent($rental);
+                $eventId ? $synced++ : $failed++;
+            } catch (\Throwable $e) {
+                Log::warning('GoogleCalendar: błąd sync rezerwacji', [
+                    'rental_id' => $rental->id,
+                    'error'     => $e->getMessage(),
+                ]);
+                $failed++;
+            }
+        }
+
+        return compact('synced', 'skipped', 'failed');
     }
 
     public function getAuthUrl(): string

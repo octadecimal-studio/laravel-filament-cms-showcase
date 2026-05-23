@@ -50,9 +50,10 @@ class GoogleCalendarSettings extends Page implements HasForms
     public function form(Schema $schema): Schema
     {
         $service = app(GoogleCalendarService::class);
+        $hasToken = $service->hasToken();
         $isConnected = $service->isConnected();
         $hasCredentials = $service->hasCredentials();
-        $calendarOptions = $isConnected ? $service->listCalendars() : [];
+        $calendarOptions = $hasToken ? $service->listCalendars() : [];
 
         return $schema
             ->statePath('data')
@@ -84,9 +85,9 @@ class GoogleCalendarSettings extends Page implements HasForms
                         Select::make('calendar_id')
                             ->label('Kalendarz docelowy')
                             ->options($calendarOptions)
-                            ->placeholder($isConnected ? 'Wybierz kalendarz' : 'Najpierw połącz konto Google')
-                            ->disabled(! $isConnected)
-                            ->helperText($isConnected
+                            ->placeholder($hasToken ? 'Wybierz kalendarz' : 'Najpierw połącz konto Google')
+                            ->disabled(! $hasToken)
+                            ->helperText($hasToken
                                 ? 'Rezerwacje będą synchronizowane do wybranego kalendarza.'
                                 : 'Kliknij "Połącz z Google Calendar" po zapisaniu credentials.'),
 
@@ -96,26 +97,37 @@ class GoogleCalendarSettings extends Page implements HasForms
                                 ->action('saveSettings')
                                 ->color('primary'),
 
+                            Action::make('sync_all')
+                                ->label('Synchronizuj z Google Calendar')
+                                ->icon('heroicon-o-arrow-path')
+                                ->color('info')
+                                ->requiresConfirmation()
+                                ->modalHeading('Synchronizacja rezerwacji')
+                                ->modalDescription('Przesłane zostaną wszystkie aktywne rezerwacje (pending, confirmed, paid), które nie mają jeszcze wpisu w kalendarzu. Anulowane i wygasłe zostaną pominięte.')
+                                ->modalSubmitActionLabel('Synchronizuj')
+                                ->action('syncAllRentals')
+                                ->visible($isConnected),
+
                             Action::make('connect')
                                 ->label('Połącz z Google Calendar')
                                 ->url(route('google-calendar.redirect'))
                                 ->icon('heroicon-o-arrow-top-right-on-square')
                                 ->color('success')
-                                ->visible($hasCredentials && ! $isConnected),
+                                ->visible($hasCredentials && ! $hasToken),
 
                             Action::make('reconnect')
                                 ->label('Połącz ponownie')
                                 ->url(route('google-calendar.redirect'))
                                 ->icon('heroicon-o-arrow-path')
                                 ->color('warning')
-                                ->visible($isConnected),
+                                ->visible($hasToken),
 
                             Action::make('disconnect')
                                 ->label('Rozłącz')
                                 ->action('disconnectGoogle')
                                 ->color('danger')
                                 ->requiresConfirmation()
-                                ->visible($isConnected),
+                                ->visible($hasToken),
                         ]),
                     ]),
             ]);
@@ -139,6 +151,17 @@ class GoogleCalendarSettings extends Page implements HasForms
         $settings->update($updateData);
 
         Notification::make()->title('Zapisano')->success()->send();
+    }
+
+    public function syncAllRentals(): void
+    {
+        $result = app(GoogleCalendarService::class)->syncAllRentals();
+
+        Notification::make()
+            ->title("Synchronizacja zakończona")
+            ->body("Dodano: {$result['synced']} | Pominięto (już w kalendarzu): {$result['skipped']} | Błędy: {$result['failed']}")
+            ->success()
+            ->send();
     }
 
     public function disconnectGoogle(): void

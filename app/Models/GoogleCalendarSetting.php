@@ -23,10 +23,14 @@ class GoogleCalendarSetting extends Model
         return static::firstOrCreate([]);
     }
 
+    public function hasToken(): bool
+    {
+        return ! empty($this->getRawOriginal('access_token'));
+    }
+
     public function isConnected(): bool
     {
-        return ! empty($this->getRawOriginal('access_token'))
-            && ! empty($this->calendar_id);
+        return $this->hasToken() && ! empty($this->calendar_id);
     }
 
     public function hasCredentials(): bool
