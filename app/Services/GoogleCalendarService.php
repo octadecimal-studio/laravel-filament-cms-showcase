@@ -64,6 +64,38 @@ class GoogleCalendarService
         return compact('synced', 'skipped', 'failed');
     }
 
+    public function syncAllSlots(): array
+    {
+        $synced = 0;
+        $skipped = 0;
+        $failed = 0;
+
+        $slots = AvailabilitySlot::whereNull('google_calendar_event_id')
+            ->orderBy('start_date')
+            ->get();
+
+        foreach ($slots as $slot) {
+            try {
+                $eventId = $this->createAvailabilitySlotEvent($slot);
+
+                if ($eventId) {
+                    $slot->updateQuietly(['google_calendar_event_id' => $eventId]);
+                    $synced++;
+                } else {
+                    $failed++;
+                }
+            } catch (\Throwable $e) {
+                Log::warning('GoogleCalendar: błąd sync blokady', [
+                    'slot_id' => $slot->id,
+                    'error'   => $e->getMessage(),
+                ]);
+                $failed++;
+            }
+        }
+
+        return compact('synced', 'skipped', 'failed');
+    }
+
     public function getAuthUrl(): string
     {
         $settings = GoogleCalendarSetting::instance();

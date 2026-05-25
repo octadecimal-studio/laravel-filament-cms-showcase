@@ -166,11 +166,18 @@ class GoogleCalendarSettings extends Page implements HasForms
             return;
         }
 
-        $result = $service->syncAllRentals();
+        $rentals = $service->syncAllRentals();
+        $slots   = $service->syncAllSlots();
+
+        $failed = $rentals['failed'] + $slots['failed'];
 
         Notification::make()
             ->title('Synchronizacja zakończona')
-            ->body("Dodano: {$result['synced']} | Pominięto (już w kalendarzu): {$result['skipped']} | Błędy: {$result['failed']}")
+            ->body(implode(' | ', [
+                "Rezerwacje: +{$rentals['synced']} / pominięto {$rentals['skipped']}",
+                "Blokady: +{$slots['synced']} / pominięto {$slots['skipped']}",
+                "Błędy: {$failed}",
+            ]))
             ->success()
             ->send();
     }
