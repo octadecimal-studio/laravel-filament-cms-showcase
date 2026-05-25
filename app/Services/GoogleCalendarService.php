@@ -11,6 +11,7 @@ use Google\Service\Calendar\Event;
 use Google\Service\Calendar\EventDateTime;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
+use Octadecimal\Rental\Models\AvailabilitySlot;
 use Octadecimal\Rental\Models\Rental;
 
 class GoogleCalendarService
@@ -169,6 +170,51 @@ class GoogleCalendarService
         }
     }
 
+    public function createAvailabilitySlotEvent(AvailabilitySlot $slot): ?string
+    {
+        if (! $this->isConnected()) {
+            return null;
+        }
+
+        try {
+            $settings = GoogleCalendarSetting::instance();
+            $created = (new Calendar($this->buildClient()))
+                ->events
+                ->insert($settings->calendar_id, $this->buildSlotEvent($slot));
+
+            return $created->getId();
+        } catch (\Throwable $e) {
+            Log::warning('GoogleCalendar: błąd tworzenia eventu blokady', [
+                'slot_id' => $slot->id,
+                'error'   => $e->getMessage(),
+            ]);
+
+            return null;
+        }
+    }
+
+    public function updateAvailabilitySlotEvent(AvailabilitySlot $slot): void
+    {
+        $eventId = $slot->google_calendar_event_id;
+
+        if (! $this->isConnected() || ! $eventId) {
+            return;
+        }
+
+        try {
+            $settings = GoogleCalendarSetting::instance();
+            (new Calendar($this->buildClient()))
+                ->events
+                ->update($settings->calendar_id, $eventId, $this->buildSlotEvent($slot));
+        } catch (\Throwable $e) {
+            Log::warning('GoogleCalendar: błąd aktualizacji eventu blokady', [
+                'slot_id'  => $slot->id,
+                'event_id' => $eventId,
+                'error'    => $e->getMessage(),
+            ]);
+        }
+    }
+
     public function deleteEvent(string $eventId): void
     {
         if (! $this->isConnected()) {
@@ -263,6 +309,29 @@ class GoogleCalendarService
         // all-day event — end date w Google Calendar jest exclusive (dzień po ostatnim)
         $event->setStart(new EventDateTime(['date' => Carbon::parse($rental->start_date)->format('Y-m-d')]));
         $event->setEnd(new EventDateTime(['date' => Carbon::parse($rental->end_date)->addDay()->format('Y-m-d')]));
+
+        return $event;
+    }
+
+    private function buildSlotEvent(AvailabilitySlot $slot): Event
+    {
+        $rentable = $slot->rentable;
+        $resourceName = $rentable?->name ?? $rentable?->title ?? 'Zasób';
+        $reason = $slot->reason ?? 'Blokada';
+
+        $description = implode("\n", array_filter([
+            'Zasób: ' . $resourceName,
+            'Powód: ' . $reason,
+        ]));
+
+        $event = new Event([
+            'summary'     => "[Blokada] {$resourceName} — {$reason}",
+            'description' => $description,
+            'colorId'     => '8', // graphite
+        ]);
+
+        $event->setStart(new EventDateTime(['date' => Carbon::parse($slot->start_date)->format('Y-m-d')]));
+        $event->setEnd(new EventDateTime(['date' => Carbon::parse($slot->end_date)->addDay()->format('Y-m-d')]));
 
         return $event;
     }
